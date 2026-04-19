@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- Polices locales — offline ready -->
+    <link rel="stylesheet" href="fonts/icon.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEHAVANA - Système de Gestion</title>
+    <meta name="description" content="Application de gestion des avances et de la collecte de vanille. Fonctionne offline.">
+    <meta name="keywords" content="behavana, vanille, gestion, collecte, avances">
+    <meta name="author" content="BEHAVANA">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
+    <link rel="shortcut icon" href="logo.jpg" type="image/jpeg">
+    <meta name="theme-color" content="#6750a4">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#10081c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BEHAVANA">
+    <link rel="apple-touch-icon" href="logo.jpg">
+    <meta name="msapplication-TileColor" content="#6750a4">
+    <meta name="msapplication-TileImage" content="logo.jpg">
+    <!-- External Libraries -->
+    <!-- Font Awesome: local si disponible, CDN sinon -->
+    <link rel="stylesheet" href="fonts/fa/all.min.css"
+          onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'">
+    <script src="assets/chart.min.js" defer></script>
+    <script src="assets/xlsx.full.min.js" defer></script>
+    <!-- App Styles -->
+    <link rel="stylesheet" href="src/styles/base.css">
+    <link rel="stylesheet" href="src/styles/layout.css">
+    <link rel="stylesheet" href="src/styles/ui.css">
+    <link rel="stylesheet" href="src/styles/search.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Overlay -->
+        <div id="sidebar-overlay"
+            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2500; backdrop-filter:blur(4px);">
+        </div>
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar" role="navigation" aria-label="Menu principal">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fa-solid fa-spa" style="font-size: 24px;"></i>
+                    </div>
+                    <div>
+                        <div class="company-name">BEHAVANA</div>
+                        <div class="company-subtitle">Gestion de Collecte</div>
+                    </div>
+                </div>
+            </div>
+            <ul class="nav-menu" role="menubar">
+                <li class="nav-item" role="none">
+                    <a class="nav-link active" data-section="dashboard" role="menuitem" aria-current="page" tabindex="0" data-tooltip="Tableau de Bord">
+                        <span class="material-icons" aria-hidden="true">dashboard</span>
+                        <span class="nav-text">Tableau de Bord</span>
+                    </a>
+                </li>
+                <li class="nav-item" role="none">
+                    <a class="nav-link" data-section="collectors" role="menuitem" tabindex="-1" data-tooltip="Collecteurs">
+                        <span class="material-icons" aria-hidden="true">people</span>
+                        <span class="nav-text">Collecteurs</span>
+                    </a>
+                </li>
+                <li class="nav-item" role="none">
+                    <a class="nav-link" data-section="advances" role="menuitem" tabindex="-1" data-tooltip="Avances">
+                        <span class="material-icons" aria-hidden="true">account_balance_wallet</span>
+                        <span class="nav-text">Avances</span>
+                    </a>
+                </li>
+                <li class="nav-item" role="none">
+                    <a class="nav-link" data-section="reception" role="menuitem" tabindex="-1" data-tooltip="Réception">
+                        <span class="material-icons" aria-hidden="true">inventory</span>
+                        <span class="nav-text">Réception</span>
+                    </a>
+                </li>
+                <li class="nav-item" role="none">
+                    <a class="nav-link" data-section="remboursements" role="menuitem" tabindex="-1" data-tooltip="Remboursements">
+                        <span class="material-icons" aria-hidden="true">paid</span>
+                        <span class="nav-text">Remboursements</span>
+                    </a>
+                </li>
+                <li class="nav-item" role="none">
+                    <a class="nav-link" data-section="paiements" role="menuitem" tabindex="-1" data-tooltip="Paiements Effectués">
+                        <span class="material-icons" style="transform: scaleX(-1);">payments</span>
+                        <span class="nav-text">Paiements Effectués</span>
+                    </a>
+                </li>
+                <li class="nav-item" role="none">
+                    <a class="nav-link" data-section="expenses" role="menuitem" tabindex="-1" data-tooltip="Dépenses">
+                        <span class="material-icons" aria-hidden="true">receipt_long</span>
+                        <span class="nav-text">Dépenses</span>
+                    </a>
+                </li>
+                <li class="nav-item" role="none">
+                    <a class="nav-link" data-section="delivery" role="menuitem" tabindex="-1" data-tooltip="Livraison Export">
+                        <span class="material-icons" aria-hidden="true">local_shipping</span>
+                        <span class="nav-text">Livraison Export</span>
+                    </a>
+                </li>
+                <li class="nav-item" role="none">
+                    <a class="nav-link" data-section="analysis" role="menuitem" tabindex="-1" data-tooltip="Suivi & Analyse">
+                        <span class="material-icons" aria-hidden="true">analytics</span>
+                        <span class="nav-text">Suivi & Analyse</span>
+                    </a>
+                </li>
+                <li class="nav-item" role="none">
+                    <a class="nav-link" data-section="settings" role="menuitem" tabindex="-1" data-tooltip="Paramètres">
+                        <span class="material-icons" aria-hidden="true">settings</span>
+                        <span class="nav-text">Paramètres</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <button id="sidebar-toggle" class="btn btn-icon" title="Afeno/Asehoy ny sisin-dàlana">
+                    <span class="material-icons" aria-hidden="true">menu_open</span>
+                </button>
+                <h1 id="page-title">Tableau de Bord</h1>
+                <div class="global-search-wrapper">
+                    <span class="material-icons">search</span>
+                    <input id="global-search-input" type="text" placeholder="Recherche Globale..." oninput="debouncedGlobalSearch()">
+                </div>
+                <div class="year-slider-container">
+                    <div class="year-slider-track" id="yearSliderTrack">
+                        <div class="year-slider-fill" id="yearSliderFill"></div>
+                        <div class="year-slider-thumb" id="yearSliderThumb">
+                            <span class="year-display-compact" id="yearDisplay">2026</span>
+                        </div>
+                    </div>
+                    <div class="year-mobile-controls">
+                        <button class="year-mobile-btn" type="button" onclick="changeYearBy(-1)" aria-label="Année précédente">
+                            <span class="material-icons">chevron_left</span>
+                        </button>
+                        <div class="year-mobile-badge" id="yearDisplayMobile">2026</div>
+                        <button class="year-mobile-btn" type="button" onclick="changeYearBy(1)" aria-label="Année suivante">
+                            <span class="material-icons">chevron_right</span>
+                        </button>
+                    </div>
+                    <input id="yearMobileRange" class="year-mobile-range" type="range" min="2023" max="2030" step="1" value="2026" aria-label="Sélectionner l'année">
+                </div>
+                <div class="header-actions">
+                    <button class="theme-toggle" id="theme-toggle" aria-label="Manova ny lohahevitra (maizina/mazava)">
+                        <span class="material-icons" aria-hidden="true">dark_mode</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <section class="content-section active" id="dashboard">
+                <div class="dashboard-overview">
+                    <div class="dashboard-title">Aperçu Global</div>
+                    <div class="dashboard-subtitle">État financier et opérationnel de BEHAVANA</div>
+                    <div class="overview-stats">
+                        <div class="overview-stat">
+                            <div class="overview-stat-value" id="overview-collectors">0</div>
+                            <div class="overview-stat-label">Collecteurs Actifs</div>
+                        </div>
+                        <div class="overview-stat">
+                            <div class="overview-stat-value" id="overview-transactions">0</div>
+                            <div class="overview-stat-label">Transactions Totales</div>
+                        </div>
+                        <div class="overview-stat">
+                            <div class="overview-stat-value" id="overview-month">Ce Mois</div>
+                            <div class="overview-stat-label">Année Active</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="total-advances">0 Ar</div>
+                                <div class="stat-label">Total Avances Accordées</div>
+                                <div class="stat-trend negative">
+                                    <span class="material-icons">trending_down</span>
+                                    Argent sorti
+                                </div>
+                            </div>
+                            <div class="stat-icon" style="background-color: #9aecb8;">
+                                <span class="material-icons">credit_score</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="advances-progress" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="total-expenses">0 Ar</div>
+                                <div class="stat-label">Total Dépenses Opérationnelles</div>
+                                <div class="stat-trend negative">
+                                    <span class="material-icons">trending_down</span>
+                                    Argent sorti
+                                </div>
+                            </div>
+                            <div class="stat-icon" style="background-color: var(--md-sys-color-secondary);">
+                                <span class="material-icons">receipt_long</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="expenses-progress" style="width: 100%; background: var(--md-sys-color-secondary);"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="total-vanilla-weight">0 kg</div>
+                                <div class="stat-label">Vanille Collectée</div>
+                                <div class="stat-trend positive">
+                                    <span class="material-icons">trending_up</span>
+                                    Stock physique
+                                </div>
+                            </div>
+                            <div class="stat-icon" style="background-color: var(--md-sys-color-primary);">
+                                <span class="material-icons">eco</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="vanilla-progress" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="total-vanilla-value">0 Ar</div>
+                                <div class="stat-label">Valeur Totale Vanille</div>
+                                <div class="stat-trend positive">
+                                    <span class="material-icons">trending_up</span>
+                                    Argent rentré
+                                </div>
+                            </div>
+                            <div class="stat-icon" style="background-color: var(--md-sys-color-tertiary);">
+                                <span class="material-icons">attach_money</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="value-progress" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card solde-global-card equilibre" id="solde-global-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="solde-global">0 Ar</div>
+                                <div class="stat-label">Solde Global</div>
+                                <div class="stat-trend" id="solde-trend">
+                                    <span class="material-icons" id="solde-trend-icon">trending_flat</span>
+                                    <span id="solde-trend-text">État équilibré</span>
+                                </div>
+                            </div>
+                            <div class="stat-icon">
+                                <span class="material-icons" id="solde-icon">account_balance</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="solde-progress" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-insights">
+                    <div class="insights-title">
+                        <span class="material-icons">insights</span>
+                        Analyse de Rentabilité
+                    </div>
+                    <div class="insight-item" id="insight-valeur-recuperable">
+                        <div class="insight-icon" style="background-color: var(--md-sys-color-success);">
+                            <span class="material-icons">diamond</span>
+                        </div>
+                        <div class="insight-content">
+                            <div class="insight-text">Valeur Récupérable (Bonnes Qualités)</div>
+                            <div class="insight-detail" id="valeur-recuperable-detail">Calcul en cours...</div>
+                        </div>
+                    </div>
+                    <div class="insight-item" id="insight-perte-qualite">
+                        <div class="insight-icon" style="background-color: var(--md-sys-color-error);">
+                            <span class="material-icons">trending_down</span>
+                        </div>
+                        <div class="insight-content">
+                            <div class="insight-text">Perte sur Qualité Inférieure</div>
+                            <div class="insight-detail" id="perte-qualite-detail">Calcul en cours...</div>
+                        </div>
+                    </div>
+                    <div class="insight-item" id="insight-rendement-op">
+                        <div class="insight-icon" style="background-color: var(--md-sys-color-primary);">
+                            <span class="material-icons">percent</span>
+                        </div>
+                        <div class="insight-content">
+                            <div class="insight-text">Taux de Rendement Opérationnel</div>
+                            <div class="insight-detail" id="rendement-op-detail">Calcul en cours...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-insights" style="margin-top: 32px;">
+                    <div class="insights-title">
+                        <span class="material-icons">query_stats</span>
+                        Résumé Financier (Suivi des Comptes)
+                    </div>
+                    <div class="insight-item">
+                        <div class="insight-icon" style="background-color: var(--md-sys-color-error);" id="insight-icon-1">
+                            <span class="material-icons">trending_flat</span>
+                        </div>
+                        <div class="insight-content">
+                            <div class="insight-text" id="insight-title-1">État Financier</div>
+                            <div class="insight-detail" id="insight-detail-1">Aucune donnée disponible pour le moment</div>
+                        </div>
+                    </div>
+                    <div class="insight-item">
+                        <div class="insight-icon" style="background-color: var(--md-sys-color-primary);" id="insight-icon-2">
+                            <span class="material-icons">timeline</span>
+                        </div>
+                        <div class="insight-content">
+                            <div class="insight-text">Taux de Récupération des Avances</div>
+                            <div class="insight-detail" id="recovery-rate">0% des avances sont actuellement couvertes par la vanille collectée</div>
+                        </div>
+                    </div>
+                    <div class="insight-item" id="debtors-card">
+                        <div class="insight-icon" style="background-color: var(--md-sys-color-tertiary);" id="insight-icon-3">
+                            <span class="material-icons">people</span>
+                        </div>
+                        <div class="insight-content">
+                            <div class="insight-text">Collecteurs en Dette</div>
+                            <div class="insight-detail" id="debtors-info">Aucun collecteur enregistré</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; margin-top: 32px;">
+                    <div class="chart-container" style="background-color: var(--md-sys-color-surface); border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); border: 1px solid var(--md-sys-color-outline-variant);">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--md-sys-color-on-surface);">Total des Avances par Collecteur</h3>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="background-color: var(--md-sys-color-surface); border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); border: 1px solid var(--md-sys-color-outline-variant);">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--md-sys-color-on-surface);">Répartition (Avances vs Valeur Vanille)</h3>
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                    <div class="chart-container" style="background-color: var(--md-sys-color-surface); border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); border: 1px solid var(--md-sys-color-outline-variant);">
+                        <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--md-sys-color-on-surface);">Poids Réceptionnées par Qualité de Vanille</h3>
+                        <canvas id="qualityChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Collectors Section -->
+            <section class="content-section" id="collectors">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="table-title">Gestion des Collecteurs</h2>
+                        <button class="btn btn-primary" onclick="openCollectorModal()">
+                            <span class="material-icons">add</span>
+                            Ajouter Collecteur
+                        </button>
+                    </div>
+                    <div class="table-scroll-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nom</th><th>Téléphone</th><th>C.I.N</th>
+                                    <th>Délivré le</th><th>Adresse</th>
+                                    <th>Statut</th><th>Solde</th><th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="collectors-table">
+                                <tr><td colspan="8" class="empty-state"><div class="material-icons">people_outline</div><div>Aucun collecteur enregistré</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Advances Section -->
+            <section class="content-section" id="advances">
+                <div class="filters">
+                    <div class="filter-group">
+                        <label class="filter-label">Collecteur</label>
+                        <select class="form-select" id="advance-filter-collector">
+                            <option value="">Tous les collecteurs</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Date début</label>
+                        <input type="date" class="form-input" id="advance-filter-start" onchange="filterAdvancesByDate()">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Date fin</label>
+                        <input type="date" class="form-input" id="advance-filter-end" onchange="filterAdvancesByDate()">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Actions rapides</label>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-outline" style="padding: 8px 12px; font-size: 12px;" onclick="setDateFilter('today')">Aujourd'hui</button>
+                            <button class="btn btn-outline" style="padding: 8px 12px; font-size: 12px;" onclick="setDateFilter('week')">Cette semaine</button>
+                            <button class="btn btn-outline" style="padding: 8px 12px; font-size: 12px;" onclick="setDateFilter('month')">Ce mois</button>
+                            <button class="btn btn-outline" style="padding: 8px 12px; font-size: 12px;" onclick="setDateFilter('year')">Cette année</button>
+                            <button class="btn btn-outline" style="padding: 8px 12px; font-size: 12px;" onclick="clearDateFilter()">Effacer</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="table-title">Gestion des Avances</h2>
+                        <button class="btn btn-primary" onclick="openAdvanceModal()">
+                            <span class="material-icons">add</span>
+                            Nouvelle Avance
+                        </button>
+                    </div>
+                    <div class="table-scroll-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Date</th><th>Collecteur</th><th>Montant</th><th style="padding:8px;text-align:left;">Motif</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="advances-table">
+                                <tr><td colspan="5" class="empty-state"><div class="material-icons">account_balance_wallet</div><div>Aucune avance enregistrée</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Résumé total avances -->
+                    <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;
+                                padding:12px 24px;border-top:1px solid var(--md-sys-color-outline-variant);
+                                background:var(--md-sys-color-surface-variant);border-radius:0 0 16px 16px;">
+                        <span style="font-size:13px;color:var(--md-sys-color-on-surface-variant);">Total avances (année) :</span>
+                        <strong id="advances-total" style="font-size:15px;color:var(--md-sys-color-error);">0 Ar</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Remboursements Section -->
+            <section class="content-section" id="remboursements">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="table-title">Historique des Remboursements</h2>
+                    </div>
+                    <div class="table-scroll-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Date</th><th>Collecteur</th><th>Montant Remboursé</th><th style="padding:8px;text-align:left;">Note</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="remboursements-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Paiements Section -->
+            <section class="content-section" id="paiements">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="table-title">Historique des Paiements de Soldes</h2>
+                    </div>
+                    <div class="table-scroll-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Date</th><th>Collecteur</th><th>Montant Payé</th><th style="padding:8px;text-align:left;">Note</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="paiements-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Expenses Section -->
+            <section class="content-section" id="expenses">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="table-title">Gestion des Dépenses Opérationnelles</h2>
+                        <button class="btn btn-primary" onclick="openExpenseModal()">
+                            <span class="material-icons">add</span>
+                            Ajouter Dépense
+                        </button>
+                    </div>
+                    <div class="table-scroll-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Date</th><th>Catégorie</th><th>Description</th><th>Montant</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="expenses-table"></tbody>
+                        </table>
+                    </div>
+                    <!-- Résumé total dépenses -->
+                    <div style="display:flex;justify-content:flex-end;align-items:center;gap:12px;
+                                padding:12px 24px;border-top:1px solid var(--md-sys-color-outline-variant);
+                                background:var(--md-sys-color-surface-variant);border-radius:0 0 16px 16px;">
+                        <span style="font-size:13px;color:var(--md-sys-color-on-surface-variant);">Total dépenses (année) :</span>
+                        <strong id="expenses-total" style="font-size:15px;color:var(--md-sys-color-error);">0 Ar</strong>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reception Section -->
+            <section class="content-section" id="reception">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="table-title">Suivi opérationnel des collecteurs</h2>
+                        <div>
+                            <button class="btn btn-outline" onclick="exportInvoice()">
+                                <span class="material-icons">picture_as_pdf</span>
+                                Export PDF
+                            </button>
+                            <button class="btn btn-primary" onclick="openReceptionModal()">
+                                <span class="material-icons">add</span>
+                                Nouvelle Réception
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-scroll-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Date</th><th>Collecteur</th><th>Poids Brut</th><th>Poids Net</th><th style="padding:8px;text-align:left;">Qualité</th><th>Prix/kg</th><th>Valeur</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="reception-table">
+                                <tr><td colspan="8" class="empty-state"><div class="material-icons">inventory</div><div>Aucune réception enregistrée</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Delivery Section -->
+            <section class="content-section" id="delivery">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="table-title">Livraison à l'Exportateur</h2>
+                        <button class="btn btn-primary" onclick="openDeliveryModal()">
+                            <span class="material-icons">add</span>
+                            Nouvelle Livraison
+                        </button>
+                    </div>
+                    <div class="table-scroll-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Date</th><th>N° BL / Facture</th><th style="padding:8px;text-align:left;">Qualité</th><th>Poids</th><th>Valeur</th><th>Exportateur</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="delivery-table">
+                                <tr><td colspan="7" class="empty-state"><div class="material-icons">local_shipping</div><div>Aucune livraison enregistrée</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analysis Section -->
+            <section class="content-section" id="analysis">
+                <div class="filters">
+                    <div class="filter-group">
+                        <label class="filter-label">Filtrer par Collecteur</label>
+                        <select class="form-select" id="analysis-filter-collector" onchange="updateAnalysisTable()">
+                            <option value="">Tous les collecteurs</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Filtrer par Qualité de Vanille</label>
+                        <select class="form-select" id="analysis-filter-quality" onchange="updateAnalysisTable()">
+                            <option value="">Toutes les qualités</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Actions & Rapports</label>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" onclick="showAllInAnalysis()"><span class="material-icons">clear_all</span> Afficher Tout</button>
+                            <button class="btn btn-outline" onclick="exportAnalysis()"><span class="material-icons">paid</span> Rapport Comptes</button>
+                            <button class="btn btn-outline" onclick="exportPoidsAnalysis()"><span class="material-icons">scale</span> Rapport Poids</button>
+                            <button class="btn btn-success" onclick="exportAnalysisToExcel()"><span class="material-icons">table_view</span> Export Excel</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="summary-insights" style="margin-bottom: 32px;">
+                    <div class="insights-title">
+                        <span class="material-icons">calculate</span>
+                        Analyse du Prix de Revient
+                    </div>
+                    <div id="prix-revient-container">
+                        <div class="empty-state"><span class="material-icons">hourglass_empty</span><div>Aucune réception de vanille pour calculer le prix de revient.</div></div>
+                    </div>
+                </div>
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="table-title">État des Collecteurs</h2>
+                    </div>
+                    <div class="table-scroll-wrapper">
+                        <table>
+                            <thead>
+                                <tr><th>Collecteur</th><th>Total Débits (Avances + paiements.)</th><th>Total Crédits (Livr. + Remb.)</th><th>Solde</th><th>Statut</th><th>Actions</th></tr>
+                            </thead>
+                            <tbody id="analysis-table">
+                                <tr><td colspan="6" class="empty-state"><div class="material-icons">analytics</div><div>Aucune donnée d'analyse disponible</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section class="content-section" id="settings">
+                <div class="credit-card">
+                    <div class="credit-icon"></div>
+                    <div class="credit-text">
+                        <p>Application développée et maintenue par</p>
+                        <a href="#" target="_blank" class="credit-name">Rado Mandimbiarijao Developer</a>
+                    </div>
+                    <div class="credit-version">Version 1.0.0</div>
+                </div>
+                <div class="form-container">
+                    <h2>Paramètres</h2>
+                    <div class="form-group" style="background: var(--md-sys-color-secondary-container); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span class="material-icons" style="color: var(--md-sys-color-primary); font-size: 32px;">install_mobile</span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;">📱 Installation de l'Application</div>
+                                <div style="font-size: 13px; color: var(--md-sys-color-on-surface-variant);">Installer BEHAVANA pour un accès rapide et hors-ligne</div>
+                            </div>
+                        </div>
+                        <button id="pwa-install-btn" onclick="installApp()" class="btn btn-primary" style="width: 100%; display: none; margin-bottom: 12px;">
+                            <span class="material-icons">download</span>
+                            Installer l'Application
+                        </button>
+                        <div style="font-size: 12px; color: var(--md-sys-color-outline); padding: 12px; background: var(--md-sys-color-surface-variant); border-radius: 8px; border-left: 3px solid var(--md-sys-color-primary);">
+                            <div style="display: flex; align-items: start; gap: 8px;">
+                                <span class="material-icons" style="font-size: 18px;">info</span>
+                                <div><strong>📱 iPhone/iPad:</strong> Tsindrio ny <strong>Share button</strong> <span class="material-icons" style="font-size: 14px; vertical-align: middle;">ios_share</span>, dia safidio <strong>"Add to Home Screen"</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Apparence</label>
+                        <select class="form-select" id="theme-select">
+                            <option value="light">Mode Clair</option>
+                            <option value="dark">Mode Sombre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="rendement-rate">
+                            Taux de Rendement (Vanille Verte → Noire)
+                            <span class="material-icons" title="Pourcentage du poids final après séchage." style="font-size: 16px; vertical-align: middle; cursor: help;">help_outline</span>
+                        </label>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <input type="number" class="form-input" id="rendement-rate" value="25" style="flex-grow: 1;">
+                            <span style="font-size: 20px; font-weight: 500;">%</span>
+                            <button class="btn btn-secondary" onclick="saveSettings()">Enregistrer</button>
+                        </div>
+                        <small style="display: block; margin-top: 8px; color: var(--md-sys-color-on-surface-variant);">Ce taux est utilisé pour estimer le poids sec et calculer le prix de revient final.</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gestion des Données</label>
+                        <div class="btn-group">
+                            <button class="btn btn-outline" onclick="exportData()"><span class="material-icons">download</span> Exporter les Données</button>
+                            <button class="btn btn-secondary" onclick="importData()"><span class="material-icons">upload</span> Importer les Données</button>
+                            <button class="btn btn-danger" onclick="resetData()"><span class="material-icons">delete_forever</span> Remise à Zéro</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-table" style="margin-top: 32px;">
+                    <div class="table-header">
+                        <h2 class="table-title">Gestion des Qualités de Vanille</h2>
+                        <button class="btn btn-primary" onclick="openQualityModal()"><span class="material-icons">add</span> Ajouter Qualité</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>Nom de la Qualité</th><th>Description</th><th style="width: 120px;">Actions</th></tr>
+                        </thead>
+                        <tbody id="qualities-table"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ===== MODALS ===== -->
+    <!-- Collector Modal -->
+    <div class="modal" id="collector-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Ajouter/Modifier Collecteur</h3>
+                <button class="close-btn" onclick="closeModal('collector-modal')"><span class="material-icons">close</span></button>
+            </div>
+            <form id="collector-form">
+                <div class="form-group">
+                    <label class="form-label">Nom Complet</label>
+                    <input type="text" id="collector-name" class="form-input" required aria-required="true" oninput="capitalizeLive(this)">
+                </div>
+                <div class="form-group">
+                    <label for="collector-phone" class="form-label">Téléphone</label>
+                    <input type="tel" class="form-input" id="collector-phone" placeholder="030 00 000 00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="display: flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">badge</span> CIN
+                    </label>
+                    <input type="text" class="form-input" id="collector-cin" placeholder="000 000 000 000" maxlength="17" oninput="formatCIN(this)">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="collector-cin-date">Date de délivrance CIN</label>
+                    <input type="date" class="form-input" id="collector-cin-date">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Adresse</label>
+                    <input type="text" class="form-input" id="collector-address" placeholder="Adresse du collecteur">
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('collector-modal')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Advance Modal -->
+    <div class="modal" id="advance-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="advance-modal-title">Nouvelle Avance</h3>
+                <button class="close-btn" onclick="closeModal('advance-modal')"><span class="material-icons">close</span></button>
+            </div>
+            <form id="advance-form">
+                <input type="hidden" id="advance-id">
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" class="form-input" id="advance-date" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Collecteur</label>
+                    <select class="form-select" id="advance-collector" required>
+                        <option value="">Sélectionner un collecteur</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Montant (Ar)</label>
+                    <input type="text" inputmode="numeric" class="form-input" id="advance-amount" required placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="advance-motif">Motif de l'avance</label>
+                    <input type="text" class="form-input" id="advance-motif" placeholder="Ex: Achat vanille verte...">
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('advance-modal')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reception Modal -->
+    <div class="modal" id="reception-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nouvelle Réception</h3>
+                <button class="close-btn" onclick="closeModal('reception-modal')"><span class="material-icons">close</span></button>
+            </div>
+            <form id="reception-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Collecteur</label>
+                        <select class="form-select" id="reception-collector" required onchange="updateCollectorBalanceDisplay()">
+                            <option value="">Sélectionner un collecteur</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Solde Actuel</label>
+                        <input type="text" class="form-input" id="reception-collector-balance" readonly tabindex="-1" placeholder="Solde du collecteur">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-input" id="reception-date" required>
+                    </div>
+                    <!-- Pesage Rapide -->
+                    <div class="form-group" style="grid-column: span 2; background: var(--md-sys-color-secondary-container); padding: 20px; border-radius: 12px; margin-bottom: 10px;">
+                        <label class="form-label" style="font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 16px;">
+                            <span class="material-icons">scale</span> Pesage Rapide - Saisie Multiple
+                        </label>
+                        <div style="display: flex; gap: 10px; margin-top: 12px; align-items: stretch;">
+                            <div style="flex: 1; display: flex; gap: 8px;">
+                                <input type="text" class="form-input" id="quick-weight-input" placeholder="Poids (kg)" style="flex: 1;" onkeypress="if(event.key === 'Enter') { event.preventDefault(); addQuickWeight(); }">
+                                <input type="text" class="form-input" id="quick-tare-input" placeholder="Tare" style="width: 70px; background: var(--md-sys-color-surface-variant); border: 1px solid var(--md-sys-color-outline);" oninput="updateReceptionFromQuickWeights()">
+                                <button type="button" class="btn btn-primary btn-add-weight" onclick="addQuickWeight()" style="padding: 0 20px; white-space: nowrap">
+                                    <span class="material-icons" style="font-size: 18px">add</span>
+                                    <span class="btn-text">Ajouter</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="quick-weights-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;min-height:45px;max-height:150px;overflow-y:auto;padding:10px;border:2px dashed var(--md-sys-color-outline);border-radius:8px;background:rgba(255,255,255,0.5);"></div>
+                        <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                            <div style="display:flex;gap:20px;font-size:13px;color:var(--md-sys-color-on-secondary-container);font-weight:500;">
+                                <span><span class="material-icons" style="font-size:16px;vertical-align:middle;">shopping_bag</span> Isan'ny gony: <strong id="quick-bag-count">0</strong></span>
+                                <span><span class="material-icons" style="font-size:16px;vertical-align:middle;">scale</span> Brut: <strong id="quick-total-weight">0.00</strong> kg</span>
+                                <span><span class="material-icons" style="font-size:16px;vertical-align:middle;">balance</span> Net: <strong id="quick-net-weight">0.00</strong> kg</span>
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <button type="button" onclick="undoLastWeight()" style="background:none;border:none;color:var(--md-sys-color-primary);cursor:pointer;font-size:12px;padding:4px 8px;display:flex;align-items:center;gap:4px;">
+                                    <span class="material-icons" style="font-size:16px;">undo</span> Hamafa farany
+                                </button>
+                                <button type="button" onclick="clearQuickWeights()" style="background:none;border:none;color:var(--md-sys-color-error);cursor:pointer;font-size:12px;padding:4px 8px;display:flex;align-items:center;gap:4px;">
+                                    <span class="material-icons" style="font-size:16px;">delete_sweep</span> Hamafa rehetra
+                                </button>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;padding:10px;background:rgba(103,80,164,0.1);border-radius:6px;font-size:11px;color:var(--md-sys-color-on-secondary-container);">
+                            <span class="material-icons" style="font-size:14px;vertical-align:middle;">info</span>
+                            <strong>Fomba fampiasana:</strong> Ampidiro ny lanjan'ny gony tsirairay, dia tsindrio "Ajouter" na "Enter". Ny total dia hiampy ho azy.
+                        </div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Poids Brut (kg)</label><input type="number" step="0.01" class="form-input" id="reception-gross-weight"></div>
+                    <div class="form-group"><label class="form-label">Nombre de Sacs</label><input type="number" class="form-input" id="reception-bag-count" value="1"></div>
+                    <div class="form-group"><label class="form-label">Tare</label><input type="number" step="0.01" class="form-input" id="reception-bag-weight" value=""></div>
+                    <div class="form-group"><label class="form-label">Poids Net (kg)</label><input type="number" step="0.01" class="form-input" id="reception-net-weight" readonly tabindex="-1"></div>
+                    <div class="form-group">
+                        <label class="form-label">Qualité</label>
+                        <input type="text" class="form-input" id="reception-quality" list="quality-list" required placeholder="Sélectionner ou saisir la qualité">
+                        <datalist id="quality-list"></datalist>
+                    </div>
+                    <div class="form-group"><label class="form-label">Prix par kg (Ar)</label><input type="number" class="form-input" id="reception-price"></div>
+                    <div class="form-group"><label class="form-label">Valeur Totale (Ar)</label><input type="number" class="form-input" id="reception-total-value" readonly tabindex="-1"></div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('reception-modal')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Adjust Modal -->
+    <div id="adjust-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="modal-title"><span class="material-icons">tune</span> Ajustement Tri Post-Réception</h2>
+                <button class="close-btn" onclick="closeAdjustModal()">&times;</button>
+            </div>
+            <div id="adjust-reception-info" style="background: rgba(103,80,164,0.15); padding: 16px; border-radius: 12px; margin-bottom: 20px;"></div>
+            <input type="hidden" id="adjust-original-reception-id">
+            <div id="adjustments-container"></div>
+            <button type="button" class="btn btn-primary" onclick="addAdjustmentRow()" style="width: 100%; margin: 16px 0;">
+                <span class="material-icons">add</span> Ajouter un ajustement
+            </button>
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline" onclick="closeAdjustModal()">Annuler</button>
+                <button type="button" class="btn btn-success" onclick="saveAllAdjustments()">
+                    <span class="material-icons">check_circle</span> Enregistrer tous les ajustements
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Modal -->
+    <div class="modal" id="delivery-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="delivery-modal-title">Nouvelle Livraison</h3>
+                <button class="close-btn" onclick="closeModal('delivery-modal')"><span class="material-icons">close</span></button>
+            </div>
+            <form id="delivery-form">
+                <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="delivery-date" required></div>
+                <div class="form-group"><label class="form-label">Exportateur</label><input type="text" class="form-input" id="delivery-exporter" placeholder="Nom de l'exportateur"></div>
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group"><label class="form-label">N° BL</label><input type="text" class="form-input" id="delivery-bl" placeholder="Auto" readonly tabindex="-1"></div>
+                    <div class="form-group"><label class="form-label">N° Facture</label><input type="text" class="form-input" id="delivery-invoice" placeholder="Auto" readonly tabindex="-1"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Qualité de la Vanille</label>
+                    <input type="text" class="form-input" id="delivery-quality" list="quality-list" required placeholder="Sélectionner ou saisir la qualité">
+                    <datalist id="delivery-quality-list"></datalist>
+                </div>
+                <!-- Pesage Rapide Livraison -->
+                <div class="form-group" style="background: var(--md-sys-color-secondary-container); padding: 20px; border-radius: 12px; margin-bottom: 10px;">
+                    <label class="form-label" style="font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 16px;">
+                        <span class="material-icons">scale</span> Pesage Rapide - Saisie Multiple
+                    </label>
+                    <div style="display: flex; gap: 10px; margin-top: 12px; align-items: stretch;">
+                        <div style="flex: 1; display: flex; gap: 8px;">
+                            <input type="text" class="form-input" id="delivery-quick-weight-input" placeholder="Lanja (kg)" style="flex: 1;" onkeypress="if(event.key === 'Enter') { event.preventDefault(); addDeliveryQuickWeight(); }">
+                            <input type="text" class="form-input" id="delivery-quick-tare-input" placeholder="Tare" style="width: 70px; background: var(--md-sys-color-surface-variant); border: 1px solid var(--md-sys-color-outline); font-weight: bold; color: var(--md-sys-color-primary);" oninput="updateDeliveryFromQuickWeights()">
+                            <button type="button" class="btn btn-primary btn-add-weight" onclick="addDeliveryQuickWeight()" style="padding: 0 20px; white-space: nowrap">
+                                <span class="material-icons" style="font-size: 18px">add</span>
+                                <span class="btn-text">Ajouter</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="delivery-quick-weights-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;min-height:45px;max-height:150px;overflow-y:auto;padding:10px;border:2px dashed var(--md-sys-color-outline);border-radius:8px;background:rgba(255,255,255,0.5);"></div>
+                    <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                        <div style="display:flex;gap:20px;font-size:13px;color:var(--md-sys-color-on-secondary-container);font-weight:500;">
+                            <span><span class="material-icons" style="font-size:16px;vertical-align:middle;">shopping_bag</span> Isan'ny gony: <strong id="delivery-quick-bag-count">0</strong></span>
+                            <span><span class="material-icons" style="font-size:16px;vertical-align:middle;">scale</span> Brut: <strong id="delivery-quick-total-weight">0.00</strong> kg</span>
+                            <span><span class="material-icons" style="font-size:16px;vertical-align:middle;">balance</span> Net: <strong id="delivery-quick-net-weight">0.00</strong> kg</span>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <button type="button" onclick="undoLastDeliveryWeight()" style="background:none;border:none;color:var(--md-sys-color-primary);cursor:pointer;font-size:12px;padding:4px 8px;display:flex;align-items:center;gap:4px;">
+                                <span class="material-icons" style="font-size:16px;">undo</span> Hamafa farany
+                            </button>
+                            <button type="button" onclick="clearDeliveryQuickWeights()" style="background:none;border:none;color:var(--md-sys-color-error);cursor:pointer;font-size:12px;padding:4px 8px;display:flex;align-items:center;gap:4px;">
+                                <span class="material-icons" style="font-size:16px;">delete_sweep</span> Hamafa rehetra
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group"><label class="form-label">Poids Brut (kg)</label><input type="text" class="form-input" id="delivery-gross-weight" oninput="calculateDeliveryValues()"></div>
+                    <div class="form-group"><label class="form-label">Nombre de Sacs</label><input type="number" class="form-input" id="delivery-bag-count" value="1" oninput="calculateDeliveryValues()"></div>
+                </div>
+                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group"><label class="form-label">Tare (kg)</label><input type="text" class="form-input" id="delivery-bag-weight" value="" oninput="calculateDeliveryValues()"></div>
+                    <div class="form-group"><label class="form-label">Poids Net (kg)</label><input type="text" class="form-input" id="delivery-weight" required readonly tabindex="-1"></div>
+                </div>
+                <div class="form-group"><label class="form-label">Prix par kg (Ar)</label><input type="text" class="form-input" id="delivery-price" oninput="calculateDeliveryValues()"></div>
+                <div class="form-group"><label class="form-label">Valeur Totale (Ar)</label><input type="text" class="form-input" id="delivery-total-value" readonly tabindex="-1"></div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('delivery-modal')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div class="modal" id="expense-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="expense-modal-title">Nouvelle Dépense</h3>
+                <button class="close-btn" onclick="closeModal('expense-modal')"><span class="material-icons">close</span></button>
+            </div>
+            <form id="expense-form">
+                <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="expense-date" required></div>
+                <div class="form-group">
+                    <label class="form-label">Catégorie</label>
+                    <select class="form-select" id="expense-category" required>
+                        <option value="">Sélectionner une catégorie</option>
+                        <option value="Paiement Collecteur">Paiement Solde Collecteur</option>
+                        <option value="Salaire">Salaire Mpiasa</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Nourriture">Nourriture / Sakafo</option>
+                        <option value="Ristourne">Ristourne / Quittance</option>
+                        <option value="Carburant">Carburant</option>
+                        <option value="Logistique">Logistique (sacs, matériels...)</option>
+                        <option value="Administratif">Administratif (téléphone, internet...)</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+                <div class="form-group"><label class="form-label">Description</label><input type="text" class="form-input" id="expense-description" required placeholder="Ex: Karama volana Jona..."></div>
+                <div class="form-group"><label class="form-label">Montant (Ar)</label><input type="text" inputmode="numeric" class="form-input" id="expense-amount" required placeholder="0"></div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('expense-modal')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Remboursement Modal -->
+    <div class="modal" id="remboursement-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Enregistrer un Remboursement</h3>
+                <button class="close-btn" onclick="closeModal('remboursement-modal')"><span class="material-icons">close</span></button>
+            </div>
+            <form id="remboursement-form" onsubmit="saveRemboursement(event)">
+                <input type="hidden" id="remboursement-collector-id">
+                <input type="hidden" id="remboursement-edit-id">
+                <div class="form-group"><label class="form-label">Collecteur</label><input type="text" class="form-input" id="remboursement-collector-name" readonly></div>
+                <div class="form-group"><label class="form-label">Montant du remboursement (Ar)</label><input type="text" inputmode="numeric" class="form-input" id="remboursement-amount" required placeholder="0"></div>
+                <div class="form-group"><label class="form-label">Date du remboursement</label><input type="date" class="form-input" id="remboursement-date" required></div>
+                <div class="form-group"><label class="form-label">Note (optionnel)</label><input type="text" class="form-input" id="remboursement-note" placeholder="Ex: Reliquat du 15/08/2024"></div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('remboursement-modal')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Credit Payment Modal -->
+    <div class="modal" id="credit-payment-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Paiement du Solde Créditeur</h3>
+                <button class="close-btn" onclick="closeModal('credit-payment-modal')"><span class="material-icons">close</span></button>
+            </div>
+            <form id="credit-payment-form" onsubmit="submitCreditPayment(event)">
+                <input type="hidden" id="credit-payment-collector-id">
+                <div class="form-group"><label class="form-label">Collecteur</label><input type="text" class="form-input" id="credit-payment-collector-name" readonly></div>
+                <div class="form-group"><label class="form-label">Solde créditeur actuel</label><input type="text" class="form-input" id="credit-payment-balance" readonly></div>
+                <div class="form-group">
+                    <label class="form-label">Montant à payer (Ar)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" inputmode="numeric" class="form-input" id="credit-payment-amount" placeholder="0" required oninput="formatCreditPaymentAmount(this)">
+                        <button type="button" class="btn btn-outline" onclick="setCreditPaymentToFullBalance()" style="white-space: nowrap;">Payer tout</button>
+                    </div>
+                </div>
+                <div class="form-group"><label class="form-label">Date du paiement</label><input type="date" class="form-input" id="credit-payment-date" required></div>
+                <div class="form-group"><label class="form-label">Note (optionnel)</label><input type="text" class="form-input" id="credit-payment-note" placeholder="Ex: Par chèque N°123..."></div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('credit-payment-modal')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Valider le paiement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quality Modal -->
+    <div class="modal" id="quality-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Ajouter/Modifier Qualité</h3>
+                <button class="close-btn" onclick="closeModal('quality-modal')"><span class="material-icons">close</span></button>
+            </div>
+            <form id="quality-form" onsubmit="saveQuality(event)">
+                <input type="hidden" id="quality-id">
+                <div class="form-group"><label class="form-label">Nom de la Qualité</label><input type="text" id="quality-name" class="form-input" required></div>
+                <div class="form-group"><label class="form-label">Description (optionnel)</label><input type="text" id="quality-description" class="form-input"></div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('quality-modal')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quality Chart Modal -->
+    <div class="modal" id="quality-chart-modal">
+        <div class="modal-content" style="max-width: 95vw; width: 95vw; max-height: 90vh;">
+            <div class="modal-header">
+                <h3 class="modal-title"><span class="material-icons" style="vertical-align: middle;">bar_chart</span> Détails des Poids par Qualité</h3>
+                <button class="close-btn" onclick="closeModal('quality-chart-modal')"><span class="material-icons">close</span></button>
+            </div>
+            <div style="overflow-y: auto; max-height: calc(90vh - 80px); padding: 20px;">
+                <div style="background: var(--md-sys-color-surface-variant); padding: 24px; border-radius: 16px; margin-bottom: 24px;">
+                    <canvas id="qualityChartModal" style="max-height: 400px;"></canvas>
+                </div>
+                <div class="data-table">
+                    <div class="table-header"><h3 class="table-title">📊 Données Complètes</h3></div>
+                    <div class="table-scroll-wrapper" style="max-height: 350px;">
+                        <table>
+                            <thead><tr><th>Qualité</th><th>Poids Total (kg)</th><th>Pourcentage</th><th>Nb Réceptions</th></tr></thead>
+                            <tbody id="quality-detail-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== APP SCRIPTS ===== -->
+    <script src="src/core/search.js"></script>
+    <script src="src/core/state.js"></script>
+    <script src="src/core/db.js"></script>
+    <script src="src/core/router.js"></script>
+    <script src="src/components/toast.js"></script>
+    <script src="src/components/modal.js"></script>
+    <script src="src/components/form.js"></script>
+    <script src="src/components/table.js"></script>
+    <script src="src/pages/dashboard.js"></script>
+    <script src="src/pages/collectors.js"></script>
+    <script src="src/pages/advances.js"></script>
+    <script src="src/pages/receptions.js"></script>
+    <script src="src/pages/deliveries.js"></script>
+    <script src="src/pages/expenses.js"></script>
+    <script src="src/pages/analysis.js"></script>
+    <script src="src/pages/qualities.js"></script>
+    <script src="src/core/export.js"></script>
+    <script src="src/main.js"></script>
+    <script>
+        // Service Worker registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.warn('SW registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

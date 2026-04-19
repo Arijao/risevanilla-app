@@ -1,0 +1,57 @@
+.
+├── assets
+│   ├── chart.min.js
+│   └── xlsx.full.min.js
+├── fonts
+│   ├── fa
+│   │   ├── all.min.css
+│   │   └── webfonts
+│   │       ├── fa-brands-400.woff2
+│   │       ├── fa-regular-400.woff2
+│   │       └── fa-solid-900.woff2
+│   ├── icon.css
+│   ├── material-icons-outlined-v110-latin-regular.woff2
+│   ├── material-icons-v145-latin-regular.woff2
+│   ├── material-symbols-outlined-v325-latin-regular.woff2
+│   ├── roboto-condensed-v31-latin-300italic.woff2
+│   ├── roboto-condensed-v31-latin-300.woff2
+│   ├── roboto-condensed-v31-latin-700italic.woff2
+│   ├── roboto-condensed-v31-latin-700.woff2
+│   ├── roboto-condensed-v31-latin-regular.woff2
+│   └── roboto-v51-latin-regular.woff2
+├── index.html
+├── logo-192.png
+├── logo-512.png
+├── logo.jpg
+├── logo-maskable.png
+├── manifest.json
+├── README.md
+├── src
+│   ├── components
+│   │   ├── form.js
+│   │   ├── modal.js
+│   │   ├── table.js
+│   │   └── toast.js
+│   ├── core
+│   │   ├── db.js
+│   │   ├── export.js
+│   │   ├── router.js
+│   │   └── state.js
+│   ├── main.js
+│   ├── pages
+│   │   ├── advances.js
+│   │   ├── analysis.js
+│   │   ├── collectors.js
+│   │   ├── dashboard.js
+│   │   ├── deliveries.js
+│   │   ├── expenses.js
+│   │   ├── qualities.js
+│   │   └── receptions.js
+│   └── styles
+│       ├── base.css
+│       ├── layout.css
+│       └── ui.css
+├── structure.txt
+└── sw.js
+
+10 directories, 45 files

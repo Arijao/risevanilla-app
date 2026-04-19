@@ -1,0 +1,156 @@
+/* ============================================================
+   BEHAVANA — Styles recherche intelligente
+   Isolé : ne modifie aucun style existant
+   ============================================================ */
+
+/* ── Highlight <mark> ─────────────────────────────────────── */
+
+mark.search-highlight {
+  background-color: rgba(245, 158, 11, 0.28);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+  font-weight: 700;
+  animation: sh-pop 0.15s ease-out both;
+}
+
+@keyframes sh-pop {
+  from { background-color: rgba(245, 158, 11, 0); }
+  to   { background-color: rgba(245, 158, 11, 0.28); }
+}
+
+/* Thème sombre */
+[data-theme="dark"] mark.search-highlight {
+  background-color: rgba(251, 191, 36, 0.25);
+  color: #fef3c7;
+}
+
+/* ── Champ actif ──────────────────────────────────────────── */
+
+.search-wrapper--active {
+  border-color: var(--color-primary, #10b981) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12) !important;
+}
+
+.search-wrapper--active .material-icons,
+.search-wrapper--active .fa-search,
+.search-wrapper--active .fa-magnifying-glass {
+  color: var(--color-primary, #10b981);
+  transition: color 0.2s;
+}
+
+/* ── Bouton clear ─────────────────────────────────────────── */
+
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px;
+  color: var(--text-muted, #9ca3af);
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, color 0.15s;
+}
+
+.search-clear-btn:hover {
+  color: var(--color-primary, #10b981);
+}
+
+/* ── Badge résultats ──────────────────────────────────────── */
+
+.search-results-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--color-primary, #10b981);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  animation: sh-badge 0.15s ease-out;
+  white-space: nowrap;
+}
+
+.search-results-badge--empty {
+  background: rgba(239, 68, 68, 0.10);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+@keyframes sh-badge {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Lignes tableau ───────────────────────────────────────── */
+
+tbody tr.search-no-match {
+  opacity: 0.3;
+  transition: opacity 0.15s;
+}
+
+tbody tr.search-no-match:hover {
+  opacity: 0.55;
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+
+.search-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 52px 24px;
+  text-align: center;
+  color: var(--text-muted, #9ca3af);
+  animation: sh-fadeup 0.2s ease-out;
+}
+
+.search-empty-state .material-icons {
+  font-size: 38px;
+  opacity: 0.4;
+}
+
+.search-empty-state p {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  color: var(--text-secondary, #6b7280);
+}
+
+.search-empty-state span {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+@keyframes sh-fadeup {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Accessibilité ────────────────────────────────────────── */
+
+@media (prefers-contrast: high) {
+  mark.search-highlight {
+    background-color: #fef08a;
+    color: #000;
+    outline: 1px solid #ca8a04;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  mark.search-highlight,
+  .search-results-badge,
+  .search-empty-state {
+    animation: none;
+  }
+}
