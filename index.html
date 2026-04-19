@@ -50,20 +50,6 @@
 
     <!-- ⑧ Style bannière offline/update (inline = disponible sans réseau) -->
     <style>
-        #behavana-offline-bar {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            background: #b45309;
-            color: #fff;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 6px 16px;
-            z-index: 99998;
-            letter-spacing: 0.3px;
-        }
-        #behavana-offline-bar.visible { display: block; }
         #sw-update-banner {
             position: fixed;
             bottom: 20px;
@@ -92,10 +78,6 @@
     </style>
 </head>
 <body>
-    <!-- Bannière mode hors ligne (gérée par le SW registration script) -->
-    <div id="behavana-offline-bar">
-        <span>📦 Mode hors ligne — les données restent disponibles localement</span>
-    </div>
     <!-- Bannière mise à jour SW -->
     <div id="sw-update-banner">
         <span>🔄 Nouvelle version disponible</span>
@@ -1142,17 +1124,8 @@
     (function () {
         'use strict';
 
-        // ── Indicateur offline ──────────────────────────────────────
-        var offlineBar = document.getElementById('behavana-offline-bar');
-
+        // ── Statut réseau (event custom pour les modules JS) ───────────
         function setOnlineStatus(online) {
-            if (!offlineBar) return;
-            if (online) {
-                offlineBar.classList.remove('visible');
-            } else {
-                offlineBar.classList.add('visible');
-            }
-            // Event custom pour que les modules JS puissent réagir
             document.dispatchEvent(new CustomEvent('behavana:network', {
                 detail: { online: online }
             }));
@@ -1160,7 +1133,6 @@
 
         window.addEventListener('online',  function () { setOnlineStatus(true);  });
         window.addEventListener('offline', function () { setOnlineStatus(false); });
-        // Statut initial
         setOnlineStatus(navigator.onLine);
 
         // ── Service Worker ──────────────────────────────────────────
