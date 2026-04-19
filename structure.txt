@@ -36,6 +36,7 @@
 │   │   ├── db.js
 │   │   ├── export.js
 │   │   ├── router.js
+│   │   ├── search.js
 │   │   └── state.js
 │   ├── main.js
 │   ├── pages
@@ -50,8 +51,9 @@
 │   └── styles
 │       ├── base.css
 │       ├── layout.css
+│       ├── search.css
 │       └── ui.css
 ├── structure.txt
 └── sw.js
 
-10 directories, 45 files
+10 directories, 47 files
