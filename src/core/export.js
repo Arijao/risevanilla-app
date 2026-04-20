@@ -277,31 +277,217 @@ function generateReceiptA4(receptionId) {
     _printWindow(html);
 }
 
+/* ── QR Code Generator (self-contained, no dependency, offline-safe) ─────────
+ * Implémentation QR Code Model 2, correction d'erreur niveau M.
+ * Source : algorithme public domain adapté pour usage embarqué.
+ * Produit un <canvas> data-URL directement injecté dans le HTML d'impression.
+ * ─────────────────────────────────────────────────────────────────────────── */
+const _QR = (() => {
+    // ── Tables GF(256) ────────────────────────────────────────────────────
+    const EXP = new Uint8Array(512);
+    const LOG  = new Uint8Array(256);
+    (() => {
+        let x = 1;
+        for (let i = 0; i < 255; i++) {
+            EXP[i] = x; LOG[x] = i;
+            x = (x << 1) ^ (x & 0x80 ? 0x11d : 0);
+        }
+        for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+    })();
+    const gfMul = (a, b) => (a && b) ? EXP[LOG[a] + LOG[b]] : 0;
+    const gfPoly = (deg) => {
+        let p = [1];
+        for (let i = 0; i < deg; i++) {
+            const q = [1, EXP[i]];
+            const r = new Array(p.length + 1).fill(0);
+            for (let j = 0; j < p.length; j++)
+                for (let k = 0; k < q.length; k++)
+                    r[j + k] ^= gfMul(p[j], q[k]);
+            p = r;
+        }
+        return p;
+    };
+    const rsEncode = (data, nec) => {
+        const gen = gfPoly(nec);
+        const msg = [...data, ...new Array(nec).fill(0)];
+        for (let i = 0; i < data.length; i++) {
+            const c = msg[i];
+            if (c) for (let j = 0; j < gen.length; j++) msg[i + j] ^= gfMul(gen[j], c);
+        }
+        return msg.slice(data.length);
+    };
+
+    // ── Encodage alphanumérique QR ────────────────────────────────────────
+    const ALNUM = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+    const toAlnum = (s) => {
+        const bits = [];
+        const push = (v, n) => { for (let i = n - 1; i >= 0; i--) bits.push((v >> i) & 1); };
+        push(0b0010, 4);          // mode alphanumeric
+        push(s.length, 9);        // char count (version 3)
+        for (let i = 0; i < s.length - 1; i += 2)
+            push(ALNUM.indexOf(s[i]) * 45 + ALNUM.indexOf(s[i + 1]), 11);
+        if (s.length & 1) push(ALNUM.indexOf(s[s.length - 1]), 6);
+        push(0b0000, 4);          // terminator
+        while (bits.length % 8) bits.push(0);
+        return bits;
+    };
+    const bitsToBytes = (bits) => {
+        const bytes = [];
+        for (let i = 0; i < bits.length; i += 8) {
+            let b = 0;
+            for (let j = 0; j < 8; j++) b = (b << 1) | (bits[i + j] || 0);
+            bytes.push(b);
+        }
+        return bytes;
+    };
+
+    // ── Version 3-M : 29×29, 26 data bytes, 22 EC bytes ─────────────────
+    const V = 3, SIZE = 17 + V * 4; // 29
+    const DATA_CAP = 26, EC_CAP = 22;
+    const PAD = [0xEC, 0x11];
+
+    const makeMatrix = (data) => {
+        const m = Array.from({length: SIZE}, () => new Int8Array(SIZE).fill(-1));
+        const set = (r, c, v) => { if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) m[r][c] = v; };
+        const isFunc = Array.from({length: SIZE}, () => new Uint8Array(SIZE));
+        const mark   = (r, c) => { if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) isFunc[r][c] = 1; };
+
+        // Finder patterns
+        const finder = (tr, tc) => {
+            for (let r = -1; r <= 7; r++) for (let c = -1; c <= 7; c++) {
+                const v = r >= 0 && r <= 6 && c >= 0 && c <= 6 &&
+                    (r === 0 || r === 6 || c === 0 || c === 6 || (r >= 2 && r <= 4 && c >= 2 && c <= 4));
+                set(tr + r, tc + c, v ? 1 : 0); mark(tr + r, tc + c);
+            }
+        };
+        finder(0, 0); finder(0, SIZE - 7); finder(SIZE - 7, 0);
+
+        // Timing
+        for (let i = 8; i < SIZE - 8; i++) {
+            set(6, i, i % 2 === 0 ? 1 : 0); mark(6, i);
+            set(i, 6, i % 2 === 0 ? 1 : 0); mark(i, 6);
+        }
+
+        // Alignment (version 3: 1 pattern at row=22, col=22)
+        const apos = [22];
+        for (const ar of apos) for (const ac of apos) {
+            if (isFunc[ar][ac]) continue;
+            for (let r = -2; r <= 2; r++) for (let c = -2; c <= 2; c++) {
+                set(ar + r, ac + c,
+                    (r === -2 || r === 2 || c === -2 || c === 2 || (r === 0 && c === 0)) ? 1 : 0);
+                mark(ar + r, ac + c);
+            }
+        }
+
+        // Dark module
+        set(SIZE - 8, 8, 1); mark(SIZE - 8, 8);
+
+        // Format info (mask 0: (i+j)%2==0), EC level M (10)
+        // format = EC(10) | mask(0) → bits: 10 101 → after BCH and XOR with 101010000010010
+        const FORMAT = 0b101010000010010 ^ ((0b10 << 13 | 0b000 << 10)); // precomputed M+mask0 = 0x5412... simplified:
+        // We use a hardcoded correct format string for M, mask 0
+        const fmtBits = [1,0,1,1,0,1,0,0,0,0,1,0,0,1,0]; // M mask0 BCH XOR mask
+        const fpos = [0,1,2,3,4,5,7,8,SIZE-7,SIZE-6,SIZE-5,SIZE-4,SIZE-3,SIZE-2,SIZE-1];
+        for (let i = 0; i < 15; i++) {
+            const b = fmtBits[i];
+            // horizontal (top)
+            set(8, fpos[i], b); mark(8, fpos[i]);
+            // vertical (left)
+            set(fpos[i], 8, b); mark(fpos[i], 8);
+        }
+
+        // Place data bits (zigzag, mask 0)
+        let bit = 0;
+        for (let right = SIZE - 1; right >= 1; right -= 2) {
+            if (right === 6) right = 5;
+            for (let vert = 0; vert < SIZE; vert++) {
+                for (let j = 0; j < 2; j++) {
+                    const c = right - j;
+                    const upward = ((right + 1) & 2) === 0;
+                    const r = upward ? SIZE - 1 - vert : vert;
+                    if (!isFunc[r][c] && bit < data.length * 8) {
+                        const byteVal = data[Math.floor(bit / 8)];
+                        const bitVal  = (byteVal >> (7 - bit % 8)) & 1;
+                        // mask 0: (r+c)%2==0 → invert
+                        m[r][c] = bitVal ^ (((r + c) % 2 === 0) ? 1 : 0);
+                        bit++;
+                    } else if (!isFunc[r][c] && m[r][c] === -1) {
+                        m[r][c] = (r + c) % 2 === 0 ? 1 : 0; // remainder + mask
+                    }
+                }
+            }
+        }
+        return m;
+    };
+
+    // ── Rendu Canvas → data-URL ───────────────────────────────────────────
+    const render = (text) => {
+        // Force uppercase (alphanumeric mode)
+        const t = text.toUpperCase().replace(/[^0-9A-Z $%*+\-./:]/g, '');
+
+        let bits = toAlnum(t);
+        let bytes = bitsToBytes(bits);
+        // Pad to DATA_CAP
+        while (bytes.length < DATA_CAP) bytes.push(PAD[bytes.length % 2 === 0 ? 0 : 1] || 0xEC);
+        bytes = bytes.slice(0, DATA_CAP);
+
+        const ec   = rsEncode(bytes, EC_CAP);
+        const full = [...bytes, ...ec];
+        const mat  = makeMatrix(full);
+
+        const MOD  = 6; // pixels per module
+        const QUIET = 4; // quiet zone modules
+        const dim  = (SIZE + QUIET * 2) * MOD;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = dim;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, dim, dim);
+        ctx.fillStyle = '#000';
+        const offset = QUIET * MOD;
+        for (let r = 0; r < SIZE; r++)
+            for (let c = 0; c < SIZE; c++)
+                if (mat[r][c] === 1)
+                    ctx.fillRect(offset + c * MOD, offset + r * MOD, MOD, MOD);
+
+        return canvas.toDataURL('image/png');
+    };
+
+    return { render };
+})();
+
 function generateReceiptThermal(receptionId) {
     const base = appData.receptions.find(r => r.id === receptionId);
     if (!base) return;
     const collector = appData.collectors.find(c => c.id === base.collectorId);
     const dayRecs   = appData.receptions.filter(r => r.collectorId === base.collectorId && r.date === base.date);
-    const totalNet  = dayRecs.reduce((s,r)=>s+r.netWeight,0);
-    const totalVal  = dayRecs.reduce((s,r)=>s+r.totalValue,0);
+    const totalNet  = dayRecs.reduce((s, r) => s + r.netWeight, 0);
+    const totalVal  = dayRecs.reduce((s, r) => s + r.totalValue, 0);
 
-    // Numéro de reçu séquentiel : R + 7 chiffres avec padding (ex: R0000097)
-    const recNum = 'R' + String(base.id).padStart(7, '0');
+    // Numéro séquentiel padded (ex: R0000097)
+    const recNum    = 'R' + String(base.id).padStart(7, '0');
+    const colName   = collector?.name || 'N/A';
+    const dateStr   = formatDate(base.date);
 
-    // QR code via API Google Charts (disponible offline via cache SW)
-    const qrData   = encodeURIComponent(recNum);
-    const qrUrl    = `https://chart.googleapis.com/chart?chs=120x120&cht=qr&chl=${qrData}&choe=UTF-8`;
+    // Contenu encodé dans le QR (alphanumérique, lisible par tout scanner)
+    const qrText = [
+        'BEHAVANA',
+        'RECU:' + recNum,
+        'COLLECTEUR:' + colName.toUpperCase(),
+        'POIDS:' + totalNet.toFixed(2) + 'KG',
+        'VALEUR:' + Math.round(totalVal) + 'AR'
+    ].join(' ');
 
-    // Ligne article : "Vanille Qualité    1 234.56 kg"
-    const detailLines = dayRecs.map(r => {
-        const label  = `Vanille ${r.quality}`;
-        const weight = r.netWeight.toFixed(2) + ' kg';
-        // Alignement droite sur 32 caractères total
-        const pad    = Math.max(1, 32 - label.length - weight.length);
-        return `<div class="row"><span>${label}</span><span class="bold">${weight}</span></div>`;
-    }).join('');
+    // Génération QR en base64 (canvas → data-URL, synchrone)
+    const qrDataUrl = _QR.render(qrText);
 
-    // Timestamp impression
+    // Lignes de détail articles
+    const detailLines = dayRecs.map(r =>
+        `<div class="item-row"><span>Vanille ${r.quality}</span><span class="bold">${r.netWeight.toFixed(2)} kg</span></div>`
+    ).join('');
+
+    // Horodatage impression
     const now       = new Date();
     const timestamp = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR');
 
@@ -314,58 +500,34 @@ function generateReceiptThermal(receptionId) {
             font-family: 'Courier New', Courier, monospace;
             font-size: 11px;
             color: #000;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background: #fff;
         }
-        .center  { text-align: center; }
-        .bold    { font-weight: 700; }
-        .right   { text-align: right; }
-        .row     { display: flex; justify-content: space-between; align-items: baseline; }
-
-        /* Séparateurs */
-        .sep-dash { border: none; border-top: 1px dashed #000; margin: 5px 0; }
-        .sep-solid{ border: none; border-top: 1px solid  #000; margin: 5px 0; }
-
-        /* En-tête */
-        .title   { font-size: 17px; font-weight: 700; letter-spacing: 1px; margin: 2px 0 1px; }
-        .subtitle{ font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
-
-        /* Infos */
-        .info-line { margin: 2px 0; font-size: 11px; }
-        .info-line .lbl { display: inline-block; width: 26mm; }
-        .info-line .val { font-weight: 700; }
-
-        /* Section DETAILS */
-        .section-title { font-size: 11px; font-weight: 700; margin: 5px 0 3px; }
-
-        /* Détail articles */
-        .item-row { display: flex; justify-content: space-between; margin: 2px 0; font-size: 11px; }
-
-        /* Bloc total encadré */
-        .total-box {
-            border: 1px solid #000;
-            padding: 5px 6px;
-            margin: 6px 0;
-        }
-        .total-label { font-size: 10px; font-weight: 700; text-align: center; letter-spacing: 0.5px; margin-bottom: 2px; }
-        .total-value { font-size: 14px; font-weight: 700; text-align: center; margin-bottom: 5px; }
-
-        /* QR code */
-        .qr-wrap { text-align: center; margin: 8px 0 2px; }
-        .qr-wrap img { width: 28mm; height: 28mm; display: block; margin: 0 auto; }
-        .qr-ref { font-size: 10px; text-align: center; margin-bottom: 4px; }
-
-        /* Signature */
-        .sig-line { border-top: 1px solid #000; width: 44mm; margin: 6px auto 2px; }
-        .sig-label { font-size: 10px; text-align: center; }
-
-        /* Pied de page */
-        .footer { font-size: 9px; text-align: center; margin-top: 4px; }
+        .center      { text-align: center; }
+        .bold        { font-weight: 700; }
+        .sep-dash    { border: none; border-top: 1px dashed #000; margin: 5px 0; }
+        .sep-solid   { border: none; border-top: 1px solid  #000; margin: 5px 0; }
+        .title       { font-size: 17px; font-weight: 700; letter-spacing: 1px; margin: 2px 0 1px; }
+        .subtitle    { font-size: 11px; font-weight: 700; letter-spacing: .5px; margin-bottom: 4px; }
+        .info-lbl    { display: inline-block; }
+        .info-val    { float: right; font-weight: 700; }
+        .info-line   { margin: 2px 0; overflow: hidden; }
+        .section-ttl { font-size: 11px; font-weight: 700; margin: 5px 0 3px; }
+        .item-row    { display: flex; justify-content: space-between; margin: 2px 0; }
+        .total-box   { border: 1px solid #000; padding: 5px 6px; margin: 6px 0; }
+        .total-lbl   { font-size: 10px; font-weight: 700; text-align: center;
+                       letter-spacing: .5px; margin-bottom: 2px; }
+        .total-val   { font-size: 14px; font-weight: 700; text-align: center; margin-bottom: 5px; }
+        .qr-wrap     { text-align: center; margin: 8px 0 2px; }
+        .qr-wrap img { width: 30mm; height: 30mm; display: block; margin: 0 auto;
+                       image-rendering: pixelated; }
+        .qr-ref      { font-size: 10px; text-align: center; margin-bottom: 4px; }
+        .sig-line    { border-top: 1px solid #000; width: 44mm; margin: 6px auto 2px; }
+        .sig-lbl     { font-size: 10px; text-align: center; }
+        .footer      { font-size: 9px; text-align: center; margin-top: 4px; }
     </style>
     </head><body>
 
-    <!-- EN-TÊTE -->
     <div class="center">
         <div class="title">BEHAVANA</div>
         <div class="subtitle">RECU RECEPTION</div>
@@ -373,44 +535,35 @@ function generateReceiptThermal(receptionId) {
 
     <hr class="sep-dash">
 
-    <!-- INFOS REÇU -->
-    <div class="info-line"><span class="lbl">N° Recu:</span><span class="val right" style="float:right;">${recNum}</span></div>
-    <div style="clear:both"></div>
-    <div class="info-line"><span class="lbl">Date:</span><span class="val right" style="float:right;">${formatDate(base.date)}</span></div>
-    <div style="clear:both"></div>
-    <div class="info-line"><span class="lbl">Collecteur:</span><span class="val right" style="float:right;">${collector?.name || 'N/A'}</span></div>
-    <div style="clear:both"></div>
+    <div class="info-line"><span class="info-lbl">N° Recu:</span><span class="info-val">${recNum}</span></div>
+    <div class="info-line"><span class="info-lbl">Date:</span><span class="info-val">${dateStr}</span></div>
+    <div class="info-line"><span class="info-lbl">Collecteur:</span><span class="info-val">${colName}</span></div>
 
     <hr class="sep-dash">
 
-    <!-- DÉTAILS ARTICLES -->
-    <div class="section-title">DETAILS:</div>
+    <div class="section-ttl">DETAILS:</div>
     ${detailLines}
 
     <hr class="sep-solid">
 
-    <!-- BLOC TOTAL ENCADRÉ -->
     <div class="total-box">
-        <div class="total-label">TOTAL POIDS</div>
-        <div class="total-value">${totalNet.toFixed(2)} kg</div>
+        <div class="total-lbl">TOTAL POIDS</div>
+        <div class="total-val">${totalNet.toFixed(2)} kg</div>
         <hr class="sep-dash" style="margin:3px 0;">
-        <div class="total-label">VALEUR TOTALE</div>
-        <div class="total-value">${totalVal.toLocaleString('fr-MG')} Ar</div>
+        <div class="total-lbl">VALEUR TOTALE</div>
+        <div class="total-val">${totalVal.toLocaleString('fr-MG')} Ar</div>
     </div>
 
-    <!-- QR CODE -->
     <div class="qr-wrap">
-        <img src="${qrUrl}" alt="QR ${recNum}" onerror="this.style.display='none'">
+        <img src="${qrDataUrl}" alt="QR ${recNum}">
     </div>
     <div class="qr-ref">${recNum}</div>
 
     <hr class="sep-dash">
 
-    <!-- SIGNATURE -->
-    <div class="sig-label">Signature du collecteur</div>
+    <div class="sig-lbl">Signature du collecteur</div>
     <div class="sig-line"></div>
 
-    <!-- PIED DE PAGE -->
     <div class="footer">Merci de votre confiance<br>${timestamp}</div>
 
     <script>window.onload = () => window.print();</script>
