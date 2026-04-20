@@ -121,6 +121,20 @@ function loadThemePreference() {
     setTheme(localStorage.getItem('theme') || 'light');
 }
 
+// ── Palette ──────────────────────────────────────────────────
+function setPalette(palette) {
+    document.body.dataset.palette = palette;
+    localStorage.setItem('palette', palette);
+    document.querySelectorAll('.palette-swatch').forEach(sw => {
+        sw.classList.toggle('active', sw.dataset.palette === palette);
+    });
+    setTimeout(updateCharts, 50);
+}
+
+function loadPalettePreference() {
+    setPalette(localStorage.getItem('palette') || 'blue');
+}
+
 // ── Global Search ────────────────────────────────────────────
 
 // Indique si une recherche est active — utilisé par getPaginatedData()
@@ -254,6 +268,8 @@ function saveSettings() {
     localStorage.setItem('rendement_rate', rate);
     const theme = document.getElementById('theme-select')?.value || 'light';
     setTheme(theme);
+    const activeSwatch = document.querySelector('.palette-swatch.active');
+    if (activeSwatch) setPalette(activeSwatch.dataset.palette);
     showToast('Paramètres enregistrés.', 'success');
     updatePrixRevientAnalysis();
 }
@@ -261,6 +277,7 @@ function saveSettings() {
 function loadSettings() {
     const rate = localStorage.getItem('rendement_rate');
     if (rate) { const el = document.getElementById('rendement-rate'); if (el) el.value = rate; }
+    loadPalettePreference();
 }
 
 // ── Pagination ───────────────────────────────────────────────

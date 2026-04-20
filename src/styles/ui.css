@@ -1524,6 +1524,7 @@
 /* ============================================================
  * GLASSMORPHISM UI COMPONENTS (from css1)
  * ============================================================ */
+            .year-slider-track {
                 width: 3px;
                 height: 40px;
             }
@@ -2562,6 +2563,74 @@
             min-width: 76px;
             height: 34px;
             padding: 0 8px;
+        }
+
+/* ============================================================
+ * PALETTE PICKER — Sélecteur de thème couleur
+ * ============================================================ */
+        .palette-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .palette-swatch {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: var(--swatch-color);
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                        border-color 0.2s,
+                        box-shadow 0.2s;
+            position: relative;
+            outline: none;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .palette-swatch:hover {
+            transform: scale(1.18);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+        }
+
+        .palette-swatch.active {
+            border-color: var(--md-sys-color-on-background);
+            box-shadow: 0 0 0 2px var(--md-sys-color-background),
+                        0 0 0 4px var(--swatch-color),
+                        0 4px 14px rgba(0, 0, 0, 0.2);
+            transform: scale(1.1);
+        }
+
+        .palette-swatch.active::after {
+            content: 'check';
+            font-family: 'Material Icons';
+            font-size: 17px;
+            line-height: 1;
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        }
+
+        .palette-swatch-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .palette-swatch-name {
+            font-size: 11px;
+            color: var(--md-sys-color-on-surface-variant);
+            text-align: center;
+            white-space: nowrap;
         }
 
         .pagination-summary {
