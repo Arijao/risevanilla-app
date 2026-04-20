@@ -515,15 +515,32 @@ function openQualityDetailModal() {
                     <td style="padding:10px 14px;text-align:right;font-variant-numeric:tabular-nums;">
                         ${row.totalWeight.toFixed(2)} kg
                     </td>
-                    <td style="padding:10px 14px;text-align:right;">
-                        <span style="
-                            background:${color}22;
-                            color:${color};
-                            border-radius:8px;
-                            padding:2px 8px;
-                            font-size:.8rem;
-                            font-weight:600;
-                        ">${row.pct.toFixed(1)}%</span>
+                    <td style="padding:10px 14px;min-width:140px;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="
+                                flex:1;
+                                height:8px;
+                                background:var(--md-sys-color-outline-variant,#cac4d0);
+                                border-radius:99px;
+                                overflow:hidden;
+                            ">
+                                <div style="
+                                    width:${row.pct.toFixed(1)}%;
+                                    height:100%;
+                                    background:${color};
+                                    border-radius:99px;
+                                    transition:width .5s cubic-bezier(.4,0,.2,1);
+                                "></div>
+                            </div>
+                            <span style="
+                                width:38px;
+                                text-align:right;
+                                font-size:.8rem;
+                                font-weight:600;
+                                color:${color};
+                                flex-shrink:0;
+                            ">${row.pct.toFixed(1)}%</span>
+                        </div>
                     </td>
                     <td style="padding:10px 14px;text-align:right;
                                color:var(--md-sys-color-on-surface-variant);">
