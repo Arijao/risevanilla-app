@@ -285,112 +285,201 @@ function generateReceiptThermal(receptionId) {
     const totalNet  = dayRecs.reduce((s, r) => s + r.netWeight, 0);
     const totalVal  = dayRecs.reduce((s, r) => s + r.totalValue, 0);
 
-    const recNum   = 'R' + String(base.id).padStart(7, '0');
-    const colName  = collector?.name || 'N/A';
-    const dateStr  = formatDate(base.date);
+    const recNum  = 'R' + String(base.id).padStart(7, '0');
+    const colName = collector?.name || 'N/A';
+    const dateStr = formatDate(base.date);
 
-    // Données encodées dans le QR — format URL-like, lisible par tout scanner
-    const qrPayload = [
-        'N=' + recNum,
-        'C=' + colName,
-        'P=' + totalNet.toFixed(2) + 'kg',
-        'V=' + Math.round(totalVal) + 'Ar',
-        'D=' + dateStr
-    ].join('|');
+    // Payload QR — compact, lisible par tout scanner standard
+    const qrPayload = 'N=' + recNum
+        + '|C=' + colName
+        + '|P=' + totalNet.toFixed(2) + 'kg'
+        + '|V=' + Math.round(totalVal) + 'Ar'
+        + '|D=' + dateStr;
 
     const detailLines = dayRecs.map(r =>
-        `<div class="item-row"><span>Vanille ${r.quality}</span><span class="bold">${r.netWeight.toFixed(2)} kg</span></div>`
+        `<tr><td>Vanille ${r.quality}</td><td class="right bold">${r.netWeight.toFixed(2)} kg</td></tr>`
     ).join('');
 
     const now       = new Date();
     const timestamp = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR');
 
-    // ── Popup 80mm : largeur fixée à ~302px (80mm @ 96dpi) ───────────────
-    // window.open avec dimensions force le navigateur à ouvrir une petite fenêtre
-    // ce qui fait que @page size:80mm est respecté lors de l'impression.
-    const PX_80MM = 302;
-    const w = window.open('', '_blank',
-        `width=${PX_80MM},height=700,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes`
-    );
+    // ── Ouvre une popup standard (pas de dimensions fixes — le CSS gère le format) ──
+    const w = window.open('', '_blank');
     if (!w) { showToast('Popup bloqué — autorisez les popups', 'error'); return; }
 
-    const html = `<!DOCTYPE html><html><head>
-    <meta charset="UTF-8">
-    <title>Reçu ${recNum}</title>
-    <!-- qrcodejs : librairie éprouvée, génère un QR scannable via canvas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
-    <style>
-        @page {
-            size: 80mm auto;
-            margin: 3mm 3mm;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body {
-            width: 74mm;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 11px;
-            color: #000;
-            background: #fff;
-        }
-        body { padding: 2mm; }
+    /* Stratégie format thermique :
+     * - En écran  : body = fond gris, #ticket = bloc blanc 72mm centré → aperçu fidèle ticket
+     * - À l'impression (@media print) : fond gris masqué, seul #ticket imprimé,
+     *   @page margin:0 + le ticket porte ses propres paddings.
+     * Chrome respecte alors la largeur du contenu (72mm) sans forcer A4.         */
+    const html = `<!DOCTYPE html>
+<html lang="fr"><head>
+<meta charset="UTF-8">
+<title>Reçu ${recNum} — BEHAVANA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+<style>
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .center      { text-align: center; }
-        .bold        { font-weight: 700; }
-        .sep-dash    { border: none; border-top: 1px dashed #000; margin: 4px 0; }
-        .sep-solid   { border: none; border-top: 1px solid  #000; margin: 4px 0; }
-        .title       { font-size: 16px; font-weight: 700; letter-spacing: 1px; margin: 2px 0 0; }
-        .subtitle    { font-size: 11px; font-weight: 700; letter-spacing: .5px; margin-bottom: 3px; }
-        .info-line   { display: flex; justify-content: space-between; margin: 2px 0; }
-        .info-val    { font-weight: 700; text-align: right; }
-        .section-ttl { font-size: 11px; font-weight: 700; margin: 4px 0 2px; }
-        .item-row    { display: flex; justify-content: space-between; margin: 2px 0; }
-        .total-box   { border: 1px solid #000; padding: 4px 6px; margin: 5px 0; }
-        .total-lbl   { font-size: 10px; font-weight: 700; text-align: center; letter-spacing: .5px; margin-bottom: 1px; }
-        .total-val   { font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+/* ── Écran : fond gris, ticket centré ── */
+html { background: #e0e0e0; min-height: 100%; }
+body {
+    background: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0 40px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    color: #000;
+    line-height: 1.6;
+}
 
-        /* QR : centré, taille fixe pour lisibilité scanner */
-        .qr-wrap        { text-align: center; margin: 6px 0 2px; line-height: 0; }
-        #qr-container   { display: inline-block; }
-        #qr-container canvas,
-        #qr-container img { width: 28mm !important; height: 28mm !important;
-                            image-rendering: pixelated; }
-        .qr-ref         { font-size: 10px; text-align: center; margin: 3px 0 4px; line-height: 1.2; }
+/* ── Barre d'actions (masquée à l'impression) ── */
+.toolbar {
+    width: 72mm;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.toolbar button {
+    flex: 1;
+    padding: 7px 0;
+    border: none;
+    border-radius: 6px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.btn-print  { background: #1a1a1a; color: #fff; }
+.btn-close  { background: #ccc;    color: #333; }
 
-        .sig-lbl     { font-size: 10px; text-align: center; margin-bottom: 3px; }
-        .sig-line    { border-top: 1px solid #000; width: 44mm; margin: 0 auto 4px; }
-        .footer      { font-size: 9px; text-align: center; margin-top: 4px; line-height: 1.4; }
+/* ── Ticket ── */
+#ticket {
+    width: 72mm;
+    background: #fff;
+    padding: 4mm 4mm 6mm;
+    line-height: 1.6;
+    box-shadow: 0 2px 12px rgba(0,0,0,.25);
+}
 
-        @media print {
-            html, body { width: 74mm; }
-            .no-print  { display: none !important; }
-        }
-    </style>
-    </head><body>
+/* Typographie */
+.t-center  { text-align: center; }
+.t-right   { text-align: right; }
+.bold      { font-weight: 700; }
 
-    <div class="center">
-        <div class="title">BEHAVANA</div>
-        <div class="subtitle">RECU RECEPTION</div>
-    </div>
+/* En-tête */
+.hd-title    { font-size: 15px; font-weight: 700; letter-spacing: 1.5px; text-align: center; margin-bottom: 1px; }
+.hd-subtitle { font-size: 11px; font-weight: 700; letter-spacing: .8px; text-align: center; margin-bottom: 4px; }
+
+/* Séparateurs */
+.sep-dash  { border: none; border-top: 1px dashed #000; margin: 6px 0; }
+.sep-solid { border: none; border-top: 1px solid  #000; margin: 6px 0; }
+
+/* Table infos */
+.info-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
+.info-table td { padding: 2px 0; vertical-align: top; line-height: 1.6; }
+.info-table td.lbl { width: 50%; }
+.info-table td.val { text-align: right; font-weight: 700; }
+
+/* Section titre */
+.section-ttl { font-weight: 700; margin: 4px 0 3px; }
+
+/* Table détails articles */
+.detail-table { width: 100%; border-collapse: collapse; }
+.detail-table td { padding: 3px 0; line-height: 1.5; vertical-align: middle; }
+.detail-table td.right { text-align: right; font-weight: 700; }
+
+/* Bloc total encadré */
+.total-box { border: 1px solid #000; padding: 6px 8px; margin: 7px 0; }
+.total-box .lbl {
+    font-size: 10px; font-weight: 700;
+    text-align: center; letter-spacing: .6px;
+    margin-bottom: 1px;
+}
+.total-box .val {
+    font-size: 14px; font-weight: 700;
+    text-align: center; margin-bottom: 5px;
+}
+.total-box .val:last-child { margin-bottom: 0; }
+
+/* QR code */
+.qr-wrap      { text-align: center; margin: 8px 0 3px; line-height: 0; }
+#qr-container { display: inline-block; }
+#qr-container canvas,
+#qr-container img {
+    width: 30mm !important;
+    height: 30mm !important;
+    image-rendering: pixelated;
+    display: block;
+}
+.qr-ref { font-size: 10px; text-align: center; margin: 4px 0 6px; line-height: 1.5; }
+
+/* Signature — espace généreux */
+.sig-section { margin: 8px 0 4px; }
+.sig-label   { font-size: 11px; text-align: center; margin-bottom: 16px; line-height: 1.6; }
+.sig-line    { border-top: 1px solid #000; width: 52mm; margin: 0 auto; }
+
+/* Pied de page */
+.footer { font-size: 9px; text-align: center; margin-top: 8px; line-height: 1.7; }
+
+/* ── Impression ── */
+@media print {
+    @page { size: 72mm auto; margin: 0; }
+
+    /* Masquer tout sauf le ticket */
+    html  { background: #fff !important; }
+    body  { background: #fff !important; display: block !important;
+            padding: 0 !important; }
+    .toolbar { display: none !important; }
+
+    #ticket {
+        width: 72mm !important;
+        box-shadow: none !important;
+        padding: 3mm 3mm 5mm !important;
+        /* Pas de page-break parasite */
+        page-break-inside: avoid;
+    }
+}
+</style>
+</head><body>
+
+<!-- Barre d'actions (écran uniquement) -->
+<div class="toolbar no-print">
+    <button class="btn-print" onclick="doPrint()">🖨 Imprimer</button>
+    <button class="btn-close" onclick="window.close()">✕ Fermer</button>
+</div>
+
+<!-- Ticket -->
+<div id="ticket">
+
+    <div class="hd-title">BEHAVANA</div>
+    <div class="hd-subtitle">RECU RECEPTION</div>
 
     <hr class="sep-dash">
 
-    <div class="info-line"><span>N&#176; Recu:</span><span class="info-val">${recNum}</span></div>
-    <div class="info-line"><span>Date:</span><span class="info-val">${dateStr}</span></div>
-    <div class="info-line"><span>Collecteur:</span><span class="info-val">${colName}</span></div>
+    <table class="info-table">
+        <tr><td class="lbl">N&#176; Recu:</td><td class="val">${recNum}</td></tr>
+        <tr><td class="lbl">Date:</td><td class="val">${dateStr}</td></tr>
+        <tr><td class="lbl">Collecteur:</td><td class="val">${colName}</td></tr>
+    </table>
 
     <hr class="sep-dash">
 
     <div class="section-ttl">DETAILS:</div>
-    ${detailLines}
+    <table class="detail-table">
+        ${detailLines}
+    </table>
 
     <hr class="sep-solid">
 
     <div class="total-box">
-        <div class="total-lbl">TOTAL POIDS</div>
-        <div class="total-val">${totalNet.toFixed(2)} kg</div>
-        <hr class="sep-dash" style="margin:3px 0;">
-        <div class="total-lbl">VALEUR TOTALE</div>
-        <div class="total-val">${totalVal.toLocaleString('fr-MG')} Ar</div>
+        <div class="lbl">TOTAL POIDS</div>
+        <div class="val">${totalNet.toFixed(2)} kg</div>
+        <hr class="sep-dash" style="margin:4px 0;">
+        <div class="lbl">VALEUR TOTALE</div>
+        <div class="val">${totalVal.toLocaleString('fr-MG')} Ar</div>
     </div>
 
     <div class="qr-wrap"><div id="qr-container"></div></div>
@@ -398,42 +487,52 @@ function generateReceiptThermal(receptionId) {
 
     <hr class="sep-dash">
 
-    <div class="sig-lbl">Signature du collecteur</div>
-    <div class="sig-line"></div>
+    <!-- Zone signature avec espace suffisant -->
+    <div class="sig-section">
+        <div class="sig-label">Signature du collecteur</div>
+        <div class="sig-line"></div>
+    </div>
 
-    <div class="footer">Merci de votre confiance<br>${timestamp}</div>
+    <div class="footer">
+        Merci de votre confiance<br>
+        ${timestamp}
+    </div>
 
-    <script>
-    // Génération QR après chargement de qrcodejs
-    function buildQR() {
-        var el = document.getElementById('qr-container');
-        if (!el) return;
-        // QRCode(element, { options }) — API qrcodejs standard
-        new QRCode(el, {
-            text:           ${JSON.stringify(qrPayload)},
-            width:          106,   // ~28mm @ 96dpi
-            height:         106,
-            colorDark:      '#000000',
-            colorLight:     '#ffffff',
-            correctLevel:   QRCode.CorrectLevel.M
-        });
+</div><!-- /#ticket -->
+
+<script>
+function buildQR() {
+    var el = document.getElementById('qr-container');
+    if (!el) return;
+    new QRCode(el, {
+        text:         ${JSON.stringify(qrPayload)},
+        width:        114,
+        height:       114,
+        colorDark:    '#000000',
+        colorLight:   '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+    });
+}
+
+function doPrint() {
+    window.print();
+}
+
+function init() {
+    if (typeof QRCode !== 'undefined') {
+        buildQR();
+    } else {
+        setTimeout(init, 80);
     }
+}
 
-    // Attendre que qrcodejs soit chargé, puis imprimer
-    function waitAndPrint() {
-        if (typeof QRCode !== 'undefined') {
-            buildQR();
-            // Laisser le canvas se rendre avant d'ouvrir la boîte d'impression
-            setTimeout(function() { window.print(); }, 600);
-        } else {
-            // qrcodejs pas encore chargé (réseau lent) — réessayer
-            setTimeout(waitAndPrint, 100);
-        }
-    }
-
-    window.onload = waitAndPrint;
-    <\/script>
-    </body></html>`;
+window.onload = function() {
+    init();
+    // Délai pour s'assurer que le QR est rendu avant l'impression auto
+    setTimeout(function() { window.print(); }, 700);
+};
+<\/script>
+</body></html>`;
 
     w.document.write(html);
     w.document.close();
