@@ -489,7 +489,7 @@ body {
 
     <!-- Zone signature avec espace suffisant -->
     <div class="sig-section">
-        <div class="sig-label">Signature du collecteur</div>
+        <div class="sig-label">Signature du responsable de réception</div>
         <div class="sig-line"></div>
     </div>
 
