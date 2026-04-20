@@ -79,12 +79,13 @@ function updateCollectorsTable() {
         const balance = getCachedBalance(c.id);
         const status  = getCollectorStatus(balance);
         const row = document.createElement('tr');
+        const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
-            <td data-label="Nom">${c.name}</td>
-            <td data-label="Téléphone">${formatPhoneNumberForDisplay(c.phone)}</td>
-            <td data-label="C.I.N">${c.cin || ''}</td>
+            <td data-label="Nom">${BehavanaSearch.highlightText(c.name, _q)}</td>
+            <td data-label="Téléphone">${BehavanaSearch.highlightText(formatPhoneNumberForDisplay(c.phone), _q)}</td>
+            <td data-label="C.I.N">${BehavanaSearch.highlightText(c.cin || '', _q)}</td>
             <td data-label="Délivré le">${c.cinDate ? formatDate(c.cinDate) : ''}</td>
-            <td data-label="Adresse">${c.address || ''}</td>
+            <td data-label="Adresse">${BehavanaSearch.highlightText(c.address || '', _q)}</td>
             <td data-label="Statut">
                 <span class="status-badge status-${status.class}">${status.label}</span>
             </td>
@@ -137,13 +138,14 @@ function updateReceptionTable() {
         const qualClass   = (r.quality || '').toLowerCase();
 
         const row = document.createElement('tr');
+        const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(r.date)}</td>
-            <td data-label="Collecteur">${collector ? collector.name : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur">${collector ? BehavanaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
             <td data-label="Poids Brut">${grossWeight} kg</td>
             <td data-label="Poids Net">${netWeight} kg</td>
             <td data-label="Qualité">
-                <span class="status-badge status-${qualClass}">${r.quality || '—'}</span>
+                <span class="status-badge status-${qualClass}">${BehavanaSearch.highlightText(r.quality || '—', _q)}</span>
             </td>
             <td data-label="Prix/kg">${formatCurrency(price)}/kg</td>
             <td data-label="Valeur">${formatCurrency(totalValue)}</td>
@@ -189,9 +191,10 @@ function updateQualitiesTable() {
 
     appData.qualities.forEach(q => {
         const row = document.createElement('tr');
+        const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
-            <td data-label="Nom">${q.name}</td>
-            <td data-label="Description">${q.description || ''}</td>
+            <td data-label="Nom">${BehavanaSearch.highlightText(q.name, _q)}</td>
+            <td data-label="Description">${BehavanaSearch.highlightText(q.description || '', _q)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-outline"
                         onclick="openQualityModal(${q.id})" title="Modifier">

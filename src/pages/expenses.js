@@ -41,15 +41,16 @@ function updateExpensesTable() {
 
     getPaginatedData(expenses, 'expenses').forEach(e => {
         const row = document.createElement('tr');
+        const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(e.date)}</td>
             <td data-label="Catégorie">
                 <span style="display:inline-flex;align-items:center;gap:6px;">
                     <span class="material-icons" style="font-size:16px;opacity:.7;">${_getExpenseCategoryIcon(e.category)}</span>
-                    ${e.category || '—'}
+                    ${BehavanaSearch.highlightText(e.category || '—', _q)}
                 </span>
             </td>
-            <td data-label="Description">${e.description || '—'}</td>
+            <td data-label="Description">${BehavanaSearch.highlightText(e.description || '—', _q)}</td>
             <td data-label="Montant" style="font-weight:600;">${formatCurrency(e.amount)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-outline" onclick="openExpenseModal(${e.id})" title="Modifier">

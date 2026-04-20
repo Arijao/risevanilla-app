@@ -63,9 +63,10 @@ function updateAnalysisTable() {
             actionBtn = `<button class="btn btn-icon btn-primary" onclick="payCollectorCredit(${c.id})" title="Payer solde créditeur"><span class="material-icons">payments</span></button>`;
         }
 
+        const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td data-label="Collecteur">${c.name}</td>
+            <td data-label="Collecteur">${BehavanaSearch.highlightText(c.name, _q)}</td>
             <td data-label="Total Débits">${formatCurrency(totalDebits)}</td>
             <td data-label="Total Crédits">${formatCurrency(totalCred)}</td>
             <td data-label="Solde">${formatCurrency(balance)}</td>

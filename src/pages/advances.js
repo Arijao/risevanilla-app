@@ -78,11 +78,12 @@ function updateAdvancesTable() {
     getPaginatedData(filtered, 'advances').forEach(adv => {
         const collector = (appData.collectors || []).find(c => c.id === adv.collectorId);
         const row = document.createElement('tr');
+        const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(adv.date)}</td>
-            <td data-label="Collecteur">${collector ? collector.name : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur">${collector ? BehavanaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
             <td data-label="Montant">${formatCurrency(adv.amount)}</td>
-            <td data-label="Motif">${adv.motif || '—'}</td>
+            <td data-label="Motif">${BehavanaSearch.highlightText(adv.motif || '—', _q)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-outline" onclick="openAdvanceModal(${adv.id})" title="Modifier">
                     <span class="material-icons">edit</span>
@@ -348,11 +349,12 @@ function updateRemboursementsTable() {
     rembs.forEach(r => {
         const collector = (appData.collectors || []).find(c => c.id === r.collectorId);
         const row = document.createElement('tr');
+        const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(r.date)}</td>
-            <td data-label="Collecteur">${collector ? collector.name : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur">${collector ? BehavanaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
             <td data-label="Montant Remboursé">${formatCurrency(r.amount)}</td>
-            <td data-label="Note">${r.note || '—'}</td>
+            <td data-label="Note">${BehavanaSearch.highlightText(r.note || '—', _q)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-outline" onclick="openRemboursementModalToEdit(${r.id})" title="Modifier">
                     <span class="material-icons">edit</span>
@@ -457,11 +459,12 @@ function updatePaiementsTable() {
     paiements.forEach(p => {
         const collector = (appData.collectors || []).find(c => c.id === p.collectorId);
         const row = document.createElement('tr');
+        const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(p.date)}</td>
-            <td data-label="Collecteur">${collector ? collector.name : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur">${collector ? BehavanaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
             <td data-label="Montant Payé">${formatCurrency(p.amount)}</td>
-            <td data-label="Note">${p.note || '—'}</td>
+            <td data-label="Note">${BehavanaSearch.highlightText(p.note || '—', _q)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-danger" onclick="deletePaiement(${p.id})" title="Supprimer">
                     <span class="material-icons">delete</span>

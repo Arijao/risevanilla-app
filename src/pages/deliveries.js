@@ -71,18 +71,19 @@ function updateDeliveryTable() {
     getPaginatedData(deliveries, 'deliveries').forEach(d => {
         const qualityClass = (d.quality || '').toLowerCase();
         const row = document.createElement('tr');
+        const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(d.date)}</td>
             <td data-label="N° BL / Facture">
-                <div style="font-weight:600;">${d.bl || '—'}</div>
-                <div style="font-size:11px;opacity:.65;">${d.invoice || ''}</div>
+                <div style="font-weight:600;">${BehavanaSearch.highlightText(d.bl || '—', _q)}</div>
+                <div style="font-size:11px;opacity:.65;">${BehavanaSearch.highlightText(d.invoice || '', _q)}</div>
             </td>
             <td data-label="Qualité">
-                <span class="status-badge status-${qualityClass}">${d.quality || '—'}</span>
+                <span class="status-badge status-${qualityClass}">${BehavanaSearch.highlightText(d.quality || '—', _q)}</span>
             </td>
             <td data-label="Poids Net">${(d.weight || 0).toFixed(2)} kg</td>
             <td data-label="Valeur">${formatCurrency(d.totalValue || 0)}</td>
-            <td data-label="Exportateur">${d.exporter || '—'}</td>
+            <td data-label="Exportateur">${BehavanaSearch.highlightText(d.exporter || '—', _q)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-outline"   onclick="openDeliveryModal(${d.id})"             title="Modifier">
                     <span class="material-icons">edit</span>

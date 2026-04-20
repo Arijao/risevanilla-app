@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ── Sidebar & Navigation ──────────────────────────────────
     initSidebar();
+    initGlobalSearch();
     document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 
     // ── Forms ─────────────────────────────────────────────────
