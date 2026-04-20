@@ -691,32 +691,30 @@
                         </select>
                         <label class="form-label" style="margin-top:16px;">Palette de Couleurs</label>
                         <div class="palette-picker">
-                            <div class="palette-swatch-label">
-                                <button class="palette-swatch" data-palette="blue"    onclick="setPalette('blue')"    title="Bleu" style="--swatch-color:#0061a4;"></button>
+                            <label class="palette-swatch-label">
+                                <button class="palette-swatch active" data-palette="brilliant-green" onclick="setPalette('brilliant-green')" title="Vert Brillant" style="--swatch-color:#00A66A;"></button>
+                                <span class="palette-swatch-name">Brillant</span>
+                            </label>
+                            <label class="palette-swatch-label">
+                                <button class="palette-swatch" data-palette="olive" onclick="setPalette('olive')" title="Vert Olive" style="--swatch-color:#5C7345;"></button>
+                                <span class="palette-swatch-name">Olive</span>
+                            </label>
+                            <label class="palette-swatch-label">
+                                <button class="palette-swatch" data-palette="apricot" onclick="setPalette('apricot')" title="Abricot" style="--swatch-color:#D17A3A;"></button>
+                                <span class="palette-swatch-name">Abricot</span>
+                            </label>
+                            <label class="palette-swatch-label">
+                                <button class="palette-swatch" data-palette="future-dusk" onclick="setPalette('future-dusk')" title="Future Dusk" style="--swatch-color:#4B4B82;"></button>
+                                <span class="palette-swatch-name">Future Dusk</span>
+                            </label>
+                            <label class="palette-swatch-label">
+                                <button class="palette-swatch" data-palette="blue" onclick="setPalette('blue')" title="Bleu (défaut)" style="--swatch-color:#0061a4;"></button>
                                 <span class="palette-swatch-name">Bleu</span>
-                            </div>
-                            <div class="palette-swatch-label">
-                                <button class="palette-swatch" data-palette="emerald" onclick="setPalette('emerald')" title="Émeraude" style="--swatch-color:#006e2c;"></button>
-                                <span class="palette-swatch-name">Émeraude</span>
-                            </div>
-                            <div class="palette-swatch-label">
-                                <button class="palette-swatch" data-palette="amber"   onclick="setPalette('amber')"   title="Ambre" style="--swatch-color:#7a5900;"></button>
-                                <span class="palette-swatch-name">Ambre</span>
-                            </div>
-                            <div class="palette-swatch-label">
-                                <button class="palette-swatch" data-palette="rose"    onclick="setPalette('rose')"    title="Rose" style="--swatch-color:#9c0048;"></button>
-                                <span class="palette-swatch-name">Rose</span>
-                            </div>
-                            <div class="palette-swatch-label">
-                                <button class="palette-swatch" data-palette="violet"  onclick="setPalette('violet')"  title="Violet" style="--swatch-color:#6750a4;"></button>
-                                <span class="palette-swatch-name">Violet</span>
-                            </div>
-                            <div class="palette-swatch-label">
-                                <button class="palette-swatch" data-palette="teal"    onclick="setPalette('teal')"    title="Sarcelle" style="--swatch-color:#006a6a;"></button>
-                                <span class="palette-swatch-name">Sarcelle</span>
-                            </div>
+                            </label>
                         </div>
-                        <small style="display:block;margin-top:8px;color:var(--md-sys-color-on-surface-variant);">Le changement de couleur s'applique immédiatement sur toute l'application.</small>
+                        <small style="display:block;margin-top:8px;color:var(--md-sys-color-on-surface-variant);">
+                            Le changement de couleur s'applique immédiatement sur toute l'application.
+                        </small>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="rendement-rate">

@@ -2686,3 +2686,102 @@
             }
         }
     
+    /* ============================================================
+    MODERN UI ENHANCEMENTS (Surgical)
+    ============================================================ */
+    /* ── Sidebar Glass & Navigation ── */
+    .sidebar {
+        background: color-mix(in srgb, var(--md-sys-color-surface) 85%, transparent);
+        backdrop-filter: blur(16px) saturate(160%);
+        -webkit-backdrop-filter: blur(16px) saturate(160%);
+        border-right: 1px solid color-mix(in srgb, var(--md-sys-color-outline) 30%, transparent);
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.06);
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .nav-link {
+        position: relative;
+        border-radius: 10px;
+        padding: 10px 14px;
+        transition: all 0.25s ease;
+        background: transparent;
+    }
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 0;
+        background: var(--md-sys-color-primary);
+        border-radius: 2px;
+        transition: height 0.25s ease;
+    }
+    .nav-link:hover {
+        background: color-mix(in srgb, var(--md-sys-color-primary-container) 60%, transparent);
+        transform: translateX(3px);
+    }
+    .nav-link.active::before { height: 60%; }
+    .nav-link.active {
+        background: color-mix(in srgb, var(--md-sys-color-primary-container) 40%, transparent);
+        font-weight: 600;
+        color: var(--md-sys-color-on-primary-container);
+    }
+
+    /* ── Buttons Modernization ── */
+    .btn {
+        backdrop-filter: blur(6px);
+        box-shadow: 
+            0 2px 6px rgba(0, 0, 0, 0.08),
+            0 1px 2px rgba(0, 0, 0, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn:hover {
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+    .btn:active {
+        transform: translateY(0) scale(0.98);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .btn:focus-visible {
+        outline: 2px solid var(--md-sys-color-primary);
+        outline-offset: 3px;
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--md-sys-color-primary) 20%, transparent);
+    }
+
+    /* ── Primary Button Gradient Hover ── */
+    .btn-primary:hover {
+        background: linear-gradient(135deg, 
+            color-mix(in srgb, var(--md-sys-color-primary) 85%, white), 
+            var(--md-sys-color-primary));
+    }
+
+    /* ── Cards & Tables Subtle Depth ── */
+    .stat-card, .data-table, .form-container, .summary-insights {
+        background: color-mix(in srgb, var(--md-sys-color-surface) 90%, var(--md-sys-color-surface-variant));
+        backdrop-filter: blur(10px) saturate(140%);
+        border: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 40%, transparent);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .stat-card:hover, .data-table:hover, .form-container:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+        border-color: color-mix(in srgb, var(--md-sys-color-primary) 30%, transparent);
+    }
+
+    /* ── Inputs Focus Ring ── */
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--md-sys-color-primary) 18%, transparent) !important;
+        border-color: var(--md-sys-color-primary) !important;
+    }
+
+    /* ── Accessibility & Reduced Motion ── */
+    @media (prefers-reduced-motion: reduce) {
+        .btn, .nav-link, .stat-card, .data-table {
+            transition: none;
+            transform: none;
+        }
+    }
