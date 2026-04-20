@@ -86,12 +86,44 @@
         /* ── Blue (défaut — défini dans :root, aucun bloc nécessaire) ── */
 
         /* ── Emerald ── */
-        [data-palette="emerald"] {
-            --md-sys-color-primary:                #006e2c;
+        [data-palette="deep-blue"] {
+            --md-sys-color-primary:                #1e3a8a;
             --md-sys-color-on-primary:             #ffffff;
-            --md-sys-color-primary-container:      #98f7b5;
-            --md-sys-color-on-primary-container:   #00210e;
-            --md-sys-color-secondary:              #4e6355;
+            --md-sys-color-primary-container:      #d1e4ff;
+            --md-sys-color-on-primary-container:   #001d36;
+            --md-sys-color-secondary:              #2c5282;
+            --md-sys-color-on-secondary:           #ffffff;
+            --md-sys-color-secondary-container:    #d7e3f7;
+            --md-sys-color-on-secondary-container: #101c2b;
+            --md-sys-color-tertiary:               #3b6470;
+            --md-sys-color-on-tertiary:            #ffffff;
+            --md-sys-color-tertiary-container:     #beeaf7;
+            --md-sys-color-on-tertiary-container:  #001f27;
+            --md-sys-color-surface-tint:           #1e3a8a;
+            --md-sys-color-inverse-primary:        #6b82e1;
+        }
+        [data-theme="dark"][data-palette="deep-blue"] {
+            --md-sys-color-primary:                #6b82e1;
+            --md-sys-color-on-primary:             #1a237e;
+            --md-sys-color-primary-container:      #3949ab;
+            --md-sys-color-on-primary-container:   #d1e4ff;
+            --md-sys-color-secondary:              #5c6bc0;
+            --md-sys-color-on-secondary:           #1a237e;
+            --md-sys-color-secondary-container:    #3949ab;
+            --md-sys-color-on-secondary-container: #d7e3f7;
+            --md-sys-color-tertiary:               #a2ced9;
+            --md-sys-color-on-tertiary:            #013541;
+            --md-sys-color-tertiary-container:     #1f4c58;
+            --md-sys-color-on-tertiary-container:  #beeaf7;
+            --md-sys-color-surface-tint:           #6b82e1;
+            --md-sys-color-inverse-primary:        #1e3a8a;
+        }
+[data-palette="emerald"] {
+            --md-sys-color-primary:                #10b981;
+            --md-sys-color-on-primary:             #ffffff;
+            --md-sys-color-primary-container:      #78f5a8;
+            --md-sys-color-on-primary-container:   #003520;
+            --md-sys-color-secondary:              #059669;
             --md-sys-color-on-secondary:           #ffffff;
             --md-sys-color-secondary-container:    #d1e8d5;
             --md-sys-color-on-secondary-container: #0b1f14;
@@ -99,14 +131,14 @@
             --md-sys-color-on-tertiary:            #ffffff;
             --md-sys-color-tertiary-container:     #beeaf7;
             --md-sys-color-on-tertiary-container:  #001f27;
-            --md-sys-color-surface-tint:           #006e2c;
-            --md-sys-color-inverse-primary:        #7bdb99;
+            --md-sys-color-surface-tint:           #10b981;
+            --md-sys-color-inverse-primary:        #54d99a;
         }
         [data-theme="dark"][data-palette="emerald"] {
-            --md-sys-color-primary:                #7bdb99;
-            --md-sys-color-on-primary:             #00391a;
-            --md-sys-color-primary-container:      #005227;
-            --md-sys-color-on-primary-container:   #98f7b5;
+            --md-sys-color-primary:                #54d99a;
+            --md-sys-color-on-primary:             #003a25;
+            --md-sys-color-primary-container:      #005233;
+            --md-sys-color-on-primary-container:   #78f5a8;
             --md-sys-color-secondary:              #b5ccb9;
             --md-sys-color-on-secondary:           #213529;
             --md-sys-color-secondary-container:    #374b3e;
@@ -115,8 +147,40 @@
             --md-sys-color-on-tertiary:            #013541;
             --md-sys-color-tertiary-container:     #1f4c58;
             --md-sys-color-on-tertiary-container:  #beeaf7;
-            --md-sys-color-surface-tint:           #7bdb99;
-            --md-sys-color-inverse-primary:        #006e2c;
+            --md-sys-color-surface-tint:           #54d99a;
+            --md-sys-color-inverse-primary:        #10b981;
+        }
+[data-palette="deep-teal"] {
+            --md-sys-color-primary:                #14b8a6;
+            --md-sys-color-on-primary:             #ffffff;
+            --md-sys-color-primary-container:      #78f5f5;
+            --md-sys-color-on-primary-container:   #002f2e;
+            --md-sys-color-secondary:              #06b6d4;
+            --md-sys-color-on-secondary:           #ffffff;
+            --md-sys-color-secondary-container:    #beeaf7;
+            --md-sys-color-on-secondary-container: #051f1f;
+            --md-sys-color-tertiary:               #3b6470;
+            --md-sys-color-on-tertiary:            #ffffff;
+            --md-sys-color-tertiary-container:     #beeaf7;
+            --md-sys-color-on-tertiary-container:  #001f27;
+            --md-sys-color-surface-tint:           #14b8a6;
+            --md-sys-color-inverse-primary:        #6bf2e9;
+        }
+        [data-theme="dark"][data-palette="deep-teal"] {
+            --md-sys-color-primary:                #6bf2e9;
+            --md-sys-color-on-primary:             #00534e;
+            --md-sys-color-primary-container:      #005955;
+            --md-sys-color-on-primary-container:   #78f5f5;
+            --md-sys-color-secondary:              #a2d5d8;
+            --md-sys-color-on-secondary:           #1a4a4d;
+            --md-sys-color-secondary-container:    #1f4c58;
+            --md-sys-color-on-secondary-container: #beeaf7;
+            --md-sys-color-tertiary:               #a2ced9;
+            --md-sys-color-on-tertiary:            #013541;
+            --md-sys-color-tertiary-container:     #1f4c58;
+            --md-sys-color-on-tertiary-container:  #beeaf7;
+            --md-sys-color-surface-tint:           #6bf2e9;
+            --md-sys-color-inverse-primary:        #14b8a6;
         }
 
         /* ── Amber ── */
