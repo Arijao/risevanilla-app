@@ -277,186 +277,6 @@ function generateReceiptA4(receptionId) {
     _printWindow(html);
 }
 
-/* ── QR Code Generator (self-contained, no dependency, offline-safe) ─────────
- * Implémentation QR Code Model 2, correction d'erreur niveau M.
- * Source : algorithme public domain adapté pour usage embarqué.
- * Produit un <canvas> data-URL directement injecté dans le HTML d'impression.
- * ─────────────────────────────────────────────────────────────────────────── */
-const _QR = (() => {
-    // ── Tables GF(256) ────────────────────────────────────────────────────
-    const EXP = new Uint8Array(512);
-    const LOG  = new Uint8Array(256);
-    (() => {
-        let x = 1;
-        for (let i = 0; i < 255; i++) {
-            EXP[i] = x; LOG[x] = i;
-            x = (x << 1) ^ (x & 0x80 ? 0x11d : 0);
-        }
-        for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
-    })();
-    const gfMul = (a, b) => (a && b) ? EXP[LOG[a] + LOG[b]] : 0;
-    const gfPoly = (deg) => {
-        let p = [1];
-        for (let i = 0; i < deg; i++) {
-            const q = [1, EXP[i]];
-            const r = new Array(p.length + 1).fill(0);
-            for (let j = 0; j < p.length; j++)
-                for (let k = 0; k < q.length; k++)
-                    r[j + k] ^= gfMul(p[j], q[k]);
-            p = r;
-        }
-        return p;
-    };
-    const rsEncode = (data, nec) => {
-        const gen = gfPoly(nec);
-        const msg = [...data, ...new Array(nec).fill(0)];
-        for (let i = 0; i < data.length; i++) {
-            const c = msg[i];
-            if (c) for (let j = 0; j < gen.length; j++) msg[i + j] ^= gfMul(gen[j], c);
-        }
-        return msg.slice(data.length);
-    };
-
-    // ── Encodage alphanumérique QR ────────────────────────────────────────
-    const ALNUM = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
-    const toAlnum = (s) => {
-        const bits = [];
-        const push = (v, n) => { for (let i = n - 1; i >= 0; i--) bits.push((v >> i) & 1); };
-        push(0b0010, 4);          // mode alphanumeric
-        push(s.length, 9);        // char count (version 3)
-        for (let i = 0; i < s.length - 1; i += 2)
-            push(ALNUM.indexOf(s[i]) * 45 + ALNUM.indexOf(s[i + 1]), 11);
-        if (s.length & 1) push(ALNUM.indexOf(s[s.length - 1]), 6);
-        push(0b0000, 4);          // terminator
-        while (bits.length % 8) bits.push(0);
-        return bits;
-    };
-    const bitsToBytes = (bits) => {
-        const bytes = [];
-        for (let i = 0; i < bits.length; i += 8) {
-            let b = 0;
-            for (let j = 0; j < 8; j++) b = (b << 1) | (bits[i + j] || 0);
-            bytes.push(b);
-        }
-        return bytes;
-    };
-
-    // ── Version 3-M : 29×29, 26 data bytes, 22 EC bytes ─────────────────
-    const V = 3, SIZE = 17 + V * 4; // 29
-    const DATA_CAP = 26, EC_CAP = 22;
-    const PAD = [0xEC, 0x11];
-
-    const makeMatrix = (data) => {
-        const m = Array.from({length: SIZE}, () => new Int8Array(SIZE).fill(-1));
-        const set = (r, c, v) => { if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) m[r][c] = v; };
-        const isFunc = Array.from({length: SIZE}, () => new Uint8Array(SIZE));
-        const mark   = (r, c) => { if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) isFunc[r][c] = 1; };
-
-        // Finder patterns
-        const finder = (tr, tc) => {
-            for (let r = -1; r <= 7; r++) for (let c = -1; c <= 7; c++) {
-                const v = r >= 0 && r <= 6 && c >= 0 && c <= 6 &&
-                    (r === 0 || r === 6 || c === 0 || c === 6 || (r >= 2 && r <= 4 && c >= 2 && c <= 4));
-                set(tr + r, tc + c, v ? 1 : 0); mark(tr + r, tc + c);
-            }
-        };
-        finder(0, 0); finder(0, SIZE - 7); finder(SIZE - 7, 0);
-
-        // Timing
-        for (let i = 8; i < SIZE - 8; i++) {
-            set(6, i, i % 2 === 0 ? 1 : 0); mark(6, i);
-            set(i, 6, i % 2 === 0 ? 1 : 0); mark(i, 6);
-        }
-
-        // Alignment (version 3: 1 pattern at row=22, col=22)
-        const apos = [22];
-        for (const ar of apos) for (const ac of apos) {
-            if (isFunc[ar][ac]) continue;
-            for (let r = -2; r <= 2; r++) for (let c = -2; c <= 2; c++) {
-                set(ar + r, ac + c,
-                    (r === -2 || r === 2 || c === -2 || c === 2 || (r === 0 && c === 0)) ? 1 : 0);
-                mark(ar + r, ac + c);
-            }
-        }
-
-        // Dark module
-        set(SIZE - 8, 8, 1); mark(SIZE - 8, 8);
-
-        // Format info (mask 0: (i+j)%2==0), EC level M (10)
-        // format = EC(10) | mask(0) → bits: 10 101 → after BCH and XOR with 101010000010010
-        const FORMAT = 0b101010000010010 ^ ((0b10 << 13 | 0b000 << 10)); // precomputed M+mask0 = 0x5412... simplified:
-        // We use a hardcoded correct format string for M, mask 0
-        const fmtBits = [1,0,1,1,0,1,0,0,0,0,1,0,0,1,0]; // M mask0 BCH XOR mask
-        const fpos = [0,1,2,3,4,5,7,8,SIZE-7,SIZE-6,SIZE-5,SIZE-4,SIZE-3,SIZE-2,SIZE-1];
-        for (let i = 0; i < 15; i++) {
-            const b = fmtBits[i];
-            // horizontal (top)
-            set(8, fpos[i], b); mark(8, fpos[i]);
-            // vertical (left)
-            set(fpos[i], 8, b); mark(fpos[i], 8);
-        }
-
-        // Place data bits (zigzag, mask 0)
-        let bit = 0;
-        for (let right = SIZE - 1; right >= 1; right -= 2) {
-            if (right === 6) right = 5;
-            for (let vert = 0; vert < SIZE; vert++) {
-                for (let j = 0; j < 2; j++) {
-                    const c = right - j;
-                    const upward = ((right + 1) & 2) === 0;
-                    const r = upward ? SIZE - 1 - vert : vert;
-                    if (!isFunc[r][c] && bit < data.length * 8) {
-                        const byteVal = data[Math.floor(bit / 8)];
-                        const bitVal  = (byteVal >> (7 - bit % 8)) & 1;
-                        // mask 0: (r+c)%2==0 → invert
-                        m[r][c] = bitVal ^ (((r + c) % 2 === 0) ? 1 : 0);
-                        bit++;
-                    } else if (!isFunc[r][c] && m[r][c] === -1) {
-                        m[r][c] = (r + c) % 2 === 0 ? 1 : 0; // remainder + mask
-                    }
-                }
-            }
-        }
-        return m;
-    };
-
-    // ── Rendu Canvas → data-URL ───────────────────────────────────────────
-    const render = (text) => {
-        // Force uppercase (alphanumeric mode)
-        const t = text.toUpperCase().replace(/[^0-9A-Z $%*+\-./:]/g, '');
-
-        let bits = toAlnum(t);
-        let bytes = bitsToBytes(bits);
-        // Pad to DATA_CAP
-        while (bytes.length < DATA_CAP) bytes.push(PAD[bytes.length % 2 === 0 ? 0 : 1] || 0xEC);
-        bytes = bytes.slice(0, DATA_CAP);
-
-        const ec   = rsEncode(bytes, EC_CAP);
-        const full = [...bytes, ...ec];
-        const mat  = makeMatrix(full);
-
-        const MOD  = 6; // pixels per module
-        const QUIET = 4; // quiet zone modules
-        const dim  = (SIZE + QUIET * 2) * MOD;
-
-        const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = dim;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0, 0, dim, dim);
-        ctx.fillStyle = '#000';
-        const offset = QUIET * MOD;
-        for (let r = 0; r < SIZE; r++)
-            for (let c = 0; c < SIZE; c++)
-                if (mat[r][c] === 1)
-                    ctx.fillRect(offset + c * MOD, offset + r * MOD, MOD, MOD);
-
-        return canvas.toDataURL('image/png');
-    };
-
-    return { render };
-})();
-
 function generateReceiptThermal(receptionId) {
     const base = appData.receptions.find(r => r.id === receptionId);
     if (!base) return;
@@ -465,66 +285,85 @@ function generateReceiptThermal(receptionId) {
     const totalNet  = dayRecs.reduce((s, r) => s + r.netWeight, 0);
     const totalVal  = dayRecs.reduce((s, r) => s + r.totalValue, 0);
 
-    // Numéro séquentiel padded (ex: R0000097)
-    const recNum    = 'R' + String(base.id).padStart(7, '0');
-    const colName   = collector?.name || 'N/A';
-    const dateStr   = formatDate(base.date);
+    const recNum   = 'R' + String(base.id).padStart(7, '0');
+    const colName  = collector?.name || 'N/A';
+    const dateStr  = formatDate(base.date);
 
-    // Contenu encodé dans le QR (alphanumérique, lisible par tout scanner)
-    const qrText = [
-        'BEHAVANA',
-        'RECU:' + recNum,
-        'COLLECTEUR:' + colName.toUpperCase(),
-        'POIDS:' + totalNet.toFixed(2) + 'KG',
-        'VALEUR:' + Math.round(totalVal) + 'AR'
-    ].join(' ');
+    // Données encodées dans le QR — format URL-like, lisible par tout scanner
+    const qrPayload = [
+        'N=' + recNum,
+        'C=' + colName,
+        'P=' + totalNet.toFixed(2) + 'kg',
+        'V=' + Math.round(totalVal) + 'Ar',
+        'D=' + dateStr
+    ].join('|');
 
-    // Génération QR en base64 (canvas → data-URL, synchrone)
-    const qrDataUrl = _QR.render(qrText);
-
-    // Lignes de détail articles
     const detailLines = dayRecs.map(r =>
         `<div class="item-row"><span>Vanille ${r.quality}</span><span class="bold">${r.netWeight.toFixed(2)} kg</span></div>`
     ).join('');
 
-    // Horodatage impression
     const now       = new Date();
     const timestamp = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR');
 
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    // ── Popup 80mm : largeur fixée à ~302px (80mm @ 96dpi) ───────────────
+    // window.open avec dimensions force le navigateur à ouvrir une petite fenêtre
+    // ce qui fait que @page size:80mm est respecté lors de l'impression.
+    const PX_80MM = 302;
+    const w = window.open('', '_blank',
+        `width=${PX_80MM},height=700,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes`
+    );
+    if (!w) { showToast('Popup bloqué — autorisez les popups', 'error'); return; }
+
+    const html = `<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>Reçu ${recNum}</title>
+    <!-- qrcodejs : librairie éprouvée, génère un QR scannable via canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
     <style>
-        @page { size: 80mm auto; margin: 3mm 4mm; }
-        * { box-sizing: border-box; }
-        body {
-            width: 72mm;
+        @page {
+            size: 80mm auto;
+            margin: 3mm 3mm;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            width: 74mm;
             font-family: 'Courier New', Courier, monospace;
             font-size: 11px;
             color: #000;
-            margin: 0; padding: 0;
             background: #fff;
         }
+        body { padding: 2mm; }
+
         .center      { text-align: center; }
         .bold        { font-weight: 700; }
-        .sep-dash    { border: none; border-top: 1px dashed #000; margin: 5px 0; }
-        .sep-solid   { border: none; border-top: 1px solid  #000; margin: 5px 0; }
-        .title       { font-size: 17px; font-weight: 700; letter-spacing: 1px; margin: 2px 0 1px; }
-        .subtitle    { font-size: 11px; font-weight: 700; letter-spacing: .5px; margin-bottom: 4px; }
-        .info-lbl    { display: inline-block; }
-        .info-val    { float: right; font-weight: 700; }
-        .info-line   { margin: 2px 0; overflow: hidden; }
-        .section-ttl { font-size: 11px; font-weight: 700; margin: 5px 0 3px; }
+        .sep-dash    { border: none; border-top: 1px dashed #000; margin: 4px 0; }
+        .sep-solid   { border: none; border-top: 1px solid  #000; margin: 4px 0; }
+        .title       { font-size: 16px; font-weight: 700; letter-spacing: 1px; margin: 2px 0 0; }
+        .subtitle    { font-size: 11px; font-weight: 700; letter-spacing: .5px; margin-bottom: 3px; }
+        .info-line   { display: flex; justify-content: space-between; margin: 2px 0; }
+        .info-val    { font-weight: 700; text-align: right; }
+        .section-ttl { font-size: 11px; font-weight: 700; margin: 4px 0 2px; }
         .item-row    { display: flex; justify-content: space-between; margin: 2px 0; }
-        .total-box   { border: 1px solid #000; padding: 5px 6px; margin: 6px 0; }
-        .total-lbl   { font-size: 10px; font-weight: 700; text-align: center;
-                       letter-spacing: .5px; margin-bottom: 2px; }
-        .total-val   { font-size: 14px; font-weight: 700; text-align: center; margin-bottom: 5px; }
-        .qr-wrap     { text-align: center; margin: 8px 0 2px; }
-        .qr-wrap img { width: 30mm; height: 30mm; display: block; margin: 0 auto;
-                       image-rendering: pixelated; }
-        .qr-ref      { font-size: 10px; text-align: center; margin-bottom: 4px; }
-        .sig-line    { border-top: 1px solid #000; width: 44mm; margin: 6px auto 2px; }
-        .sig-lbl     { font-size: 10px; text-align: center; }
-        .footer      { font-size: 9px; text-align: center; margin-top: 4px; }
+        .total-box   { border: 1px solid #000; padding: 4px 6px; margin: 5px 0; }
+        .total-lbl   { font-size: 10px; font-weight: 700; text-align: center; letter-spacing: .5px; margin-bottom: 1px; }
+        .total-val   { font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+
+        /* QR : centré, taille fixe pour lisibilité scanner */
+        .qr-wrap        { text-align: center; margin: 6px 0 2px; line-height: 0; }
+        #qr-container   { display: inline-block; }
+        #qr-container canvas,
+        #qr-container img { width: 28mm !important; height: 28mm !important;
+                            image-rendering: pixelated; }
+        .qr-ref         { font-size: 10px; text-align: center; margin: 3px 0 4px; line-height: 1.2; }
+
+        .sig-lbl     { font-size: 10px; text-align: center; margin-bottom: 3px; }
+        .sig-line    { border-top: 1px solid #000; width: 44mm; margin: 0 auto 4px; }
+        .footer      { font-size: 9px; text-align: center; margin-top: 4px; line-height: 1.4; }
+
+        @media print {
+            html, body { width: 74mm; }
+            .no-print  { display: none !important; }
+        }
     </style>
     </head><body>
 
@@ -535,9 +374,9 @@ function generateReceiptThermal(receptionId) {
 
     <hr class="sep-dash">
 
-    <div class="info-line"><span class="info-lbl">N° Recu:</span><span class="info-val">${recNum}</span></div>
-    <div class="info-line"><span class="info-lbl">Date:</span><span class="info-val">${dateStr}</span></div>
-    <div class="info-line"><span class="info-lbl">Collecteur:</span><span class="info-val">${colName}</span></div>
+    <div class="info-line"><span>N&#176; Recu:</span><span class="info-val">${recNum}</span></div>
+    <div class="info-line"><span>Date:</span><span class="info-val">${dateStr}</span></div>
+    <div class="info-line"><span>Collecteur:</span><span class="info-val">${colName}</span></div>
 
     <hr class="sep-dash">
 
@@ -554,9 +393,7 @@ function generateReceiptThermal(receptionId) {
         <div class="total-val">${totalVal.toLocaleString('fr-MG')} Ar</div>
     </div>
 
-    <div class="qr-wrap">
-        <img src="${qrDataUrl}" alt="QR ${recNum}">
-    </div>
+    <div class="qr-wrap"><div id="qr-container"></div></div>
     <div class="qr-ref">${recNum}</div>
 
     <hr class="sep-dash">
@@ -566,9 +403,40 @@ function generateReceiptThermal(receptionId) {
 
     <div class="footer">Merci de votre confiance<br>${timestamp}</div>
 
-    <script>window.onload = () => window.print();</script>
+    <script>
+    // Génération QR après chargement de qrcodejs
+    function buildQR() {
+        var el = document.getElementById('qr-container');
+        if (!el) return;
+        // QRCode(element, { options }) — API qrcodejs standard
+        new QRCode(el, {
+            text:           ${JSON.stringify(qrPayload)},
+            width:          106,   // ~28mm @ 96dpi
+            height:         106,
+            colorDark:      '#000000',
+            colorLight:     '#ffffff',
+            correctLevel:   QRCode.CorrectLevel.M
+        });
+    }
+
+    // Attendre que qrcodejs soit chargé, puis imprimer
+    function waitAndPrint() {
+        if (typeof QRCode !== 'undefined') {
+            buildQR();
+            // Laisser le canvas se rendre avant d'ouvrir la boîte d'impression
+            setTimeout(function() { window.print(); }, 600);
+        } else {
+            // qrcodejs pas encore chargé (réseau lent) — réessayer
+            setTimeout(waitAndPrint, 100);
+        }
+    }
+
+    window.onload = waitAndPrint;
+    <\/script>
     </body></html>`;
-    _printWindow(html);
+
+    w.document.write(html);
+    w.document.close();
 }
 
 // ── Delivery PDF ──────────────────────────────────────────────
