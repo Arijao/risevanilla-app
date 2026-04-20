@@ -6,22 +6,41 @@
 /* ── Highlight <mark> ─────────────────────────────────────── */
 
 mark.search-highlight {
-  background-color: rgba(245, 158, 11, 0.28);
+  /* Glassmorphism */
+  background: rgba(245, 158, 11, 0.18);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 4px;
+  padding: 0 3px;
+  /* Underline */
+  text-decoration: underline;
+  text-decoration-color: rgba(245, 158, 11, 0.8);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  /* Texte */
   color: inherit;
-  border-radius: 2px;
-  padding: 0 1px;
   font-weight: 700;
-  animation: sh-pop 0.15s ease-out both;
+  /* Animation */
+  animation: sh-pop 0.18s ease-out both;
 }
 
 @keyframes sh-pop {
-  from { background-color: rgba(245, 158, 11, 0); }
-  to   { background-color: rgba(245, 158, 11, 0.28); }
+  from {
+    background: rgba(245, 158, 11, 0);
+    border-color: rgba(245, 158, 11, 0);
+  }
+  to {
+    background: rgba(245, 158, 11, 0.18);
+    border-color: rgba(245, 158, 11, 0.45);
+  }
 }
 
 /* Thème sombre */
 [data-theme="dark"] mark.search-highlight {
-  background-color: rgba(251, 191, 36, 0.25);
+  background: rgba(251, 191, 36, 0.15);
+  border-color: rgba(251, 191, 36, 0.5);
+  text-decoration-color: rgba(251, 191, 36, 0.9);
   color: #fef3c7;
 }
 

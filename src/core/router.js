@@ -123,11 +123,13 @@ function loadThemePreference() {
 
 // ── Global Search ────────────────────────────────────────────
 
+// Indique si une recherche est active — utilisé par getPaginatedData()
+let _searchActive = false;
+
 function initGlobalSearch() {
     const input = document.getElementById('global-search-input');
     if (!input) return;
 
-    // Marquer le wrapper pour BehavanaSearch
     const wrapper = input.closest('.global-search-wrapper');
     if (wrapper) wrapper.setAttribute('data-search-wrapper', '');
 
@@ -139,32 +141,84 @@ function initGlobalSearch() {
 }
 
 function searchInAllData(query) {
-    const sections = ['collectors','advances','reception','remboursements','paiements','expenses','delivery','analysis'];
+    const sections = ['collectors','advances','reception','remboursements',
+                      'paiements','expenses','delivery','analysis'];
+
+    if (!query) {
+        // Désactiver le mode recherche et revenir à la pagination normale
+        _searchActive = false;
+        sections.forEach(sid => {
+            // Restaurer le texte original des cellules
+            const tbody = document.getElementById(sid)?.querySelector('tbody');
+            if (tbody) {
+                tbody.querySelectorAll('td[data-orig-text]').forEach(td => {
+                    td.innerHTML = BehavanaSearch.escapeHtml(td.dataset.origText);
+                    delete td.dataset.origText;
+                });
+            }
+        });
+        // Rerendre toutes les tables avec pagination normale
+        _rerenderAllTables();
+        return;
+    }
+
+    // Activer le mode recherche : désactive la pagination (page 1, tout afficher)
+    _searchActive = true;
+
+    // Map section HTML id → nom de table pagination
+    const TABLE_MAP = {
+        collectors:    'collectors',
+        advances:      'advances',
+        reception:     'receptions',
+        remboursements: null,   // pas de pagination
+        paiements:     null,    // pas de pagination
+        expenses:      'expenses',
+        delivery:      'deliveries',
+        analysis:      'analysis',
+    };
+
     sections.forEach(sectionId => {
+        const tableName = TABLE_MAP[sectionId];
+
+        // Forcer page 1 pour que rerenderPaginatedTable affiche tout
+        if (tableName && paginationState[tableName]) {
+            paginationState[tableName].page = 1;
+        }
+
+        // Rerendre la table (getPaginatedData retournera TOUT si _searchActive)
+        if (tableName) {
+            rerenderPaginatedTable(tableName);
+        }
+
+        // Appliquer filtre + highlight sur le tbody résultant
         const tbody = document.getElementById(sectionId)?.querySelector('tbody');
         if (!tbody) return;
 
         tbody.querySelectorAll('tr').forEach(row => {
             if (row.querySelector('.empty-state')) { row.style.display = ''; return; }
 
-            const isMatch = !query || BehavanaSearch.normalize(row.textContent).includes(BehavanaSearch.normalize(query));
+            const isMatch = BehavanaSearch.normalize(row.textContent)
+                              .includes(BehavanaSearch.normalize(query));
             row.style.display = isMatch ? '' : 'none';
 
             // Highlight dans les cellules textuelles
-            if (query) {
-                row.querySelectorAll('td').forEach(td => {
-                    const orig = td.dataset.origText ?? td.textContent;
-                    td.dataset.origText = orig;
-                    td.innerHTML = BehavanaSearch.highlightText(orig, query);
-                });
-            } else {
-                row.querySelectorAll('td[data-orig-text]').forEach(td => {
-                    td.innerHTML = BehavanaSearch.escapeHtml(td.dataset.origText);
-                    delete td.dataset.origText;
-                });
-            }
+            row.querySelectorAll('td').forEach(td => {
+                const orig = td.dataset.origText ?? td.textContent;
+                td.dataset.origText = orig;
+                td.innerHTML = isMatch
+                    ? BehavanaSearch.highlightText(orig, query)
+                    : BehavanaSearch.escapeHtml(orig);
+            });
         });
     });
+}
+
+function _rerenderAllTables() {
+    ['collectors','advances','receptions','expenses','deliveries','analysis']
+        .forEach(t => rerenderPaginatedTable(t));
+    // Remboursements et paiements n'ont pas de rerenderPaginatedTable — on les force
+    if (typeof updateRemboursementsTable === 'function') updateRemboursementsTable();
+    if (typeof updatePaiementsTable      === 'function') updatePaiementsTable();
 }
 
 // Conservé pour compatibilité — appelé depuis index.html oninput
@@ -173,8 +227,6 @@ function clearSearch() {
     const input = document.getElementById('global-search-input');
     if (input) { input.value = ''; searchInAllData(''); }
 }
-
-// clearDateFilter / setDateFilter / filterAdvancesByDate → src/pages/advances.js
 
 // ── PWA Install ──────────────────────────────────────────────
 let deferredPrompt = null;
@@ -215,6 +267,8 @@ function loadSettings() {
 const paginationState = {};
 
 function getPaginatedData(dataArray, tableName) {
+    // En mode recherche active, retourner tout le dataset sans découpe
+    if (_searchActive) return dataArray;
     if (!paginationState[tableName]) paginationState[tableName] = { page: 1, rowsPerPage: 20 };
     const state = paginationState[tableName];
     const start = (state.page - 1) * state.rowsPerPage;
