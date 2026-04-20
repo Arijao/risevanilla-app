@@ -13,9 +13,13 @@ document.addEventListener('DOMContentLoaded', function() {
     initYearDisplay();
     loadThemePreference();
 
+    // ── Palette de couleurs ───────────────────────────────────
+    loadPalettePreference();   // applique la palette sauvegardée
+    renderPaletteSelector();   // génère le sélecteur dans #settings
+
     // ── Sidebar & Navigation ──────────────────────────────────
     initSidebar();
-    initGlobalSearch();
+    initGlobalSearch();                        // barre de recherche + highlight
     document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 
     // ── Forms ─────────────────────────────────────────────────

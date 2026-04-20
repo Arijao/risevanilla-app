@@ -175,9 +175,15 @@
                     <span class="material-icons" aria-hidden="true">menu_open</span>
                 </button>
                 <h1 id="page-title">Tableau de Bord</h1>
-                <div class="global-search-wrapper">
+                <div class="global-search-wrapper" data-search-wrapper>
                     <span class="material-icons">search</span>
-                    <input id="global-search-input" type="text" placeholder="Recherche Globale..." oninput="debouncedGlobalSearch()">
+                    <input id="global-search-input" type="text"
+                           placeholder="Recherche Globale..."
+                           autocomplete="off" autocorrect="off" spellcheck="false"
+                           oninput="debouncedGlobalSearch()">
+                    <button class="search-clear-btn" title="Effacer" aria-label="Effacer la recherche">
+                        <span class="material-icons">close</span>
+                    </button>
                 </div>
                 <div class="year-slider-container">
                     <div class="year-slider-track" id="yearSliderTrack">
@@ -689,33 +695,27 @@
                             <option value="light">Mode Clair</option>
                             <option value="dark">Mode Sombre</option>
                         </select>
-                        <label class="form-label" style="margin-top:16px;">Palette de Couleurs</label>
-                        <div class="palette-picker">
-                            <label class="palette-swatch-label">
-                                <button class="palette-swatch active" data-palette="brilliant-green" onclick="setPalette('brilliant-green')" title="Vert Brillant" style="--swatch-color:#00A66A;"></button>
-                                <span class="palette-swatch-name">Brillant</span>
-                            </label>
-                            <label class="palette-swatch-label">
-                                <button class="palette-swatch" data-palette="olive" onclick="setPalette('olive')" title="Vert Olive" style="--swatch-color:#5C7345;"></button>
-                                <span class="palette-swatch-name">Olive</span>
-                            </label>
-                            <label class="palette-swatch-label">
-                                <button class="palette-swatch" data-palette="apricot" onclick="setPalette('apricot')" title="Abricot" style="--swatch-color:#D17A3A;"></button>
-                                <span class="palette-swatch-name">Abricot</span>
-                            </label>
-                            <label class="palette-swatch-label">
-                                <button class="palette-swatch" data-palette="future-dusk" onclick="setPalette('future-dusk')" title="Future Dusk" style="--swatch-color:#4B4B82;"></button>
-                                <span class="palette-swatch-name">Future Dusk</span>
-                            </label>
-                            <label class="palette-swatch-label">
-                                <button class="palette-swatch" data-palette="blue" onclick="setPalette('blue')" title="Bleu (défaut)" style="--swatch-color:#0061a4;"></button>
-                                <span class="palette-swatch-name">Bleu</span>
-                            </label>
-                        </div>
-                        <small style="display:block;margin-top:8px;color:var(--md-sys-color-on-surface-variant);">
-                            Le changement de couleur s'applique immédiatement sur toute l'application.
-                        </small>
                     </div>
+
+                    <!-- ── Couleur du thème ─────────────────────────── -->
+                    <div class="form-group">
+                        <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+                            <span class="material-icons" style="font-size:20px;">palette</span>
+                            Couleur du thème
+                        </label>
+                        <p style="font-size:13px;color:var(--md-sys-color-on-surface-variant);margin-bottom:14px;">
+                            Choisissez une palette de couleurs pour personnaliser l'interface.
+                            Compatible avec les modes clair et sombre.
+                        </p>
+                        <!-- Grille des palettes — remplie par renderPaletteSelector() -->
+                        <div id="palette-selector" style="
+                            display: grid;
+                            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                            gap: 10px;">
+                        </div>
+                    </div>
+                    <!-- ── / Couleur du thème ───────────────────────── -->
+
                     <div class="form-group">
                         <label class="form-label" for="rendement-rate">
                             Taux de Rendement (Vanille Verte → Noire)

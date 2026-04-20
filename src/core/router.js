@@ -121,20 +121,6 @@ function loadThemePreference() {
     setTheme(localStorage.getItem('theme') || 'light');
 }
 
-// ── Palette ──────────────────────────────────────────────────
-function setPalette(palette) {
-    document.body.dataset.palette = palette;
-    localStorage.setItem('palette', palette);
-    document.querySelectorAll('.palette-swatch').forEach(sw => {
-        sw.classList.toggle('active', sw.dataset.palette === palette);
-    });
-    setTimeout(updateCharts, 50);
-}
-
-function loadPalettePreference() {
-    setPalette(localStorage.getItem('palette') || 'blue');
-}
-
 // ── Global Search ────────────────────────────────────────────
 
 // Indique si une recherche est active — utilisé par getPaginatedData()
@@ -268,8 +254,6 @@ function saveSettings() {
     localStorage.setItem('rendement_rate', rate);
     const theme = document.getElementById('theme-select')?.value || 'light';
     setTheme(theme);
-    const activeSwatch = document.querySelector('.palette-swatch.active');
-    if (activeSwatch) setPalette(activeSwatch.dataset.palette);
     showToast('Paramètres enregistrés.', 'success');
     updatePrixRevientAnalysis();
 }
@@ -277,7 +261,231 @@ function saveSettings() {
 function loadSettings() {
     const rate = localStorage.getItem('rendement_rate');
     if (rate) { const el = document.getElementById('rendement-rate'); if (el) el.value = rate; }
-    loadPalettePreference();
+}
+
+// ── Palette de couleurs ───────────────────────────────────────
+/**
+ * Catalogue des palettes disponibles.
+ * Chaque palette définit uniquement les 4 variables primaires —
+ * les couleurs dérivées (container, on-*) sont calculées automatiquement.
+ *
+ * Structure par palette :
+ *   primary        → couleur principale (boutons, accent, sidebar active)
+ *   onPrimary      → texte sur couleur primaire  (toujours blanc ou noir)
+ *   primaryCont    → container primaire clair     (fond des modals, bandeaux)
+ *   onPrimaryCont  → texte dans le container      (titres, labels importants)
+ *   secondary      → couleur secondaire
+ *   tertiary       → couleur tertiaire / accent
+ */
+const PALETTES = {
+    ocean: {
+        label: '🌊 Océan (défaut)',
+        light: {
+            primary:       '#0061a4',
+            onPrimary:     '#ffffff',
+            primaryCont:   '#d1e4ff',
+            onPrimaryCont: '#001d36',
+            secondary:     '#535f70',
+            tertiary:      '#6b5778',
+        },
+        dark: {
+            primary:       '#9ecaff',
+            onPrimary:     '#003258',
+            primaryCont:   '#004a7c',
+            onPrimaryCont: '#d1e4ff',
+            secondary:     '#b9c8e1',
+            tertiary:      '#d4bce1',
+        },
+    },
+    vanille: {
+        label: '🌿 Vanille (violet)',
+        light: {
+            primary:       '#6750a4',
+            onPrimary:     '#ffffff',
+            primaryCont:   '#eaddff',
+            onPrimaryCont: '#21005d',
+            secondary:     '#625b71',
+            tertiary:      '#7e5260',
+        },
+        dark: {
+            primary:       '#d0bcff',
+            onPrimary:     '#381e72',
+            primaryCont:   '#4f378b',
+            onPrimaryCont: '#eaddff',
+            secondary:     '#ccc2dc',
+            tertiary:      '#efb8c8',
+        },
+    },
+    foret: {
+        label: '🌲 Forêt',
+        light: {
+            primary:       '#1b6c3e',
+            onPrimary:     '#ffffff',
+            primaryCont:   '#b7f1cb',
+            onPrimaryCont: '#002111',
+            secondary:     '#4e6355',
+            tertiary:      '#3b6b4b',
+        },
+        dark: {
+            primary:       '#9cd4b1',
+            onPrimary:     '#003920',
+            primaryCont:   '#005230',
+            onPrimaryCont: '#b7f1cb',
+            secondary:     '#b2ccbb',
+            tertiary:      '#95cfab',
+        },
+    },
+    soleil: {
+        label: '☀️ Soleil',
+        light: {
+            primary:       '#7a5500',
+            onPrimary:     '#ffffff',
+            primaryCont:   '#ffdea5',
+            onPrimaryCont: '#271900',
+            secondary:     '#6c5c3e',
+            tertiary:      '#4e6c52',
+        },
+        dark: {
+            primary:       '#ffb94c',
+            onPrimary:     '#412d00',
+            primaryCont:   '#5c4200',
+            onPrimaryCont: '#ffdea5',
+            secondary:     '#d8c3a0',
+            tertiary:      '#a8d1a8',
+        },
+    },
+    grenade: {
+        label: '🍎 Grenade',
+        light: {
+            primary:       '#9b1919',
+            onPrimary:     '#ffffff',
+            primaryCont:   '#ffdad6',
+            onPrimaryCont: '#410001',
+            secondary:     '#775652',
+            tertiary:      '#705c2e',
+        },
+        dark: {
+            primary:       '#ffb4ab',
+            onPrimary:     '#690001',
+            primaryCont:   '#930001',
+            onPrimaryCont: '#ffdad6',
+            secondary:     '#e7bdb8',
+            tertiary:      '#dfc27f',
+        },
+    },
+    ardoise: {
+        label: '🪨 Ardoise',
+        light: {
+            primary:       '#2e5e8b',
+            onPrimary:     '#ffffff',
+            primaryCont:   '#d3e4f7',
+            onPrimaryCont: '#001d33',
+            secondary:     '#4f6070',
+            tertiary:      '#5a5f6e',
+        },
+        dark: {
+            primary:       '#a0c7e8',
+            onPrimary:     '#003353',
+            primaryCont:   '#1d4976',
+            onPrimaryCont: '#d3e4f7',
+            secondary:     '#b5c9d9',
+            tertiary:      '#c2c6d5',
+        },
+    },
+};
+
+const PALETTE_STORAGE_KEY = 'behavana_palette';
+
+/**
+ * Applique une palette en injectant un <style> sur :root et [data-theme="dark"].
+ * N'écrase aucune variable existante hors des 6 primaires ciblées.
+ */
+function applyPalette(paletteKey) {
+    const palette = PALETTES[paletteKey];
+    if (!palette) return;
+
+    const l = palette.light;
+    const d = palette.dark;
+
+    const css = `
+        :root {
+            --md-sys-color-primary:               ${l.primary};
+            --md-sys-color-on-primary:            ${l.onPrimary};
+            --md-sys-color-primary-container:     ${l.primaryCont};
+            --md-sys-color-on-primary-container:  ${l.onPrimaryCont};
+            --md-sys-color-secondary:             ${l.secondary};
+            --md-sys-color-tertiary:              ${l.tertiary};
+            --md-sys-color-surface-tint:          ${l.primary};
+            --md-sys-color-inverse-primary:       ${d.primary};
+        }
+        [data-theme="dark"] {
+            --md-sys-color-primary:               ${d.primary};
+            --md-sys-color-on-primary:            ${d.onPrimary};
+            --md-sys-color-primary-container:     ${d.primaryCont};
+            --md-sys-color-on-primary-container:  ${d.onPrimaryCont};
+            --md-sys-color-secondary:             ${d.secondary};
+            --md-sys-color-tertiary:              ${d.tertiary};
+            --md-sys-color-surface-tint:          ${d.primary};
+            --md-sys-color-inverse-primary:       ${l.primary};
+        }`;
+
+    let tag = document.getElementById('theme-palette-override');
+    if (!tag) {
+        tag = document.createElement('style');
+        tag.id = 'theme-palette-override';
+        document.head.appendChild(tag);
+    }
+    tag.textContent = css;
+
+    // Mettre à jour les puces visuelles dans le sélecteur
+    document.querySelectorAll('.palette-option').forEach(btn => {
+        btn.classList.toggle('palette-option--active', btn.dataset.palette === paletteKey);
+    });
+
+    // Rafraîchir les graphiques après changement de couleur
+    if (typeof updateCharts === 'function') setTimeout(updateCharts, 50);
+}
+
+/** Persiste le choix et l'applique. */
+function setPalette(paletteKey) {
+    localStorage.setItem(PALETTE_STORAGE_KEY, paletteKey);
+    applyPalette(paletteKey);
+}
+
+/** Recharge la palette sauvegardée au démarrage. */
+function loadPalettePreference() {
+    const saved = localStorage.getItem(PALETTE_STORAGE_KEY) || 'ocean';
+    applyPalette(saved);
+    // Marquer le bouton actif dans le sélecteur (si déjà rendu)
+    document.querySelectorAll('.palette-option').forEach(btn => {
+        btn.classList.toggle('palette-option--active', btn.dataset.palette === saved);
+    });
+}
+
+/** Génère le HTML du sélecteur de palettes (injecté dans #settings). */
+function renderPaletteSelector() {
+    const container = document.getElementById('palette-selector');
+    if (!container) return;
+
+    const saved = localStorage.getItem(PALETTE_STORAGE_KEY) || 'ocean';
+
+    container.innerHTML = Object.entries(PALETTES).map(([key, pal]) => {
+        const isActive = key === saved;
+        const swatch   = pal.light.primary;
+        const swatchC  = pal.light.primaryCont;
+
+        return `
+        <button
+            class="palette-option${isActive ? ' palette-option--active' : ''}"
+            data-palette="${key}"
+            onclick="setPalette('${key}')"
+            title="${pal.label}"
+            style="--pal-primary:${swatch};--pal-container:${swatchC};">
+            <span class="palette-option__swatch"></span>
+            <span class="palette-option__label">${pal.label}</span>
+            <span class="palette-option__check material-icons">check_circle</span>
+        </button>`;
+    }).join('');
 }
 
 // ── Pagination ───────────────────────────────────────────────
