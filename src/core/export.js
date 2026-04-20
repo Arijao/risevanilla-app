@@ -284,31 +284,136 @@ function generateReceiptThermal(receptionId) {
     const dayRecs   = appData.receptions.filter(r => r.collectorId === base.collectorId && r.date === base.date);
     const totalNet  = dayRecs.reduce((s,r)=>s+r.netWeight,0);
     const totalVal  = dayRecs.reduce((s,r)=>s+r.totalValue,0);
-    const recNum    = `R${new Date(base.date).getTime().toString().slice(-5)}${base.collectorId}`;
+
+    // Numéro de reçu séquentiel : R + 7 chiffres avec padding (ex: R0000097)
+    const recNum = 'R' + String(base.id).padStart(7, '0');
+
+    // QR code via API Google Charts (disponible offline via cache SW)
+    const qrData   = encodeURIComponent(recNum);
+    const qrUrl    = `https://chart.googleapis.com/chart?chs=120x120&cht=qr&chl=${qrData}&choe=UTF-8`;
+
+    // Ligne article : "Vanille Qualité    1 234.56 kg"
+    const detailLines = dayRecs.map(r => {
+        const label  = `Vanille ${r.quality}`;
+        const weight = r.netWeight.toFixed(2) + ' kg';
+        // Alignement droite sur 32 caractères total
+        const pad    = Math.max(1, 32 - label.length - weight.length);
+        return `<div class="row"><span>${label}</span><span class="bold">${weight}</span></div>`;
+    }).join('');
+
+    // Timestamp impression
+    const now       = new Date();
+    const timestamp = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR');
 
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
     <style>
-        @page{width:80mm;margin:3mm;}
-        body{width:72mm;font-family:'Courier New',monospace;font-size:11px;margin:0;padding:2mm;}
-        .center{text-align:center;}.bold{font-weight:700;}
-        .sep{border-top:1px dashed #000;margin:4px 0;}
-        .row{display:flex;justify-content:space-between;}
+        @page { size: 80mm auto; margin: 3mm 4mm; }
+        * { box-sizing: border-box; }
+        body {
+            width: 72mm;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            color: #000;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+        }
+        .center  { text-align: center; }
+        .bold    { font-weight: 700; }
+        .right   { text-align: right; }
+        .row     { display: flex; justify-content: space-between; align-items: baseline; }
+
+        /* Séparateurs */
+        .sep-dash { border: none; border-top: 1px dashed #000; margin: 5px 0; }
+        .sep-solid{ border: none; border-top: 1px solid  #000; margin: 5px 0; }
+
+        /* En-tête */
+        .title   { font-size: 17px; font-weight: 700; letter-spacing: 1px; margin: 2px 0 1px; }
+        .subtitle{ font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
+
+        /* Infos */
+        .info-line { margin: 2px 0; font-size: 11px; }
+        .info-line .lbl { display: inline-block; width: 26mm; }
+        .info-line .val { font-weight: 700; }
+
+        /* Section DETAILS */
+        .section-title { font-size: 11px; font-weight: 700; margin: 5px 0 3px; }
+
+        /* Détail articles */
+        .item-row { display: flex; justify-content: space-between; margin: 2px 0; font-size: 11px; }
+
+        /* Bloc total encadré */
+        .total-box {
+            border: 1px solid #000;
+            padding: 5px 6px;
+            margin: 6px 0;
+        }
+        .total-label { font-size: 10px; font-weight: 700; text-align: center; letter-spacing: 0.5px; margin-bottom: 2px; }
+        .total-value { font-size: 14px; font-weight: 700; text-align: center; margin-bottom: 5px; }
+
+        /* QR code */
+        .qr-wrap { text-align: center; margin: 8px 0 2px; }
+        .qr-wrap img { width: 28mm; height: 28mm; display: block; margin: 0 auto; }
+        .qr-ref { font-size: 10px; text-align: center; margin-bottom: 4px; }
+
+        /* Signature */
+        .sig-line { border-top: 1px solid #000; width: 44mm; margin: 6px auto 2px; }
+        .sig-label { font-size: 10px; text-align: center; }
+
+        /* Pied de page */
+        .footer { font-size: 9px; text-align: center; margin-top: 4px; }
     </style>
     </head><body>
-    <div class="center bold" style="font-size:16px;">BEHAVANA</div>
-    <div class="center" style="font-size:10px;">Gestion de Collecte</div>
-    <div class="sep"></div>
-    <div>Reçu N°: ${recNum}</div>
-    <div>Date: ${formatDate(base.date)}</div>
-    <div>Collecteur: ${collector?.name||'N/A'}</div>
-    <div class="sep"></div>
-    ${dayRecs.map(r=>`<div><b>${r.quality}</b> — ${r.netWeight.toFixed(2)} kg × ${formatCurrency(r.price)}/kg = ${formatCurrency(r.totalValue)}</div>`).join('')}
-    <div class="sep"></div>
-    <div class="row bold"><span>TOTAL:</span><span>${totalNet.toFixed(2)} kg</span></div>
-    <div class="row bold"><span>VALEUR:</span><span>${formatCurrency(totalVal)}</span></div>
-    <div class="sep"></div>
-    <div class="center" style="margin-top:8px;font-size:10px;">Merci — BEHAVANA</div>
-    <script>window.onload=()=>window.print();</script>
+
+    <!-- EN-TÊTE -->
+    <div class="center">
+        <div class="title">BEHAVANA</div>
+        <div class="subtitle">RECU RECEPTION</div>
+    </div>
+
+    <hr class="sep-dash">
+
+    <!-- INFOS REÇU -->
+    <div class="info-line"><span class="lbl">N° Recu:</span><span class="val right" style="float:right;">${recNum}</span></div>
+    <div style="clear:both"></div>
+    <div class="info-line"><span class="lbl">Date:</span><span class="val right" style="float:right;">${formatDate(base.date)}</span></div>
+    <div style="clear:both"></div>
+    <div class="info-line"><span class="lbl">Collecteur:</span><span class="val right" style="float:right;">${collector?.name || 'N/A'}</span></div>
+    <div style="clear:both"></div>
+
+    <hr class="sep-dash">
+
+    <!-- DÉTAILS ARTICLES -->
+    <div class="section-title">DETAILS:</div>
+    ${detailLines}
+
+    <hr class="sep-solid">
+
+    <!-- BLOC TOTAL ENCADRÉ -->
+    <div class="total-box">
+        <div class="total-label">TOTAL POIDS</div>
+        <div class="total-value">${totalNet.toFixed(2)} kg</div>
+        <hr class="sep-dash" style="margin:3px 0;">
+        <div class="total-label">VALEUR TOTALE</div>
+        <div class="total-value">${totalVal.toLocaleString('fr-MG')} Ar</div>
+    </div>
+
+    <!-- QR CODE -->
+    <div class="qr-wrap">
+        <img src="${qrUrl}" alt="QR ${recNum}" onerror="this.style.display='none'">
+    </div>
+    <div class="qr-ref">${recNum}</div>
+
+    <hr class="sep-dash">
+
+    <!-- SIGNATURE -->
+    <div class="sig-label">Signature du collecteur</div>
+    <div class="sig-line"></div>
+
+    <!-- PIED DE PAGE -->
+    <div class="footer">Merci de votre confiance<br>${timestamp}</div>
+
+    <script>window.onload = () => window.print();</script>
     </body></html>`;
     _printWindow(html);
 }
