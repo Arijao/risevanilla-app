@@ -80,17 +80,23 @@ function showCollectorDetails(collectorId) {
             </div>
             <!-- Summary cards -->
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;">
-                <div style="background:var(--md-sys-color-error-container);color:var(--md-sys-color-on-error-container);padding:16px;border-radius:12px;text-align:center;">
-                    <div style="font-size:20px;font-weight:700;">${formatCurrency(totalAdvances)}</div><div style="font-size:12px;opacity:.8;">Total Avances (${currentYear})</div>
+                <div class="collector-stat-card collector-stat-card--advances">
+                    <div class="collector-stat-card__value">${formatCurrency(totalAdvances)}</div>
+                    <div class="collector-stat-card__label">Total Avances (${currentYear})</div>
                 </div>
-                <div style="background:var(--md-sys-color-tertiary-container);color:var(--md-sys-color-on-tertiary-container);padding:16px;border-radius:12px;text-align:center;">
-                    <div style="font-size:20px;font-weight:700;">${formatCurrency(totalDeliveries)}</div><div style="font-size:12px;opacity:.8;">Total Réceptions (${currentYear})</div>
+                <div class="collector-stat-card collector-stat-card--receptions">
+                    <div class="collector-stat-card__value">${formatCurrency(totalDeliveries)}</div>
+                    <div class="collector-stat-card__label">Total Réceptions (${currentYear})</div>
                 </div>
-                <div style="background:${balance>=0?'var(--md-sys-color-success-container)':'var(--md-sys-color-error-container)'};color:${balance>=0?'var(--md-sys-color-on-success-container)':'var(--md-sys-color-on-error-container)'};padding:16px;border-radius:12px;text-align:center;">
-                    <div style="font-size:20px;font-weight:700;">${formatCurrency(Math.abs(balance))}</div><div style="font-size:12px;opacity:.8;">Solde ${currentYear}</div><div style="font-size:12px;font-weight:600;">${status.label}</div>
+                <div class="collector-stat-card ${balance >= 0 ? 'collector-stat-card--balance-ok' : 'collector-stat-card--balance-bad'}">
+                    <div class="collector-stat-card__value">${formatCurrency(Math.abs(balance))}</div>
+                    <div class="collector-stat-card__label">Solde ${currentYear}</div>
+                    <div class="collector-stat-card__status">${status.label}</div>
                 </div>
-                <div style="background:${globalBalance>=0?'var(--md-sys-color-primary-container)':'var(--md-sys-color-error-container)'};color:${globalBalance>=0?'var(--md-sys-color-on-primary-container)':'var(--md-sys-color-on-error-container)'};padding:16px;border-radius:12px;text-align:center;border:2px solid var(--md-sys-color-primary);">
-                    <div style="font-size:20px;font-weight:700;">${formatCurrency(Math.abs(globalBalance))}</div><div style="font-size:12px;opacity:.8;">Dette Totale (Toutes années)</div><div style="font-size:12px;font-weight:600;">${globalStatus.label}</div>
+                <div class="collector-stat-card ${globalBalance >= 0 ? 'collector-stat-card--global-ok' : 'collector-stat-card--global-bad'}">
+                    <div class="collector-stat-card__value">${formatCurrency(Math.abs(globalBalance))}</div>
+                    <div class="collector-stat-card__label">Dette Totale (Toutes années)</div>
+                    <div class="collector-stat-card__status">${globalStatus.label}</div>
                 </div>
             </div>
             <!-- Tabs -->

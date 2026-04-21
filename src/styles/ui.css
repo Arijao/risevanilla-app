@@ -2703,3 +2703,163 @@
         grid-template-columns: 1fr !important;
     }
 }
+
+
+/* ============================================================
+ * COLLECTOR DETAIL — Summary Cards (Glassmorphism)
+ * Cartes de stats dans la modale détail collecteur.
+ * Isolation totale : aucun impact sur les autres composants.
+ * ============================================================ */
+
+.collector-stat-card {
+    padding: 16px;
+    border-radius: 14px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Shimmer de surface subtil */
+.collector-stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.07) 0%,
+        rgba(255, 255, 255, 0.00) 60%
+    );
+    pointer-events: none;
+}
+
+/* Hover : légère élévation + glow */
+.collector-stat-card:hover {
+    transform: translateY(-3px) scale(1.015);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.collector-stat-card__value {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 5px;
+    letter-spacing: -0.3px;
+}
+
+.collector-stat-card__label {
+    font-size: 12px;
+    opacity: 0.75;
+    font-weight: 400;
+}
+
+.collector-stat-card__status {
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 4px;
+    opacity: 0.95;
+}
+
+/* ── Variantes chromatiques ── */
+
+/* Avances → teinte rouge/error semi-transparente */
+.collector-stat-card--advances {
+    background: rgba(var(--_error-rgb, 186, 26, 26), 0.18);
+    color: var(--md-sys-color-on-error-container);
+    border-color: rgba(var(--_error-rgb, 186, 26, 26), 0.30);
+}
+[data-theme="dark"] .collector-stat-card--advances {
+    background: rgba(147, 0, 10, 0.32);
+    color: var(--md-sys-color-on-error-container);
+    border-color: rgba(255, 180, 171, 0.18);
+}
+
+/* Réceptions → teinte tertiaire/teal */
+.collector-stat-card--receptions {
+    background: rgba(107, 87, 120, 0.18);
+    color: var(--md-sys-color-on-tertiary-container);
+    border-color: rgba(107, 87, 120, 0.28);
+}
+[data-theme="dark"] .collector-stat-card--receptions {
+    background: rgba(50, 75, 65, 0.40);
+    color: var(--md-sys-color-on-tertiary-container);
+    border-color: rgba(176, 204, 190, 0.18);
+}
+
+/* Solde annuel → success (vert) ou error (rouge) selon valeur */
+.collector-stat-card--balance-ok {
+    background: rgba(0, 109, 58, 0.18);
+    color: var(--md-sys-color-on-success-container);
+    border-color: rgba(0, 109, 58, 0.28);
+}
+[data-theme="dark"] .collector-stat-card--balance-ok {
+    background: rgba(46, 125, 50, 0.32);
+    color: var(--md-sys-color-on-success-container);
+    border-color: rgba(165, 214, 167, 0.18);
+}
+
+.collector-stat-card--balance-bad {
+    background: rgba(186, 26, 26, 0.18);
+    color: var(--md-sys-color-on-error-container);
+    border-color: rgba(186, 26, 26, 0.30);
+}
+[data-theme="dark"] .collector-stat-card--balance-bad {
+    background: rgba(147, 0, 10, 0.32);
+    color: var(--md-sys-color-on-error-container);
+    border-color: rgba(255, 180, 171, 0.18);
+}
+
+/* Dette totale → primary si ok, error si débiteur, avec bordure accent */
+.collector-stat-card--global-ok {
+    background: rgba(0, 97, 164, 0.16);
+    color: var(--md-sys-color-on-primary-container);
+    border-color: rgba(0, 97, 164, 0.35);
+    box-shadow:
+        0 4px 24px rgba(0, 97, 164, 0.18),
+        0 0 0 1.5px rgba(0, 97, 164, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+[data-theme="dark"] .collector-stat-card--global-ok {
+    background: rgba(83, 70, 0, 0.35);
+    color: var(--md-sys-color-on-primary-container);
+    border-color: rgba(243, 229, 171, 0.22);
+    box-shadow:
+        0 4px 24px rgba(243, 229, 171, 0.10),
+        0 0 0 1.5px rgba(243, 229, 171, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.collector-stat-card--global-bad {
+    background: rgba(186, 26, 26, 0.20);
+    color: var(--md-sys-color-on-error-container);
+    border-color: rgba(186, 26, 26, 0.38);
+    box-shadow:
+        0 4px 24px rgba(186, 26, 26, 0.22),
+        0 0 0 1.5px rgba(186, 26, 26, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+[data-theme="dark"] .collector-stat-card--global-bad {
+    background: rgba(147, 0, 10, 0.38);
+    color: var(--md-sys-color-on-error-container);
+    border-color: rgba(255, 180, 171, 0.25);
+    box-shadow:
+        0 4px 28px rgba(255, 100, 100, 0.15),
+        0 0 0 1.5px rgba(255, 180, 171, 0.20),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Hover glow coloré pour la carte globale */
+.collector-stat-card--global-ok:hover,
+.collector-stat-card--global-bad:hover {
+    filter: brightness(1.06);
+}
