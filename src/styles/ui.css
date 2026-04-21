@@ -2708,158 +2708,316 @@
 /* ============================================================
  * COLLECTOR DETAIL — Summary Cards (Glassmorphism)
  * Cartes de stats dans la modale détail collecteur.
+ *
+ * PALETTE ACTIVE : "Midnight Prism" (var. A — défaut)
+ * Deux variantes additionnelles disponibles en commentaire :
+ *   Variante B — "Arctic Dusk"  (bleu glacier / lilas profond)
+ *   Variante C — "Obsidian Neon" (neon cyan / emerald sur noir)
+ *
  * Isolation totale : aucun impact sur les autres composants.
  * ============================================================ */
 
+/*
+ ┌─────────────────────────────────────────────────────────────┐
+ │  PALETTE DESIGN — Référence                                 │
+ │                                                             │
+ │  Variante A · MIDNIGHT PRISM (active)                       │
+ │  ──────────────────────────────────                         │
+ │  Avances      → Ambre chaud  #F59E0B / bg rgba(245,158,11)  │
+ │  Réceptions   → Cyan saphir  #06B6D4 / bg rgba(6,182,212)   │
+ │  Solde +      → Jade vert    #10B981 / bg rgba(16,185,129)  │
+ │  Solde −      → Carmin       #F43F5E / bg rgba(244,63,94)   │
+ │  Dette totale → Violet prism #8B5CF6 / bg rgba(139,92,246)  │
+ │  Dette mauvaise → Carmin vif #F43F5E + glow rouge           │
+ │                                                             │
+ │  Variante B · ARCTIC DUSK (commentée)                       │
+ │  ──────────────────────────────────                         │
+ │  Avances      → Bleu glacier #3B82F6                        │
+ │  Réceptions   → Lilas        #A78BFA                        │
+ │  Solde +      → Menthe       #34D399                        │
+ │  Solde −      → Rose saumon  #FB7185                        │
+ │  Dette totale → Indigo       #6366F1                        │
+ │                                                             │
+ │  Variante C · OBSIDIAN NEON (commentée)                     │
+ │  ──────────────────────────────────                         │
+ │  Avances      → Neon cyan    #22D3EE                        │
+ │  Réceptions   → Lime         #84CC16                        │
+ │  Solde +      → Emerald vif  #00DC82                        │
+ │  Solde −      → Rouge néon   #FF4560                        │
+ │  Dette totale → Magenta      #E879F9                        │
+ └─────────────────────────────────────────────────────────────┘
+*/
+
+/* ── Variables de la palette active (Midnight Prism) ── */
+:root {
+    --csc-advances-rgb:      245, 158,  11;   /* Ambre         */
+    --csc-receptions-rgb:      6, 182, 212;   /* Cyan saphir   */
+    --csc-balance-ok-rgb:     16, 185, 129;   /* Jade vert     */
+    --csc-balance-bad-rgb:   244,  63,  94;   /* Carmin        */
+    --csc-global-ok-rgb:     139,  92, 246;   /* Violet prism  */
+    --csc-global-bad-rgb:    244,  63,  94;   /* Carmin vif    */
+
+    --csc-text-primary:   #f1f5f9;   /* Slate 100 — blanc cassé  */
+    --csc-text-secondary: #94a3b8;   /* Slate 400 — gris doux    */
+    --csc-text-status:    #e2e8f0;   /* Slate 200 — badge lisible */
+}
+
+/* ── Socle commun ── */
 .collector-stat-card {
-    padding: 16px;
-    border-radius: 14px;
+    padding: 18px 16px 16px;
+    border-radius: 16px;
     text-align: center;
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    isolation: isolate;
+
+    /* Glass core */
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+
+    /* Bordure neutre héritée, surclassée par les variantes */
+    border: 1px solid rgba(255, 255, 255, 0.09);
+
+    /* Shadow de profondeur */
     box-shadow:
-        0 4px 24px rgba(0, 0, 0, 0.28),
-        inset 0 1px 0 rgba(255, 255, 255, 0.10);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        0 2px 0   rgba(255, 255, 255, 0.06) inset,
+        0 6px 28px rgba(0, 0, 0, 0.40);
+
+    color: var(--csc-text-primary);
+
+    transition:
+        transform  0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+        filter     0.28s ease;
 }
 
-/* Shimmer de surface subtil */
+/* Reflet haut de carte (liseré lumineux) */
 .collector-stat-card::before {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: inherit;
     background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.07) 0%,
-        rgba(255, 255, 255, 0.00) 60%
+        160deg,
+        rgba(255, 255, 255, 0.10) 0%,
+        rgba(255, 255, 255, 0.03) 40%,
+        transparent              100%
     );
     pointer-events: none;
+    z-index: 1;
 }
 
-/* Hover : légère élévation + glow */
+/* Halo de couleur en fond (alimenté par --csc-glow-rgb de chaque variante) */
+.collector-stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 70%;
+    border-radius: 50%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(var(--csc-glow-rgb, 255,255,255), 0.10) 0%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Contenu au-dessus des pseudo-éléments */
+.collector-stat-card > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* ── Hover global ── */
 .collector-stat-card:hover {
-    transform: translateY(-3px) scale(1.015);
-    box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.38),
-        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    transform: translateY(-4px) scale(1.018);
+    filter: brightness(1.08);
 }
 
+.collector-stat-card:hover::after {
+    opacity: 1.4;
+}
+
+/* ── Typographie ── */
 .collector-stat-card__value {
-    font-size: 20px;
+    font-size: 21px;
     font-weight: 700;
     line-height: 1.2;
-    margin-bottom: 5px;
-    letter-spacing: -0.3px;
+    margin-bottom: 6px;
+    letter-spacing: -0.4px;
+    color: var(--csc-text-primary);
+    /* Glow texte doux assorti à la couleur de la carte */
+    text-shadow: 0 0 20px rgba(var(--csc-glow-rgb, 255,255,255), 0.35);
 }
 
 .collector-stat-card__label {
-    font-size: 12px;
-    opacity: 0.75;
+    font-size: 11px;
     font-weight: 400;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--csc-text-secondary);
+    line-height: 1.4;
 }
 
 .collector-stat-card__status {
-    font-size: 12px;
+    display: inline-block;
+    margin-top: 7px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
     font-weight: 600;
-    margin-top: 4px;
-    opacity: 0.95;
+    letter-spacing: 0.3px;
+    color: var(--csc-text-status);
+    background: rgba(var(--csc-glow-rgb, 255,255,255), 0.14);
+    border: 1px solid rgba(var(--csc-glow-rgb, 255,255,255), 0.22);
 }
 
-/* ── Variantes chromatiques ── */
 
-/* Avances → teinte rouge/error semi-transparente */
+/* ══════════════════════════════════════════════════════════════
+ * VARIANTE A — MIDNIGHT PRISM (palette active)
+ * ══════════════════════════════════════════════════════════════ */
+
+/* ── Avances : Ambre chaud ── */
 .collector-stat-card--advances {
-    background: rgba(var(--_error-rgb, 186, 26, 26), 0.18);
-    color: var(--md-sys-color-on-error-container);
-    border-color: rgba(var(--_error-rgb, 186, 26, 26), 0.30);
+    --csc-glow-rgb: var(--csc-advances-rgb);
+    background: linear-gradient(
+        145deg,
+        rgba(245, 158, 11, 0.20) 0%,
+        rgba(245, 158, 11, 0.08) 100%
+    );
+    border-color: rgba(245, 158, 11, 0.30);
+    box-shadow:
+        0 2px 0   rgba(255, 255, 255, 0.07) inset,
+        0 6px 32px rgba(0, 0, 0, 0.42),
+        0 0 0 1px rgba(245, 158, 11, 0.20);
 }
-[data-theme="dark"] .collector-stat-card--advances {
-    background: rgba(147, 0, 10, 0.32);
-    color: var(--md-sys-color-on-error-container);
-    border-color: rgba(255, 180, 171, 0.18);
+.collector-stat-card--advances:hover {
+    box-shadow:
+        0 2px 0   rgba(255, 255, 255, 0.09) inset,
+        0 10px 40px rgba(0, 0, 0, 0.50),
+        0 0 24px rgba(245, 158, 11, 0.22),
+        0 0 0 1px rgba(245, 158, 11, 0.35);
 }
 
-/* Réceptions → teinte tertiaire/teal */
+/* ── Réceptions : Cyan saphir ── */
 .collector-stat-card--receptions {
-    background: rgba(107, 87, 120, 0.18);
-    color: var(--md-sys-color-on-tertiary-container);
-    border-color: rgba(107, 87, 120, 0.28);
+    --csc-glow-rgb: var(--csc-receptions-rgb);
+    background: linear-gradient(
+        145deg,
+        rgba(6, 182, 212, 0.20) 0%,
+        rgba(6, 182, 212, 0.07) 100%
+    );
+    border-color: rgba(6, 182, 212, 0.28);
+    box-shadow:
+        0 2px 0   rgba(255, 255, 255, 0.07) inset,
+        0 6px 32px rgba(0, 0, 0, 0.42),
+        0 0 0 1px rgba(6, 182, 212, 0.18);
 }
-[data-theme="dark"] .collector-stat-card--receptions {
-    background: rgba(50, 75, 65, 0.40);
-    color: var(--md-sys-color-on-tertiary-container);
-    border-color: rgba(176, 204, 190, 0.18);
+.collector-stat-card--receptions:hover {
+    box-shadow:
+        0 2px 0   rgba(255, 255, 255, 0.09) inset,
+        0 10px 40px rgba(0, 0, 0, 0.50),
+        0 0 24px rgba(6, 182, 212, 0.24),
+        0 0 0 1px rgba(6, 182, 212, 0.38);
 }
 
-/* Solde annuel → success (vert) ou error (rouge) selon valeur */
+/* ── Solde positif : Jade vert ── */
 .collector-stat-card--balance-ok {
-    background: rgba(0, 109, 58, 0.18);
-    color: var(--md-sys-color-on-success-container);
-    border-color: rgba(0, 109, 58, 0.28);
-}
-[data-theme="dark"] .collector-stat-card--balance-ok {
-    background: rgba(46, 125, 50, 0.32);
-    color: var(--md-sys-color-on-success-container);
-    border-color: rgba(165, 214, 167, 0.18);
-}
-
-.collector-stat-card--balance-bad {
-    background: rgba(186, 26, 26, 0.18);
-    color: var(--md-sys-color-on-error-container);
-    border-color: rgba(186, 26, 26, 0.30);
-}
-[data-theme="dark"] .collector-stat-card--balance-bad {
-    background: rgba(147, 0, 10, 0.32);
-    color: var(--md-sys-color-on-error-container);
-    border-color: rgba(255, 180, 171, 0.18);
-}
-
-/* Dette totale → primary si ok, error si débiteur, avec bordure accent */
-.collector-stat-card--global-ok {
-    background: rgba(0, 97, 164, 0.16);
-    color: var(--md-sys-color-on-primary-container);
-    border-color: rgba(0, 97, 164, 0.35);
+    --csc-glow-rgb: var(--csc-balance-ok-rgb);
+    background: linear-gradient(
+        145deg,
+        rgba(16, 185, 129, 0.22) 0%,
+        rgba(16, 185, 129, 0.08) 100%
+    );
+    border-color: rgba(16, 185, 129, 0.32);
     box-shadow:
-        0 4px 24px rgba(0, 97, 164, 0.18),
-        0 0 0 1.5px rgba(0, 97, 164, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.10);
+        0 2px 0   rgba(255, 255, 255, 0.07) inset,
+        0 6px 32px rgba(0, 0, 0, 0.42),
+        0 0 0 1px rgba(16, 185, 129, 0.20);
 }
-[data-theme="dark"] .collector-stat-card--global-ok {
-    background: rgba(83, 70, 0, 0.35);
-    color: var(--md-sys-color-on-primary-container);
-    border-color: rgba(243, 229, 171, 0.22);
+.collector-stat-card--balance-ok:hover {
     box-shadow:
-        0 4px 24px rgba(243, 229, 171, 0.10),
-        0 0 0 1.5px rgba(243, 229, 171, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        0 2px 0   rgba(255, 255, 255, 0.09) inset,
+        0 10px 40px rgba(0, 0, 0, 0.50),
+        0 0 26px rgba(16, 185, 129, 0.28),
+        0 0 0 1px rgba(16, 185, 129, 0.40);
 }
 
+/* ── Solde négatif / Dette bad : Carmin ── */
+.collector-stat-card--balance-bad,
 .collector-stat-card--global-bad {
-    background: rgba(186, 26, 26, 0.20);
-    color: var(--md-sys-color-on-error-container);
-    border-color: rgba(186, 26, 26, 0.38);
+    --csc-glow-rgb: var(--csc-balance-bad-rgb);
+    background: linear-gradient(
+        145deg,
+        rgba(244, 63, 94, 0.24) 0%,
+        rgba(244, 63, 94, 0.09) 100%
+    );
+    border-color: rgba(244, 63, 94, 0.36);
     box-shadow:
-        0 4px 24px rgba(186, 26, 26, 0.22),
-        0 0 0 1.5px rgba(186, 26, 26, 0.25),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        0 2px 0   rgba(255, 255, 255, 0.06) inset,
+        0 6px 32px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(244, 63, 94, 0.25);
 }
-[data-theme="dark"] .collector-stat-card--global-bad {
-    background: rgba(147, 0, 10, 0.38);
-    color: var(--md-sys-color-on-error-container);
-    border-color: rgba(255, 180, 171, 0.25);
+.collector-stat-card--balance-bad:hover,
+.collector-stat-card--global-bad:hover {
     box-shadow:
-        0 4px 28px rgba(255, 100, 100, 0.15),
-        0 0 0 1.5px rgba(255, 180, 171, 0.20),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        0 2px 0   rgba(255, 255, 255, 0.08) inset,
+        0 10px 40px rgba(0, 0, 0, 0.52),
+        0 0 28px rgba(244, 63, 94, 0.32),
+        0 0 0 1px rgba(244, 63, 94, 0.45);
 }
 
-/* Hover glow coloré pour la carte globale */
-.collector-stat-card--global-ok:hover,
-.collector-stat-card--global-bad:hover {
-    filter: brightness(1.06);
+/* ── Dette totale positive : Violet prism ── */
+.collector-stat-card--global-ok {
+    --csc-glow-rgb: var(--csc-global-ok-rgb);
+    background: linear-gradient(
+        145deg,
+        rgba(139, 92, 246, 0.24) 0%,
+        rgba(139, 92, 246, 0.09) 100%
+    );
+    border-color: rgba(139, 92, 246, 0.35);
+    box-shadow:
+        0 2px 0   rgba(255, 255, 255, 0.08) inset,
+        0 6px 32px rgba(0, 0, 0, 0.44),
+        0 0 0 1.5px rgba(139, 92, 246, 0.28);
 }
+.collector-stat-card--global-ok:hover {
+    box-shadow:
+        0 2px 0   rgba(255, 255, 255, 0.10) inset,
+        0 10px 40px rgba(0, 0, 0, 0.52),
+        0 0 30px rgba(139, 92, 246, 0.30),
+        0 0 0 1.5px rgba(139, 92, 246, 0.48);
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+ * VARIANTE B — ARCTIC DUSK
+ * Pour activer : remplacer les tokens :root ci-dessus par :
+ *
+ * --csc-advances-rgb:     59, 130, 246;   Bleu glacier
+ * --csc-receptions-rgb:  167, 139, 250;   Lilas
+ * --csc-balance-ok-rgb:   52, 211, 153;   Menthe
+ * --csc-balance-bad-rgb: 251, 113, 133;   Rose saumon
+ * --csc-global-ok-rgb:    99, 102, 241;   Indigo
+ * --csc-global-bad-rgb:  251, 113, 133;
+ *
+ * Puis remplacer les couleurs RGB dans chaque règle ci-dessus
+ * par celles correspondantes. Aucun autre changement nécessaire.
+ * ══════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════════
+ * VARIANTE C — OBSIDIAN NEON
+ * Pour activer :
+ *
+ * --csc-advances-rgb:     34, 211, 238;   Neon cyan
+ * --csc-receptions-rgb:  132, 204,  22;   Lime
+ * --csc-balance-ok-rgb:    0, 220, 130;   Emerald vif
+ * --csc-balance-bad-rgb: 255,  69,  96;   Rouge néon
+ * --csc-global-ok-rgb:   232, 121, 249;   Magenta
+ * --csc-global-bad-rgb:  255,  69,  96;
+ * ══════════════════════════════════════════════════════════════ */
