@@ -1,33 +1,27 @@
 {
-  "name": "BEHAVANA - Gestion de Collecte",
-  "short_name": "BEHAVANA",
-  "description": "Application de gestion des avances et de la collecte de vanille. Fonctionne offline.",
-  "start_url": "./index.html",
+  "name": "RISEVANILLA - Gestion de Collecte",
+  "short_name": "RISEVANILLA",
+  "description": "Système premium de gestion de collecte de vanille.",
+  "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#10081c",
-  "theme_color": "#6750a4",
-  "orientation": "any",
+  "background_color": "#0f0f12",
+  "theme_color": "#f3e5ab",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "logo-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
+      "src": "icon-risevanilla.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "logo-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "logo-maskable.png",
-      "sizes": "512x512",
-      "type": "image/png",
+      "src": "logo-risevanilla.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ],
-  "categories": ["business", "productivity"],
-  "lang": "fr-FR",
-  "dir": "ltr"
+  "screenshots": [],
+  "categories": ["business", "finance"],
+  "lang": "fr-FR"
 }

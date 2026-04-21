@@ -2,7 +2,7 @@
  * EXPENSES.JS — CRUD Dépenses Opérationnelles
  * Architecture: Vanilla JS classique (pas d'ES modules)
  * Intègre la logique enrichie du fichier expenses.js fourni
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';
@@ -47,10 +47,10 @@ function updateExpensesTable() {
             <td data-label="Catégorie">
                 <span style="display:inline-flex;align-items:center;gap:6px;">
                     <span class="material-icons" style="font-size:16px;opacity:.7;">${_getExpenseCategoryIcon(e.category)}</span>
-                    ${BehavanaSearch.highlightText(e.category || '—', _q)}
+                    ${RiseVanillaSearch.highlightText(e.category || '—', _q)}
                 </span>
             </td>
-            <td data-label="Description">${BehavanaSearch.highlightText(e.description || '—', _q)}</td>
+            <td data-label="Description">${RiseVanillaSearch.highlightText(e.description || '—', _q)}</td>
             <td data-label="Montant" style="font-weight:600;">${formatCurrency(e.amount)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-outline" onclick="openExpenseModal(${e.id})" title="Modifier">

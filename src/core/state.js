@@ -1,6 +1,6 @@
 /* ============================================================
  * STATE.JS — Global Application State & Year Management
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';
@@ -18,7 +18,7 @@ let appData = {
 };
 
 // ── Year Management ─────────────────────────────────────────
-const ACTIVE_YEAR_STORAGE_KEY = 'behavana_active_year';
+const ACTIVE_YEAR_STORAGE_KEY = 'risevanilla_active_year';
 let currentYear = new Date().getFullYear();
 
 // ── Calculation Cache ───────────────────────────────────────

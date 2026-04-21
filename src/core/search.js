@@ -1,8 +1,8 @@
 /**
- * BEHAVANA — Moteur de recherche intelligent
- * Expose window.BehavanaSearch — utilisé par router.js, table.js et toutes les pages
+ * RISEVANILLA — Moteur de recherche intelligent
+ * Expose window.RiseVanillaSearch — utilisé par router.js, table.js et toutes les pages
  */
-window.BehavanaSearch = (() => {
+window.RiseVanillaSearch = (() => {
 
   // ── Configuration ──────────────────────────────────────────────
   const CFG = {

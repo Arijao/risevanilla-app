@@ -2,7 +2,7 @@
  * DELIVERIES.JS — CRUD Livraisons + Pesage Rapide
  * Architecture: Vanilla JS classique (pas d'ES modules)
  * Intègre la logique enrichie du fichier deliveries.js fourni
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';
@@ -75,15 +75,15 @@ function updateDeliveryTable() {
         row.innerHTML = `
             <td data-label="Date">${formatDate(d.date)}</td>
             <td data-label="N° BL / Facture">
-                <div style="font-weight:600;">${BehavanaSearch.highlightText(d.bl || '—', _q)}</div>
-                <div style="font-size:11px;opacity:.65;">${BehavanaSearch.highlightText(d.invoice || '', _q)}</div>
+                <div style="font-weight:600;">${RiseVanillaSearch.highlightText(d.bl || '—', _q)}</div>
+                <div style="font-size:11px;opacity:.65;">${RiseVanillaSearch.highlightText(d.invoice || '', _q)}</div>
             </td>
             <td data-label="Qualité">
-                <span class="status-badge status-${qualityClass}">${BehavanaSearch.highlightText(d.quality || '—', _q)}</span>
+                <span class="status-badge status-${qualityClass}">${RiseVanillaSearch.highlightText(d.quality || '—', _q)}</span>
             </td>
             <td data-label="Poids Net">${(d.weight || 0).toFixed(2)} kg</td>
             <td data-label="Valeur">${formatCurrency(d.totalValue || 0)}</td>
-            <td data-label="Exportateur">${BehavanaSearch.highlightText(d.exporter || '—', _q)}</td>
+            <td data-label="Exportateur">${RiseVanillaSearch.highlightText(d.exporter || '—', _q)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-outline"   onclick="openDeliveryModal(${d.id})"             title="Modifier">
                     <span class="material-icons">edit</span>

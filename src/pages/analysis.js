@@ -1,6 +1,6 @@
 /* ============================================================
  * ANALYSIS.JS — Analysis table, Prix de Revient, filters
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';
@@ -66,7 +66,7 @@ function updateAnalysisTable() {
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td data-label="Collecteur">${BehavanaSearch.highlightText(c.name, _q)}</td>
+            <td data-label="Collecteur">${RiseVanillaSearch.highlightText(c.name, _q)}</td>
             <td data-label="Total Débits">${formatCurrency(totalDebits)}</td>
             <td data-label="Total Crédits">${formatCurrency(totalCred)}</td>
             <td data-label="Solde">${formatCurrency(balance)}</td>

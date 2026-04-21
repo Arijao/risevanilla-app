@@ -1,10 +1,10 @@
 /* ============================================================
- * SW.JS — Service Worker BEHAVANA v3.0.0
+ * SW.JS — Service Worker RISEVANILLA v3.0.0
  * Stratégie: Cache-First (assets locaux) + Stale-While-Revalidate (CDN)
  * Offline complet après premier chargement
  * ============================================================ */
 
-const CACHE_NAME    = 'behavana-v3';
+const CACHE_NAME    = 'risevanilla-v3';
 const CACHE_VERSION = '3.0.0';
 const STATIC_CACHE  = `${CACHE_NAME}-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_NAME}-runtime-${CACHE_VERSION}`;
@@ -72,7 +72,7 @@ const CDN_ORIGINS = [
 // INSTALL — Précache des assets critiques
 // ─────────────────────────────────────────────────────────────
 self.addEventListener('install', event => {
-    console.log('[SW] Install — BEHAVANA', CACHE_VERSION);
+    console.log('[SW] Install — RISEVANILLA', CACHE_VERSION);
 
     event.waitUntil((async () => {
         const cache = await caches.open(STATIC_CACHE);
@@ -180,8 +180,8 @@ async function networkFirstSPA(request) {
         const fallback = await caches.match('./index.html');
         return fallback || new Response(
             `<!DOCTYPE html><html><head><meta charset="utf-8">
-            <title>BEHAVANA — Hors ligne</title></head><body>
-            <h2>📦 BEHAVANA</h2>
+            <title>RISEVANILLA — Hors ligne</title></head><body>
+            <h2>📦 RISEVANILLA</h2>
             <p>Application hors ligne. Rechargez quand la connexion revient.</p>
             </body></html>`,
             { headers: { 'Content-Type': 'text/html; charset=utf-8' } }

@@ -1,6 +1,6 @@
 /* ============================================================
  * TOAST.JS — Toast Notification System
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';

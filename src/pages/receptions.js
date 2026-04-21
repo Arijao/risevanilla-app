@@ -1,6 +1,6 @@
 /* ============================================================
  * RECEPTIONS.JS — Adjust Modal (Post-Tri)
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';

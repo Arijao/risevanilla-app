@@ -1,4 +1,4 @@
-# BEHAVANA — Système de Gestion de Collecte de Vanille
+# RISEVANILLA — Système de Gestion de Collecte de Vanille
 
 > Application PWA offline-first pour la gestion des avances, réceptions, livraisons et dépenses liées à la collecte de vanille.
 
@@ -18,7 +18,7 @@
 
 ## Présentation
 
-BEHAVANA est une application web de type **PWA (Progressive Web App)** conçue pour fonctionner **entièrement hors ligne** après le premier chargement. Elle permet de gérer l'ensemble du cycle de collecte de vanille : collecteurs, avances, réceptions, livraisons et dépenses, avec persistance locale via **IndexedDB**.
+RISEVANILLA est une application web de type **PWA (Progressive Web App)** conçue pour fonctionner **entièrement hors ligne** après le premier chargement. Elle permet de gérer l'ensemble du cycle de collecte de vanille : collecteurs, avances, réceptions, livraisons et dépenses, avec persistance locale via **IndexedDB**.
 
 **Stack technique :** Vanilla JS · CSS3 · IndexedDB · Service Worker · Chart.js · SheetJS  
 **Zéro dépendance npm** — aucun bundler requis, déploiement direct.
@@ -164,7 +164,7 @@ Aucun appel réseau n'est nécessaire pour les opérations de données. L'applic
 
 - **Bannière orange** en haut de page quand `navigator.onLine === false`
 - **Bannière violette** en bas de page quand une nouvelle version du SW est disponible
-- **Event custom** `behavana:network` dispatchable dans tous les modules JS
+- **Event custom** `risevanilla:network` dispatchable dans tous les modules JS
 
 ---
 
@@ -178,8 +178,8 @@ Aucun outil de build requis. Un simple serveur HTTP statique suffit.
 
 ```bash
 # Cloner le dépôt
-git clone https://github.com/<votre-org>/behavana.git
-cd behavana
+git clone https://github.com/<votre-org>/risevanilla.git
+cd risevanilla
 
 # Option A — Python (inclus sur macOS/Linux)
 python3 -m http.server 8080
@@ -201,7 +201,7 @@ Ouvrir `http://localhost:8080` dans le navigateur.
 
 ```bash
 git add .
-git commit -m "feat: BEHAVANA production"
+git commit -m "feat: RISEVANILLA production"
 git push origin main
 ```
 
@@ -267,8 +267,8 @@ Cela invalide l'ancien cache et force le rechargement des assets modifiés chez 
 
 **DevTools → Application → Cache Storage :**
 ```
-behavana-v3-static-3.0.0    → assets locaux (JS, CSS, fonts, images)
-behavana-v3-runtime-3.0.0   → ressources CDN mises en cache à la volée
+risevanilla-v3-static-3.0.0    → assets locaux (JS, CSS, fonts, images)
+risevanilla-v3-runtime-3.0.0   → ressources CDN mises en cache à la volée
 ```
 
 ### Import / Export des données

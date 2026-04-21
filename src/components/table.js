@@ -1,6 +1,6 @@
 /* ============================================================
  * TABLE.JS — Tables: Collectors, Receptions, Qualities
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  *
  * NOTE ARCHITECTURE — les autres tables sont dans:
  *   advances.js   → updateAdvancesTable, updateRemboursementsTable, updatePaiementsTable
@@ -81,11 +81,11 @@ function updateCollectorsTable() {
         const row = document.createElement('tr');
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
-            <td data-label="Nom">${BehavanaSearch.highlightText(c.name, _q)}</td>
-            <td data-label="Téléphone">${BehavanaSearch.highlightText(formatPhoneNumberForDisplay(c.phone), _q)}</td>
-            <td data-label="C.I.N">${BehavanaSearch.highlightText(c.cin || '', _q)}</td>
+            <td data-label="Nom">${RiseVanillaSearch.highlightText(c.name, _q)}</td>
+            <td data-label="Téléphone">${RiseVanillaSearch.highlightText(formatPhoneNumberForDisplay(c.phone), _q)}</td>
+            <td data-label="C.I.N">${RiseVanillaSearch.highlightText(c.cin || '', _q)}</td>
             <td data-label="Délivré le">${c.cinDate ? formatDate(c.cinDate) : ''}</td>
-            <td data-label="Adresse">${BehavanaSearch.highlightText(c.address || '', _q)}</td>
+            <td data-label="Adresse">${RiseVanillaSearch.highlightText(c.address || '', _q)}</td>
             <td data-label="Statut">
                 <span class="status-badge status-${status.class}">${status.label}</span>
             </td>
@@ -141,11 +141,11 @@ function updateReceptionTable() {
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(r.date)}</td>
-            <td data-label="Collecteur">${collector ? BehavanaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur">${collector ? RiseVanillaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
             <td data-label="Poids Brut">${grossWeight} kg</td>
             <td data-label="Poids Net">${netWeight} kg</td>
             <td data-label="Qualité">
-                <span class="status-badge status-${qualClass}">${BehavanaSearch.highlightText(r.quality || '—', _q)}</span>
+                <span class="status-badge status-${qualClass}">${RiseVanillaSearch.highlightText(r.quality || '—', _q)}</span>
             </td>
             <td data-label="Prix/kg">${formatCurrency(price)}/kg</td>
             <td data-label="Valeur">${formatCurrency(totalValue)}</td>
@@ -193,8 +193,8 @@ function updateQualitiesTable() {
         const row = document.createElement('tr');
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
-            <td data-label="Nom">${BehavanaSearch.highlightText(q.name, _q)}</td>
-            <td data-label="Description">${BehavanaSearch.highlightText(q.description || '', _q)}</td>
+            <td data-label="Nom">${RiseVanillaSearch.highlightText(q.name, _q)}</td>
+            <td data-label="Description">${RiseVanillaSearch.highlightText(q.description || '', _q)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-outline"
                         onclick="openQualityModal(${q.id})" title="Modifier">

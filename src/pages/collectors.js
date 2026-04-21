@@ -1,6 +1,6 @@
 /* ============================================================
  * COLLECTORS.JS — Collector Details, Export Report
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';
@@ -164,7 +164,7 @@ function exportCollectorReport(collectorId) {
     .summary{display:flex;gap:16px;margin-bottom:20px}.card{flex:1;border:1px solid #ddd;border-radius:8px;padding:12px;text-align:center}
     .val{font-size:18px;font-weight:700}.lbl{font-size:11px;color:#666}.total{font-weight:700;background:#f8f9fa}</style>
     </head><body>
-    <h1>BEHAVANA — Rapport Collecteur</h1>
+    <h1>RISEVANILLA — Rapport Collecteur</h1>
     <p><strong>Collecteur:</strong> ${collector.name} &nbsp; <strong>CIN:</strong> ${collector.cin||'N/A'} &nbsp; <strong>Adresse:</strong> ${collector.address||'N/A'}</p>
     <div class="summary">
         <div class="card"><div class="val" style="color:#ba1a1a">${formatCurrency(totalAdv+totalPai)}</div><div class="lbl">Total Débits</div></div>

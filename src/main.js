@@ -1,6 +1,6 @@
 /* ============================================================
  * MAIN.JS — Application Entry Point & DOMContentLoaded
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';
@@ -69,5 +69,5 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('online',  () => showToast('Connecté à Internet', 'success', 2000));
     window.addEventListener('offline', () => showToast('📵 Mode Hors-ligne — données enregistrées localement', 'info', 3000));
 
-    console.log('✅ BEHAVANA Application initialisée.');
+    console.log('✅ RISEVANILLA Application initialisée.');
 });

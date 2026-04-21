@@ -1,0 +1,10 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="128" fill="#0F0F12"/>
+  <!-- Decorative Vanilla Pod curve -->
+  <path d="M160 400C160 400 180 280 320 200C460 120 400 80 400 80" stroke="#f3e5ab" stroke-width="24" stroke-linecap="round" opacity="0.3"/>
+  <!-- The 'V' for Vanilla & Rise upward motion -->
+  <path d="M140 180L256 420L372 180" stroke="#f3e5ab" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Suble Vanilla Flower hint -->
+  <circle cx="256" cy="180" r="20" fill="#f3e5ab"/>
+  <path d="M256 120V160M256 200V240M196 180H236M276 180H316" stroke="#f3e5ab" stroke-width="12" stroke-linecap="round" opacity="0.6"/>
+</svg>

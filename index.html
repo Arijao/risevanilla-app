@@ -11,24 +11,24 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
     <!-- ③ Meta app -->
-    <title>BEHAVANA - Système de Gestion</title>
+    <title>RISEVANILLA - Système de Gestion</title>
     <meta name="description" content="Application de gestion des avances et de la collecte de vanille. Fonctionne offline.">
-    <meta name="keywords" content="behavana, vanille, gestion, collecte, avances">
-    <meta name="author" content="BEHAVANA">
+    <meta name="keywords" content="risevanilla, vanille, gestion, collecte, avances">
+    <meta name="author" content="RISEVANILLA">
 
     <!-- ④ PWA manifest & icons -->
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="logo-192.png" type="image/png">
-    <link rel="shortcut icon" href="logo-192.png" type="image/png">
-    <link rel="apple-touch-icon" href="logo-192.png">
-    <meta name="theme-color" content="#6750a4">
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#10081c">
+    <link rel="icon" href="icon-risevanilla.svg" type="image/svg+xml">
+    <link rel="shortcut icon" href="icon-risevanilla.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon-risevanilla.svg">
+    <meta name="theme-color" content="#f3e5ab">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f0f12">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="BEHAVANA">
-    <meta name="msapplication-TileColor" content="#6750a4">
-    <meta name="msapplication-TileImage" content="logo-192.png">
+    <meta name="apple-mobile-web-app-title" content="RISEVANILLA">
+    <meta name="msapplication-TileColor" content="#0f0f12">
+    <meta name="msapplication-TileImage" content="icon-risevanilla.svg">
 
     <!-- ⑤ Fonts — local d'abord, CDN en fallback (mise en cache SW automatique) -->
     <link rel="stylesheet" href="fonts/icon.css"
@@ -38,9 +38,9 @@
 
     <!-- ⑥ Librairies JS (defer = non-bloquant) -->
     <script src="assets/chart.min.js" defer
-            onerror="console.warn('[BEHAVANA] chart.min.js absent — télécharger depuis cdn.jsdelivr.net/npm/chart.js')"></script>
+            onerror="console.warn('[RISEVANILLA] chart.min.js absent — télécharger depuis cdn.jsdelivr.net/npm/chart.js')"></script>
     <script src="assets/xlsx.full.min.js" defer
-            onerror="console.warn('[BEHAVANA] xlsx.full.min.js absent — télécharger depuis cdnjs.cloudflare.com')"></script>
+            onerror="console.warn('[RISEVANILLA] xlsx.full.min.js absent — télécharger depuis cdnjs.cloudflare.com')"></script>
 
     <!-- ⑦ App Styles -->
     <link rel="stylesheet" href="src/styles/base.css">
@@ -94,11 +94,9 @@
         <nav class="sidebar" id="sidebar" role="navigation" aria-label="Menu principal">
             <div class="sidebar-header">
                 <div class="logo">
-                    <div class="logo-icon">
-                        <i class="fa-solid fa-spa" style="font-size: 24px;"></i>
-                    </div>
+                    <img src="logo-risevanilla.svg" alt="RiseVanilla Logo" style="width: 48px; height: 48px; border-radius: 12px;">
                     <div>
-                        <div class="company-name">BEHAVANA</div>
+                        <div class="company-name">RISEVANILLA</div>
                         <div class="company-subtitle">Gestion de Collecte</div>
                     </div>
                 </div>
@@ -214,7 +212,7 @@
             <section class="content-section active" id="dashboard">
                 <div class="dashboard-overview">
                     <div class="dashboard-title">Aperçu Global</div>
-                    <div class="dashboard-subtitle">État financier et opérationnel de BEHAVANA</div>
+                    <div class="dashboard-subtitle">État financier et opérationnel de RISEVANILLA</div>
                     <div class="overview-stats">
                         <div class="overview-stat">
                             <div class="overview-stat-value" id="overview-collectors">0</div>
@@ -661,7 +659,7 @@
             <!-- Settings Section -->
             <section class="content-section" id="settings">
                 <div class="credit-card">
-                    <div class="credit-icon"></div>
+                    <img src="logo-risevanilla.svg" alt="RiseVanilla" style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--md-sys-color-primary); flex-shrink: 0; object-fit: cover;">
                     <div class="credit-text">
                         <p>Application développée et maintenue par</p>
                         <a href="#" target="_blank" class="credit-name">Rado Mandimbiarijao Developer</a>
@@ -675,7 +673,7 @@
                             <span class="material-icons" style="color: var(--md-sys-color-primary); font-size: 32px;">install_mobile</span>
                             <div style="flex: 1;">
                                 <div style="font-weight: 600; font-size: 16px; margin-bottom: 4px;">📱 Installation de l'Application</div>
-                                <div style="font-size: 13px; color: var(--md-sys-color-on-surface-variant);">Installer BEHAVANA pour un accès rapide et hors-ligne</div>
+                                <div style="font-size: 13px; color: var(--md-sys-color-on-surface-variant);">Installer RISEVANILLA pour un accès rapide et hors-ligne</div>
                             </div>
                         </div>
                         <button id="pwa-install-btn" onclick="installApp()" class="btn btn-primary" style="width: 100%; display: none; margin-bottom: 12px;">
@@ -1152,7 +1150,7 @@
 
         // ── Statut réseau (event custom pour les modules JS) ───────────
         function setOnlineStatus(online) {
-            document.dispatchEvent(new CustomEvent('behavana:network', {
+            document.dispatchEvent(new CustomEvent('risevanilla:network', {
                 detail: { online: online }
             }));
         }

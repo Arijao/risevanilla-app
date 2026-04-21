@@ -1,7 +1,7 @@
 /* ============================================================
  * MODAL.JS — Core Modal Engine + Collector Modal
  * Advance/Delivery/Expense modals → dans leurs pages dédiées
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';

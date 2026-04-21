@@ -2,7 +2,7 @@
  * ADVANCES.JS — CRUD Avances + Remboursements
  * Architecture: Vanilla JS classique (pas d'ES modules)
  * Intègre la logique enrichie du fichier advances.js fourni
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';
@@ -81,9 +81,9 @@ function updateAdvancesTable() {
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(adv.date)}</td>
-            <td data-label="Collecteur">${collector ? BehavanaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur">${collector ? RiseVanillaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
             <td data-label="Montant">${formatCurrency(adv.amount)}</td>
-            <td data-label="Motif">${BehavanaSearch.highlightText(adv.motif || '—', _q)}</td>
+            <td data-label="Motif">${RiseVanillaSearch.highlightText(adv.motif || '—', _q)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-outline" onclick="openAdvanceModal(${adv.id})" title="Modifier">
                     <span class="material-icons">edit</span>
@@ -352,9 +352,9 @@ function updateRemboursementsTable() {
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(r.date)}</td>
-            <td data-label="Collecteur">${collector ? BehavanaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur">${collector ? RiseVanillaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
             <td data-label="Montant Remboursé">${formatCurrency(r.amount)}</td>
-            <td data-label="Note">${BehavanaSearch.highlightText(r.note || '—', _q)}</td>
+            <td data-label="Note">${RiseVanillaSearch.highlightText(r.note || '—', _q)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-outline" onclick="openRemboursementModalToEdit(${r.id})" title="Modifier">
                     <span class="material-icons">edit</span>
@@ -462,9 +462,9 @@ function updatePaiementsTable() {
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(p.date)}</td>
-            <td data-label="Collecteur">${collector ? BehavanaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur">${collector ? RiseVanillaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
             <td data-label="Montant Payé">${formatCurrency(p.amount)}</td>
-            <td data-label="Note">${BehavanaSearch.highlightText(p.note || '—', _q)}</td>
+            <td data-label="Note">${RiseVanillaSearch.highlightText(p.note || '—', _q)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-danger" onclick="deletePaiement(${p.id})" title="Supprimer">
                     <span class="material-icons">delete</span>

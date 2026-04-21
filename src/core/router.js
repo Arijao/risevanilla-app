@@ -1,6 +1,6 @@
 /* ============================================================
  * ROUTER.JS — Navigation, Sidebar, Theme
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';
@@ -33,7 +33,7 @@ function navigateToSection(sectionName) {
 
     // Page title
     const title = document.getElementById('page-title');
-    if (title) title.textContent = SECTION_TITLES[sectionName] || 'BEHAVANA';
+    if (title) title.textContent = SECTION_TITLES[sectionName] || 'RISEVANILLA';
 
     // Special: analysis filter from session
     if (sectionName === 'analysis') {
@@ -133,7 +133,7 @@ function initGlobalSearch() {
     const wrapper = input.closest('.global-search-wrapper');
     if (wrapper) wrapper.setAttribute('data-search-wrapper', '');
 
-    BehavanaSearch.attachSearchInput(input, {
+    RiseVanillaSearch.attachSearchInput(input, {
         debounce: 300,
         onSearch: (query) => searchInAllData(query),
         onClear:  ()      => searchInAllData(''),
@@ -152,7 +152,7 @@ function searchInAllData(query) {
             const tbody = document.getElementById(sid)?.querySelector('tbody');
             if (tbody) {
                 tbody.querySelectorAll('td[data-orig-text]').forEach(td => {
-                    td.innerHTML = BehavanaSearch.escapeHtml(td.dataset.origText);
+                    td.innerHTML = RiseVanillaSearch.escapeHtml(td.dataset.origText);
                     delete td.dataset.origText;
                 });
             }
@@ -197,8 +197,8 @@ function searchInAllData(query) {
         tbody.querySelectorAll('tr').forEach(row => {
             if (row.querySelector('.empty-state')) { row.style.display = ''; return; }
 
-            const isMatch = BehavanaSearch.normalize(row.textContent)
-                              .includes(BehavanaSearch.normalize(query));
+            const isMatch = RiseVanillaSearch.normalize(row.textContent)
+                              .includes(RiseVanillaSearch.normalize(query));
             row.style.display = isMatch ? '' : 'none';
 
             // Highlight dans les cellules textuelles
@@ -206,8 +206,8 @@ function searchInAllData(query) {
                 const orig = td.dataset.origText ?? td.textContent;
                 td.dataset.origText = orig;
                 td.innerHTML = isMatch
-                    ? BehavanaSearch.highlightText(orig, query)
-                    : BehavanaSearch.escapeHtml(orig);
+                    ? RiseVanillaSearch.highlightText(orig, query)
+                    : RiseVanillaSearch.escapeHtml(orig);
             });
         });
     });
@@ -394,7 +394,7 @@ const PALETTES = {
     },
 };
 
-const PALETTE_STORAGE_KEY = 'behavana_palette';
+const PALETTE_STORAGE_KEY = 'risevanilla_palette';
 
 /**
  * Applique une palette en injectant un <style> sur :root et [data-theme="dark"].

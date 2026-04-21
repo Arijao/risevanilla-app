@@ -1,13 +1,13 @@
 /* ============================================================
  * DB.JS — IndexedDB Layer: init, load, save, delete
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';
 
 // ── DB Config ────────────────────────────────────────────────
 let db            = null;
-const dbName      = 'BehavanaDB_v2';
+const dbName      = 'RiseVanillaDB_v2';
 const dbVersion   = 3;
 let dbInitialized = false;
 let pendingOperations = [];
@@ -209,7 +209,7 @@ function exportData() {
     };
     const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
-    const a    = Object.assign(document.createElement('a'), { href: url, download: `behavana-data-v2-${new Date().toISOString().split('T')[0]}.json` });
+    const a    = Object.assign(document.createElement('a'), { href: url, download: `risevanilla-data-v2-${new Date().toISOString().split('T')[0]}.json` });
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast('Exportation terminée.', 'success');

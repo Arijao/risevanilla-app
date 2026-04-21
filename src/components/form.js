@@ -2,7 +2,7 @@
  * FORM.JS — Form Setup, Collector CRUD, Reception CRUD
  *           + Reception Quick Weights, Validation
  * NOTE: Advance/Delivery/Expense CRUD → dans leurs pages dédiées
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';

@@ -1,6 +1,6 @@
 /* ============================================================
  * EXPORT.JS — PDF reports, Excel exports, Receipt printing
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 'use strict';
@@ -54,9 +54,9 @@ function exportAnalysis() {
         </tr>`;
     });
 
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Analyse — BEHAVANA</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Analyse — RISEVANILLA</title>
     <style>${_PDF_BASE_STYLE}</style></head><body>
-    <h1>BEHAVANA</h1><p>Rapport Analyse des Comptes — ${today}</p>
+    <h1>RISEVANILLA</h1><p>Rapport Analyse des Comptes — ${today}</p>
     <table>
         <thead><tr><th>Collecteur</th><th>Téléphone</th><th class="right">Total Débits</th><th class="right">Total Crédits</th><th class="right">Solde</th><th>Statut</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -91,9 +91,9 @@ function exportPoidsAnalysis() {
         rows += `<tr><td>${c.name}</td>${cells}<td class="right total">${formatNumber(colTotal)}</td></tr>`;
     });
 
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Poids — BEHAVANA</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Poids — RISEVANILLA</title>
     <style>${_PDF_BASE_STYLE} td.right{text-align:right;} th{text-align:center;}</style></head><body>
-    <h1>BEHAVANA</h1><p>Analyse des Poids Livrés — ${today}</p>
+    <h1>RISEVANILLA</h1><p>Analyse des Poids Livrés — ${today}</p>
     <table>
         <thead><tr><th>Collecteur</th>${qualities.map(q=>`<th>${q} (kg)</th>`).join('')}<th>TOTAL (kg)</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -193,11 +193,11 @@ function exportCollectorDetailsToExcel(collectorId) {
 
 // ── Receipt Print ─────────────────────────────────────────────
 function generateReceipt(receptionId) {
-    const existing = document.getElementById('behavanaPrintModal');
+    const existing = document.getElementById('risevanillaPrintModal');
     if (existing) existing.remove();
 
     const modal = document.createElement('div');
-    modal.id = 'behavanaPrintModal';
+    modal.id = 'risevanillaPrintModal';
     modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);`;
     modal.innerHTML = `
         <div style="background:var(--md-sys-color-surface);border-radius:20px;padding:32px;max-width:380px;width:90%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
@@ -253,7 +253,7 @@ function generateReceiptA4(receptionId) {
     </style>
     </head><body>
     <div class="header">
-        <div class="company">BEHAVANA</div>
+        <div class="company">RISEVANILLA</div>
         <div class="subtitle">Gestion de Collecte de Vanille</div>
         <div class="receipt-no">Reçu N°: ${recNum}</div>
     </div>
@@ -315,7 +315,7 @@ function generateReceiptThermal(receptionId) {
     const html = `<!DOCTYPE html>
 <html lang="fr"><head>
 <meta charset="UTF-8">
-<title>Reçu ${recNum} — BEHAVANA</title>
+<title>Reçu ${recNum} — RISEVANILLA</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
 <style>
 /* ── Reset ── */
@@ -454,7 +454,7 @@ body {
 <!-- Ticket -->
 <div id="ticket">
 
-    <div class="hd-title">BEHAVANA</div>
+    <div class="hd-title">RISEVANILLA</div>
     <div class="hd-subtitle">RECU RECEPTION</div>
 
     <hr class="sep-dash">
@@ -546,7 +546,7 @@ function generateDeliveryPDF(deliveryId, type = 'BL') {
     const number = type === 'BL' ? delivery.bl : delivery.invoice;
     const title  = type === 'BL' ? 'BON DE LIVRAISON' : 'FACTURE';
 
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title} — BEHAVANA</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title} — RISEVANILLA</title>
     <style>
         body{font-family:Arial,sans-serif;margin:30px;font-size:12px;}
         .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #6750a4;}
@@ -566,7 +566,7 @@ function generateDeliveryPDF(deliveryId, type = 'BL') {
     </style>
     </head><body>
     <div class="header">
-        <div><div class="company">BEHAVANA</div><div style="font-size:12px;color:#666;">Gestion de Collecte de Vanille</div></div>
+        <div><div class="company">RISEVANILLA</div><div style="font-size:12px;color:#666;">Gestion de Collecte de Vanille</div></div>
         <div style="text-align:right;"><div class="doc-type">${title}</div><div class="doc-num">N°: ${number||'—'}</div></div>
     </div>
     <div class="info-grid">
@@ -589,7 +589,7 @@ function generateDeliveryPDF(deliveryId, type = 'BL') {
         </tbody>
     </table>
     <div class="signatures">
-        <div class="sig-line">Signature Livreur / BEHAVANA</div>
+        <div class="sig-line">Signature Livreur / RISEVANILLA</div>
         <div class="sig-line">Signature Destinataire / ${delivery.exporter||'Exportateur'}</div>
     </div>
     <script>window.onload=()=>window.print();</script>
@@ -620,9 +620,9 @@ function exportInvoice() {
         </tbody></table>`;
     });
 
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Facture — BEHAVANA</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Facture — RISEVANILLA</title>
     <style>${_PDF_BASE_STYLE}</style></head><body>
-    <h1>BEHAVANA — Facture des Réceptions (${currentYear})</h1>
+    <h1>RISEVANILLA — Facture des Réceptions (${currentYear})</h1>
     ${body}
     <script>window.onload=()=>window.print();</script>
     </body></html>`;

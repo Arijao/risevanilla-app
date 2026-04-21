@@ -1,6 +1,6 @@
 /* ============================================================
  * LAYOUT.CSS — App Shell: Sidebar, Header, Main Content
- * BEHAVANA - Gestion de Collecte de Vanille
+ * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
 /* ============================================================
@@ -887,9 +887,8 @@
 
         /* Background with blur effect */
         body {
-            background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920');
-            background-size: cover;
-            background-position: center;
+            background-color: #0f0f12;
+            background-image: radial-gradient(circle at 50% 50%, rgba(243, 229, 171, 0.05) 0%, rgba(15, 15, 18, 1) 100%);
             background-attachment: fixed;
             position: relative;
         }
@@ -901,31 +900,34 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(20, 20, 20, 0.4);
-            backdrop-filter: blur(8px);
+            background: rgba(15, 15, 18, 0.2);
+            backdrop-filter: blur(4px);
             z-index: -1;
         }
 
         /* Sidebar - Dark Glassmorphism */
         .sidebar {
-            background: rgba(40, 40, 40, 0.75) !important;
-            backdrop-filter: blur(30px) saturate(150%) !important;
-            -webkit-backdrop-filter: blur(30px) saturate(150%) !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3) !important;
+            background: rgba(22, 22, 26, 0.8) !important;
+            backdrop-filter: blur(40px) saturate(160%) !important;
+            -webkit-backdrop-filter: blur(40px) saturate(160%) !important;
+            border-right: 1px solid rgba(243, 229, 171, 0.1) !important;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5) !important;
         }
 
         .sidebar-header {
-            background: rgba(60, 60, 60, 0.5) !important;
+            background: rgba(30, 30, 35, 0.4) !important;
             backdrop-filter: blur(20px) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-bottom: 1px solid rgba(243, 229, 171, 0.08) !important;
             border-radius: 0 !important;
         }
 
-        .company-name,
+        .company-name {
+            color: #f3e5ab !important; /* Vanilla Gold */
+            text-shadow: 0 2px 10px rgba(243, 229, 171, 0.3);
+        }
+        
         .company-subtitle {
-            color: rgba(255, 255, 255, 0.95) !important;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            color: rgba(225, 225, 230, 0.7) !important;
         }
 
         /* Navigation Links */
@@ -944,9 +946,10 @@
         }
 
         .nav-link.active {
-            background: rgba(103, 80, 164, 0.4) !important;
-            border: 1px solid rgba(103, 80, 164, 0.6) !important;
-            box-shadow: 0 4px 20px rgba(103, 80, 164, 0.3) !important;
+            background: rgba(243, 229, 171, 0.15) !important;
+            border: 1px solid rgba(243, 229, 171, 0.4) !important;
+            color: #f3e5ab !important;
+            box-shadow: 0 4px 20px rgba(243, 229, 171, 0.2) !important;
         }
 
         /* Main Content Area */
