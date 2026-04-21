@@ -201,8 +201,8 @@ function searchInAllData(query) {
                               .includes(RiseVanillaSearch.normalize(query));
             row.style.display = isMatch ? '' : 'none';
 
-            // Highlight dans les cellules textuelles
-            row.querySelectorAll('td').forEach(td => {
+            // Highlight dans les cellules textuelles (hors actions-cell)
+            row.querySelectorAll('td:not(.actions-cell)').forEach(td => {
                 const orig = td.dataset.origText ?? td.textContent;
                 td.dataset.origText = orig;
                 td.innerHTML = isMatch
