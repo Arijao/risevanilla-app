@@ -28,10 +28,6 @@ function setupFormHandlers() {
     // Expense form — délégué à expenses.js
     const expenseForm = document.getElementById('expense-form');
     if (expenseForm) expenseForm.addEventListener('submit', e => { e.preventDefault(); saveExpense(e); });
-
-    // Validation live unicité collecteur (nom + CIN)
-    validateCollectorNameLive();
-    validateCollectorCINLive();
 }
 
 // ── Utilities ─────────────────────────────────────────────────
@@ -44,13 +40,37 @@ function setCurrentDate() {
 }
 
 function formatPhoneNumber(e) {
-    let v = e.target.value.replace(/\D/g, '').substring(0, 10);
-    if (v.length === 10) v = v.replace(/(\d{3})(\d{2})(\d{3})(\d{2})/, '$1 $2 $3 $4');
-    e.target.value = v;
+    const input   = e.target;
+    const cursor  = input.selectionStart;
+    const prevLen = input.value.length;
+
+    // Extraire les chiffres bruts (max 10)
+    const digits = input.value.replace(/\D/g, '').substring(0, 10);
+
+    // Formatage progressif : 032 12 345 67
+    let formatted = digits;
+    if (digits.length > 3) formatted = digits.slice(0, 3) + ' ' + digits.slice(3);
+    if (digits.length > 5) formatted = formatted.slice(0, 6) + ' ' + formatted.slice(6);
+    if (digits.length > 8) formatted = formatted.slice(0, 10) + ' ' + formatted.slice(10);
+
+    input.value = formatted;
+
+    // Restaurer la position du curseur après reformatage
+    const added = formatted.length - prevLen;
+    input.setSelectionRange(Math.max(0, cursor + added), Math.max(0, cursor + added));
 }
 
 function formatPhoneNumberForDisplay(phoneString) {
     if (!phoneString) return 'N/A';
+    const c = phoneString.replace(/\s/g, '');
+    if (c.length === 10 && /^\d+$/.test(c))
+        return `${c.substring(0,3)} ${c.substring(3,5)} ${c.substring(5,8)} ${c.substring(8,10)}`;
+    return phoneString;
+}
+
+// Utilisé dans les formulaires : formate sans insérer 'N/A' si vide
+function formatPhoneForInput(phoneString) {
+    if (!phoneString) return '';
     const c = phoneString.replace(/\s/g, '');
     if (c.length === 10 && /^\d+$/.test(c))
         return `${c.substring(0,3)} ${c.substring(3,5)} ${c.substring(5,8)} ${c.substring(8,10)}`;
@@ -97,7 +117,14 @@ function saveCollector() {
         showToast('❌ Un collecteur avec ce N° CIN existe déjà!', 'error'); return;
     }
 
-    const collector = { name, phone, cin, cinDate, address, createdAt: new Date().toISOString() };
+    const collector = {
+        name,
+        phone:   phone   || '',
+        cin:     cin     || '',
+        cinDate: cinDate || '',
+        address: address || '',
+        createdAt: new Date().toISOString()
+    };
     if (editId) collector.id = parseInt(editId);
     saveToDB('collectors', collector);
     closeModal('collector-modal');

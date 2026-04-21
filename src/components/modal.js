@@ -61,7 +61,7 @@ function openCollectorModal(collectorId = null) {
         if (collector) {
             form.dataset.editId = collectorId;
             document.getElementById('collector-name').value     = collector.name    || '';
-            document.getElementById('collector-phone').value    = formatPhoneNumberForDisplay(collector.phone || '');
+            document.getElementById('collector-phone').value    = formatPhoneForInput(collector.phone || '');
             document.getElementById('collector-cin').value      = collector.cin     || '';
             document.getElementById('collector-cin-date').value = collector.cinDate || '';
             document.getElementById('collector-address').value  = collector.address || '';
