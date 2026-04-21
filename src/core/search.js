@@ -160,6 +160,8 @@ window.RiseVanillaSearch = (() => {
     if (!tbody) return;
     tbody.querySelectorAll('tr').forEach(tr => {
       tr.querySelectorAll('td').forEach((td, i) => {
+        // Ne jamais toucher aux cellules d'actions (boutons)
+        if (td.classList.contains('actions-cell')) return;
         if (cols && !cols.includes(i)) return;
         const orig = td.dataset.origText ?? td.textContent;
         td.dataset.origText = orig;

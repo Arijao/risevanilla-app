@@ -290,6 +290,13 @@
             margin: 0 auto;
         }
 
+        /* Protège la colonne d'actions : largeur fixe, jamais écrasée */
+        td.actions-cell {
+            width: 1%;
+            white-space: nowrap;
+            overflow: visible;
+        }
+
         @media (max-width:480px) {
             .actions-cell {
                 flex-direction: column;
