@@ -49,6 +49,10 @@ function openCollectorModal(collectorId = null) {
     form.reset();
     delete form.dataset.editId;
 
+    // Nettoyer les états d'erreur résiduels
+    form.querySelectorAll('.error-message').forEach(el => el.remove());
+    form.querySelectorAll('.form-input').forEach(el => el.style.borderColor = '');
+
     const titleEl = document.querySelector('#collector-modal .modal-title');
     if (titleEl) titleEl.textContent = collectorId ? 'Modifier Collecteur' : 'Ajouter Collecteur';
 
@@ -57,7 +61,7 @@ function openCollectorModal(collectorId = null) {
         if (collector) {
             form.dataset.editId = collectorId;
             document.getElementById('collector-name').value     = collector.name    || '';
-            document.getElementById('collector-phone').value    = collector.phone   || '';
+            document.getElementById('collector-phone').value    = formatPhoneNumberForDisplay(collector.phone || '');
             document.getElementById('collector-cin').value      = collector.cin     || '';
             document.getElementById('collector-cin-date').value = collector.cinDate || '';
             document.getElementById('collector-address').value  = collector.address || '';

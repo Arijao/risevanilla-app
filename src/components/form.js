@@ -28,6 +28,10 @@ function setupFormHandlers() {
     // Expense form — délégué à expenses.js
     const expenseForm = document.getElementById('expense-form');
     if (expenseForm) expenseForm.addEventListener('submit', e => { e.preventDefault(); saveExpense(e); });
+
+    // Validation live unicité collecteur (nom + CIN)
+    validateCollectorNameLive();
+    validateCollectorCINLive();
 }
 
 // ── Utilities ─────────────────────────────────────────────────

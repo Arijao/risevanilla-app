@@ -766,11 +766,11 @@
                 </div>
                 <div class="form-group">
                     <label for="collector-phone" class="form-label">Téléphone</label>
-                    <input type="tel" class="form-input" id="collector-phone" placeholder="030 00 000 00">
+                    <input type="tel" class="form-input" id="collector-phone" placeholder="032 12 345 67" oninput="formatPhoneNumber(event)">
                 </div>
                 <div class="form-group">
                     <label class="form-label" style="display: flex; align-items: center; gap: 6px;">
-                        <span class="material-symbols-outlined" style="font-size: 18px;">badge</span> CIN
+                        <span class="material-icons" style="font-size: 18px;">badge</span> CIN
                     </label>
                     <input type="text" class="form-input" id="collector-cin" placeholder="000 000 000 000" maxlength="17" oninput="formatCIN(this)">
                 </div>
