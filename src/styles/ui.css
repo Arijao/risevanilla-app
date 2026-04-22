@@ -2705,322 +2705,185 @@
 }
 
 
+
 /* ============================================================
- * COLLECTOR DETAIL — Summary Cards (Glassmorphism)
- * Cartes de stats dans la modale détail collecteur.
- *
- * PALETTE ACTIVE : "Midnight Prism" (var. A — défaut)
- * Deux variantes additionnelles disponibles en commentaire :
- *   Variante B — "Arctic Dusk"  (bleu glacier / lilas profond)
- *   Variante C — "Obsidian Neon" (neon cyan / emerald sur noir)
- *
- * Isolation totale : aucun impact sur les autres composants.
+ * COLLECTOR DETAIL — Summary Cards
+ * Style : "Accent Bar" — inspiré du screenshot de référence.
+ * Label coloré en haut · Valeur large en bas · Barre accent gauche.
+ * Utilisé dans : modale détail collecteur, suivi & analyse.
+ * Isolation totale : préfixe "collector-stat-card" réservé.
  * ============================================================ */
 
-/*
- ┌─────────────────────────────────────────────────────────────┐
- │  PALETTE DESIGN — Référence                                 │
- │                                                             │
- │  Variante A · MIDNIGHT PRISM (active)                       │
- │  ──────────────────────────────────                         │
- │  Avances      → Ambre chaud  #F59E0B / bg rgba(245,158,11)  │
- │  Réceptions   → Cyan saphir  #06B6D4 / bg rgba(6,182,212)   │
- │  Solde +      → Jade vert    #10B981 / bg rgba(16,185,129)  │
- │  Solde −      → Carmin       #F43F5E / bg rgba(244,63,94)   │
- │  Dette totale → Violet prism #8B5CF6 / bg rgba(139,92,246)  │
- │  Dette mauvaise → Carmin vif #F43F5E + glow rouge           │
- │                                                             │
- │  Variante B · ARCTIC DUSK (commentée)                       │
- │  ──────────────────────────────────                         │
- │  Avances      → Bleu glacier #3B82F6                        │
- │  Réceptions   → Lilas        #A78BFA                        │
- │  Solde +      → Menthe       #34D399                        │
- │  Solde −      → Rose saumon  #FB7185                        │
- │  Dette totale → Indigo       #6366F1                        │
- │                                                             │
- │  Variante C · OBSIDIAN NEON (commentée)                     │
- │  ──────────────────────────────────                         │
- │  Avances      → Neon cyan    #22D3EE                        │
- │  Réceptions   → Lime         #84CC16                        │
- │  Solde +      → Emerald vif  #00DC82                        │
- │  Solde −      → Rouge néon   #FF4560                        │
- │  Dette totale → Magenta      #E879F9                        │
- └─────────────────────────────────────────────────────────────┘
-*/
-
-/* ── Variables de la palette active (Midnight Prism) ── */
+/* ── Tokens couleurs ── */
 :root {
-    --csc-advances-rgb:      245, 158,  11;   /* Ambre         */
-    --csc-receptions-rgb:      6, 182, 212;   /* Cyan saphir   */
-    --csc-balance-ok-rgb:     16, 185, 129;   /* Jade vert     */
-    --csc-balance-bad-rgb:   244,  63,  94;   /* Carmin        */
-    --csc-global-ok-rgb:     139,  92, 246;   /* Violet prism  */
-    --csc-global-bad-rgb:    244,  63,  94;   /* Carmin vif    */
+    --csc-advances-rgb:    245, 158,  11;   /* Ambre          */
+    --csc-receptions-rgb:   56, 189, 248;   /* Sky blue       */
+    --csc-balance-ok-rgb:   34, 197,  94;   /* Vert émeraude  */
+    --csc-balance-bad-rgb: 244,  63,  94;   /* Carmin         */
+    --csc-global-ok-rgb:   168,  85, 247;   /* Violet         */
+    --csc-global-bad-rgb:  244,  63,  94;   /* Carmin         */
 
-    --csc-text-primary:   #f1f5f9;   /* Slate 100 — blanc cassé  */
-    --csc-text-secondary: #94a3b8;   /* Slate 400 — gris doux    */
-    --csc-text-status:    #e2e8f0;   /* Slate 200 — badge lisible */
+    --csc-text-primary:   #f1f5f9;
+    --csc-text-secondary: #94a3b8;
+    --csc-text-status:    #e2e8f0;
 }
 
 /* ── Socle commun ── */
 .collector-stat-card {
-    padding: 18px 16px 16px;
-    border-radius: 16px;
-    text-align: center;
     position: relative;
+    padding: 14px 16px 14px 20px;
+    border-radius: 14px;
     overflow: hidden;
     isolation: isolate;
+    cursor: default;
 
-    /* Glass core */
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    /* Glass */
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
 
-    /* Bordure neutre héritée, surclassée par les variantes */
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    /* Fond sombre teinté par la couleur de la variante */
+    background: rgba(var(--csc-glow-rgb, 120,120,120), 0.10);
+    border: 1px solid rgba(var(--csc-glow-rgb, 120,120,120), 0.18);
 
-    /* Shadow de profondeur */
     box-shadow:
-        0 2px 0   rgba(255, 255, 255, 0.06) inset,
-        0 6px 28px rgba(0, 0, 0, 0.40);
+        0 2px 12px rgba(0,0,0,0.30),
+        inset 0 1px 0 rgba(255,255,255,0.06);
 
     color: var(--csc-text-primary);
 
+    /* Barre accent gauche — signature visuelle principale */
+    border-left: 3.5px solid rgba(var(--csc-glow-rgb, 120,120,120), 0.85);
+
     transition:
-        transform  0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
-        box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-        filter     0.28s ease;
+        transform  0.24s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.24s ease,
+        filter     0.24s ease;
 }
 
-/* Reflet haut de carte (liseré lumineux) */
-.collector-stat-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(
-        160deg,
-        rgba(255, 255, 255, 0.10) 0%,
-        rgba(255, 255, 255, 0.03) 40%,
-        transparent              100%
-    );
-    pointer-events: none;
-    z-index: 1;
-}
-
-/* Halo de couleur en fond (alimenté par --csc-glow-rgb de chaque variante) */
+/* Halo de profondeur en bas */
 .collector-stat-card::after {
     content: '';
     position: absolute;
-    bottom: -30%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;
-    height: 70%;
+    bottom: -40%;
+    left: -10%;
+    width: 70%;
+    height: 80%;
     border-radius: 50%;
     background: radial-gradient(
         ellipse at center,
-        rgba(var(--csc-glow-rgb, 255,255,255), 0.10) 0%,
+        rgba(var(--csc-glow-rgb, 120,120,120), 0.08) 0%,
         transparent 70%
     );
     pointer-events: none;
     z-index: 0;
-    transition: opacity 0.3s ease;
 }
 
-/* Contenu au-dessus des pseudo-éléments */
-.collector-stat-card > * {
-    position: relative;
-    z-index: 2;
-}
+.collector-stat-card > * { position: relative; z-index: 1; }
 
-/* ── Hover global ── */
+/* Hover */
 .collector-stat-card:hover {
-    transform: translateY(-4px) scale(1.018);
-    filter: brightness(1.08);
+    transform: translateY(-3px) scale(1.012);
+    filter: brightness(1.07);
+    box-shadow:
+        0 8px 28px rgba(0,0,0,0.40),
+        0 0 0 1px rgba(var(--csc-glow-rgb, 120,120,120), 0.30),
+        inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
-.collector-stat-card:hover::after {
-    opacity: 1.4;
-}
-
-/* ── Typographie ── */
-.collector-stat-card__value {
-    font-size: 21px;
-    font-weight: 700;
-    line-height: 1.2;
-    margin-bottom: 6px;
-    letter-spacing: -0.4px;
-    color: var(--csc-text-primary);
-    /* Glow texte doux assorti à la couleur de la carte */
-    text-shadow: 0 0 20px rgba(var(--csc-glow-rgb, 255,255,255), 0.35);
-}
-
+/* ── Label (en haut, petit, coloré) ── */
 .collector-stat-card__label {
-    font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-    color: var(--csc-text-secondary);
-    line-height: 1.4;
-}
-
-.collector-stat-card__status {
-    display: inline-block;
-    margin-top: 7px;
-    padding: 2px 10px;
-    border-radius: 20px;
+    display: block;
     font-size: 11px;
     font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: rgba(var(--csc-glow-rgb, 180,180,180), 1);
+    margin-bottom: 8px;
+    line-height: 1;
+}
+
+/* ── Valeur (grande, blanche, dominante) ── */
+.collector-stat-card__value {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    color: var(--csc-text-primary);
+    margin-bottom: 0;
+}
+
+/* ── Status pill (optionnel, sous la valeur) ── */
+.collector-stat-card__status {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
     letter-spacing: 0.3px;
-    color: var(--csc-text-status);
-    background: rgba(var(--csc-glow-rgb, 255,255,255), 0.14);
-    border: 1px solid rgba(var(--csc-glow-rgb, 255,255,255), 0.22);
+    color: rgba(var(--csc-glow-rgb, 180,180,180), 1);
+    background: rgba(var(--csc-glow-rgb, 120,120,120), 0.16);
+    border: 1px solid rgba(var(--csc-glow-rgb, 120,120,120), 0.28);
 }
 
 
 /* ══════════════════════════════════════════════════════════════
- * VARIANTE A — MIDNIGHT PRISM (palette active)
+ * VARIANTES CHROMATIQUES
  * ══════════════════════════════════════════════════════════════ */
 
-/* ── Avances : Ambre chaud ── */
+/* ── Avances : Ambre ── */
 .collector-stat-card--advances {
     --csc-glow-rgb: var(--csc-advances-rgb);
-    background: linear-gradient(
-        145deg,
-        rgba(245, 158, 11, 0.20) 0%,
-        rgba(245, 158, 11, 0.08) 100%
-    );
-    border-color: rgba(245, 158, 11, 0.30);
-    box-shadow:
-        0 2px 0   rgba(255, 255, 255, 0.07) inset,
-        0 6px 32px rgba(0, 0, 0, 0.42),
-        0 0 0 1px rgba(245, 158, 11, 0.20);
-}
-.collector-stat-card--advances:hover {
-    box-shadow:
-        0 2px 0   rgba(255, 255, 255, 0.09) inset,
-        0 10px 40px rgba(0, 0, 0, 0.50),
-        0 0 24px rgba(245, 158, 11, 0.22),
-        0 0 0 1px rgba(245, 158, 11, 0.35);
 }
 
-/* ── Réceptions : Cyan saphir ── */
+/* ── Réceptions : Sky blue ── */
 .collector-stat-card--receptions {
     --csc-glow-rgb: var(--csc-receptions-rgb);
-    background: linear-gradient(
-        145deg,
-        rgba(6, 182, 212, 0.20) 0%,
-        rgba(6, 182, 212, 0.07) 100%
-    );
-    border-color: rgba(6, 182, 212, 0.28);
-    box-shadow:
-        0 2px 0   rgba(255, 255, 255, 0.07) inset,
-        0 6px 32px rgba(0, 0, 0, 0.42),
-        0 0 0 1px rgba(6, 182, 212, 0.18);
-}
-.collector-stat-card--receptions:hover {
-    box-shadow:
-        0 2px 0   rgba(255, 255, 255, 0.09) inset,
-        0 10px 40px rgba(0, 0, 0, 0.50),
-        0 0 24px rgba(6, 182, 212, 0.24),
-        0 0 0 1px rgba(6, 182, 212, 0.38);
 }
 
-/* ── Solde positif : Jade vert ── */
+/* ── Solde positif : Vert émeraude ── */
 .collector-stat-card--balance-ok {
     --csc-glow-rgb: var(--csc-balance-ok-rgb);
-    background: linear-gradient(
-        145deg,
-        rgba(16, 185, 129, 0.22) 0%,
-        rgba(16, 185, 129, 0.08) 100%
-    );
-    border-color: rgba(16, 185, 129, 0.32);
-    box-shadow:
-        0 2px 0   rgba(255, 255, 255, 0.07) inset,
-        0 6px 32px rgba(0, 0, 0, 0.42),
-        0 0 0 1px rgba(16, 185, 129, 0.20);
-}
-.collector-stat-card--balance-ok:hover {
-    box-shadow:
-        0 2px 0   rgba(255, 255, 255, 0.09) inset,
-        0 10px 40px rgba(0, 0, 0, 0.50),
-        0 0 26px rgba(16, 185, 129, 0.28),
-        0 0 0 1px rgba(16, 185, 129, 0.40);
 }
 
 /* ── Solde négatif / Dette bad : Carmin ── */
 .collector-stat-card--balance-bad,
 .collector-stat-card--global-bad {
     --csc-glow-rgb: var(--csc-balance-bad-rgb);
-    background: linear-gradient(
-        145deg,
-        rgba(244, 63, 94, 0.24) 0%,
-        rgba(244, 63, 94, 0.09) 100%
-    );
-    border-color: rgba(244, 63, 94, 0.36);
-    box-shadow:
-        0 2px 0   rgba(255, 255, 255, 0.06) inset,
-        0 6px 32px rgba(0, 0, 0, 0.45),
-        0 0 0 1px rgba(244, 63, 94, 0.25);
-}
-.collector-stat-card--balance-bad:hover,
-.collector-stat-card--global-bad:hover {
-    box-shadow:
-        0 2px 0   rgba(255, 255, 255, 0.08) inset,
-        0 10px 40px rgba(0, 0, 0, 0.52),
-        0 0 28px rgba(244, 63, 94, 0.32),
-        0 0 0 1px rgba(244, 63, 94, 0.45);
 }
 
-/* ── Dette totale positive : Violet prism ── */
+/* ── Dette totale positive : Violet ── */
 .collector-stat-card--global-ok {
     --csc-glow-rgb: var(--csc-global-ok-rgb);
-    background: linear-gradient(
-        145deg,
-        rgba(139, 92, 246, 0.24) 0%,
-        rgba(139, 92, 246, 0.09) 100%
-    );
-    border-color: rgba(139, 92, 246, 0.35);
-    box-shadow:
-        0 2px 0   rgba(255, 255, 255, 0.08) inset,
-        0 6px 32px rgba(0, 0, 0, 0.44),
-        0 0 0 1.5px rgba(139, 92, 246, 0.28);
-}
-.collector-stat-card--global-ok:hover {
-    box-shadow:
-        0 2px 0   rgba(255, 255, 255, 0.10) inset,
-        0 10px 40px rgba(0, 0, 0, 0.52),
-        0 0 30px rgba(139, 92, 246, 0.30),
-        0 0 0 1.5px rgba(139, 92, 246, 0.48);
 }
 
+/* ── Hover glow coloré renforcé pour les cartes globales ── */
+.collector-stat-card--global-ok:hover,
+.collector-stat-card--global-bad:hover {
+    filter: brightness(1.10);
+}
 
-/* ══════════════════════════════════════════════════════════════
- * VARIANTE B — ARCTIC DUSK
- * Pour activer : remplacer les tokens :root ci-dessus par :
- *
- * --csc-advances-rgb:     59, 130, 246;   Bleu glacier
- * --csc-receptions-rgb:  167, 139, 250;   Lilas
- * --csc-balance-ok-rgb:   52, 211, 153;   Menthe
- * --csc-balance-bad-rgb: 251, 113, 133;   Rose saumon
- * --csc-global-ok-rgb:    99, 102, 241;   Indigo
- * --csc-global-bad-rgb:  251, 113, 133;
- *
- * Puis remplacer les couleurs RGB dans chaque règle ci-dessus
- * par celles correspondantes. Aucun autre changement nécessaire.
- * ══════════════════════════════════════════════════════════════ */
+/* ── Thème clair : fond plus visible ── */
+[data-theme="light"] .collector-stat-card {
+    background: rgba(var(--csc-glow-rgb, 120,120,120), 0.07);
+    border-color: rgba(var(--csc-glow-rgb, 120,120,120), 0.22);
+    border-left-color: rgba(var(--csc-glow-rgb, 120,120,120), 0.90);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.5);
+    color: #1a1c1e;
+}
 
-/* ══════════════════════════════════════════════════════════════
- * VARIANTE C — OBSIDIAN NEON
- * Pour activer :
- *
- * --csc-advances-rgb:     34, 211, 238;   Neon cyan
- * --csc-receptions-rgb:  132, 204,  22;   Lime
- * --csc-balance-ok-rgb:    0, 220, 130;   Emerald vif
- * --csc-balance-bad-rgb: 255,  69,  96;   Rouge néon
- * --csc-global-ok-rgb:   232, 121, 249;   Magenta
- * --csc-global-bad-rgb:  255,  69,  96;
- * ══════════════════════════════════════════════════════════════ */
+[data-theme="light"] .collector-stat-card__label {
+    color: rgba(var(--csc-glow-rgb, 80,80,80), 0.85);
+}
+
+[data-theme="light"] .collector-stat-card__value {
+    color: #1a1c1e;
+}
+
+[data-theme="light"] .collector-stat-card__status {
+    color: rgba(var(--csc-glow-rgb, 80,80,80), 0.90);
+}
 
 
 /* ============================================================
@@ -3077,6 +2940,17 @@
 }
 
 /* ── Zone photo ── */
+/* ── Wrapper photo + actions ── */
+.cform-photo-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    width: 96px;
+}
+
+/* ── Aperçu photo ── */
 .cform-photo-zone {
     position: relative;
     width: 96px;
@@ -3084,19 +2958,12 @@
     border-radius: 14px;
     border: 2px dashed var(--md-sys-color-outline-variant);
     background: var(--md-sys-color-surface);
-    cursor: pointer;
     flex-shrink: 0;
     overflow: hidden;
-    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, background 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.cform-photo-zone:hover {
-    border-color: var(--md-sys-color-primary);
-    background: var(--md-sys-color-primary-container);
-    box-shadow: 0 0 0 3px rgba(var(--csc-global-ok-rgb, 139,92,246), 0.12);
 }
 
 [data-theme="dark"] .cform-photo-zone {
@@ -3112,6 +2979,7 @@
     color: var(--md-sys-color-on-surface-variant);
     pointer-events: none;
     text-align: center;
+    gap: 2px;
 }
 
 .cform-photo-zone__img {
@@ -3122,15 +2990,15 @@
     display: block;
 }
 
-/* Bouton ×  supprimer photo */
+/* Bouton × supprimer photo */
 .cform-photo-zone__remove {
     position: absolute;
     top: 4px;
     right: 4px;
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.60);
+    background: rgba(0, 0, 0, 0.65);
     border: none;
     color: #fff;
     cursor: pointer;
@@ -3143,7 +3011,141 @@
 
 .cform-photo-zone__remove:hover {
     background: var(--md-sys-color-error);
-    transform: scale(1.1);
+    transform: scale(1.12);
+}
+
+/* ── Boutons Caméra / Galerie ── */
+.cform-photo-actions {
+    display: flex;
+    gap: 5px;
+    width: 100%;
+}
+
+.cform-photo-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 2px;
+    border-radius: 10px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    font-family: inherit;
+    transition: background 0.18s ease, color 0.18s ease,
+                border-color 0.18s ease, transform 0.18s ease;
+    line-height: 1;
+}
+
+.cform-photo-btn .material-icons {
+    font-size: 16px;
+}
+
+.cform-photo-btn:hover {
+    transform: translateY(-1px);
+}
+
+.cform-photo-btn--camera {
+    border-color: rgba(var(--csc-receptions-rgb, 56,189,248), 0.40);
+    color: rgba(var(--csc-receptions-rgb, 56,189,248), 1);
+    background: rgba(var(--csc-receptions-rgb, 56,189,248), 0.08);
+}
+.cform-photo-btn--camera:hover {
+    background: rgba(var(--csc-receptions-rgb, 56,189,248), 0.18);
+    border-color: rgba(var(--csc-receptions-rgb, 56,189,248), 0.65);
+    box-shadow: 0 3px 10px rgba(var(--csc-receptions-rgb, 56,189,248), 0.18);
+}
+
+.cform-photo-btn--upload {
+    border-color: rgba(var(--csc-global-ok-rgb, 168,85,247), 0.40);
+    color: rgba(var(--csc-global-ok-rgb, 168,85,247), 1);
+    background: rgba(var(--csc-global-ok-rgb, 168,85,247), 0.08);
+}
+.cform-photo-btn--upload:hover {
+    background: rgba(var(--csc-global-ok-rgb, 168,85,247), 0.18);
+    border-color: rgba(var(--csc-global-ok-rgb, 168,85,247), 0.65);
+    box-shadow: 0 3px 10px rgba(var(--csc-global-ok-rgb, 168,85,247), 0.18);
+}
+
+/* ── Modal caméra live (desktop getUserMedia) ── */
+.cform-camera-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: fadeIn 0.2s ease;
+}
+
+.cform-camera-modal__inner {
+    background: var(--md-sys-color-surface);
+    border-radius: 18px;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.55);
+}
+
+[data-theme="dark"] .cform-camera-modal__inner {
+    background: #1e1e24;
+    border-color: rgba(255,255,255,0.10);
+}
+
+.cform-camera-modal__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.cform-camera-modal__close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface-variant);
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+
+.cform-camera-modal__close:hover {
+    background: var(--md-sys-color-surface-variant);
+    color: var(--md-sys-color-error);
+}
+
+.cform-camera-modal__video-wrap {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    margin-bottom: 14px;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cform-camera-modal__footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
 }
 
 /* ── Drop zone documents ── */
@@ -3350,9 +3352,19 @@
 
 /* Responsive mobile */
 @media (max-width: 480px) {
+    .cform-photo-wrap {
+        width: 76px;
+    }
     .cform-photo-zone {
-        width: 80px;
-        height: 80px;
+        width: 76px;
+        height: 76px;
+    }
+    .cform-photo-btn {
+        font-size: 8px;
+        padding: 5px 1px;
+    }
+    .cform-photo-btn .material-icons {
+        font-size: 14px;
     }
 
     .cdetail-doc-grid {

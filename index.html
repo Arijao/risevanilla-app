@@ -771,18 +771,74 @@
                     <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;">
 
                         <!-- Zone photo -->
-                        <div class="cform-photo-zone" id="collector-photo-zone" onclick="document.getElementById('collector-photo-input').click()" title="Cliquer pour changer la photo">
-                            <div class="cform-photo-zone__placeholder" id="collector-photo-placeholder">
-                                <span class="material-icons" style="font-size:40px;opacity:.45;">add_a_photo</span>
-                                <span style="font-size:11px;opacity:.5;margin-top:4px;">Photo</span>
+                        <!-- Zone photo — dual mode : aperçu + actions -->
+                        <div class="cform-photo-wrap" id="collector-photo-wrap">
+
+                            <!-- Aperçu (vide = placeholder, rempli = image) -->
+                            <div class="cform-photo-zone" id="collector-photo-zone">
+                                <div class="cform-photo-zone__placeholder" id="collector-photo-placeholder">
+                                    <span class="material-icons" style="font-size:36px;opacity:.40;">person</span>
+                                    <span style="font-size:10px;opacity:.45;margin-top:3px;letter-spacing:.3px;">PHOTO</span>
+                                </div>
+                                <img id="collector-photo-preview" class="cform-photo-zone__img" src="" alt="Photo" style="display:none;">
+                                <!-- Bouton × supprimer (visible quand photo présente) -->
+                                <button type="button" class="cform-photo-zone__remove" id="collector-photo-remove"
+                                        onclick="removeCollectorPhoto()" style="display:none;" title="Supprimer la photo">
+                                    <span class="material-icons" style="font-size:13px;">close</span>
+                                </button>
                             </div>
-                            <img id="collector-photo-preview" class="cform-photo-zone__img" src="" alt="Photo" style="display:none;">
-                            <button type="button" class="cform-photo-zone__remove" id="collector-photo-remove"
-                                    onclick="event.stopPropagation();removeCollectorPhoto()" style="display:none;" title="Supprimer la photo">
-                                <span class="material-icons" style="font-size:14px;">close</span>
-                            </button>
-                            <input type="file" id="collector-photo-input" accept="image/*" style="display:none;"
+
+                            <!-- Deux boutons d'action sous la photo -->
+                            <div class="cform-photo-actions" id="collector-photo-actions">
+                                <!-- Prendre une photo (caméra) -->
+                                <button type="button" class="cform-photo-btn cform-photo-btn--camera"
+                                        onclick="openCollectorCameraPicker()" title="Prendre une photo">
+                                    <span class="material-icons">photo_camera</span>
+                                    <span>Caméra</span>
+                                </button>
+                                <!-- Importer depuis galerie/stockage -->
+                                <button type="button" class="cform-photo-btn cform-photo-btn--upload"
+                                        onclick="document.getElementById('collector-photo-input').click()" title="Importer une image">
+                                    <span class="material-icons">photo_library</span>
+                                    <span>Galerie</span>
+                                </button>
+                            </div>
+
+                            <!-- Inputs fichier cachés -->
+                            <!-- Upload galerie -->
+                            <input type="file" id="collector-photo-input" accept="image/*"
+                                   style="display:none;" onchange="handleCollectorPhotoSelect(event)">
+                            <!-- Caméra (capture=environment = caméra arrière sur mobile) -->
+                            <input type="file" id="collector-camera-input" accept="image/*"
+                                   capture="environment" style="display:none;"
                                    onchange="handleCollectorPhotoSelect(event)">
+                        </div>
+
+                        <!-- Modal caméra live (fallback desktop via getUserMedia) -->
+                        <div class="cform-camera-modal" id="collector-camera-modal" style="display:none;">
+                            <div class="cform-camera-modal__inner">
+                                <div class="cform-camera-modal__header">
+                                    <span class="material-icons" style="color:var(--md-sys-color-primary);">photo_camera</span>
+                                    <span style="font-weight:600;font-size:15px;">Prendre une photo</span>
+                                    <button type="button" class="cform-camera-modal__close"
+                                            onclick="closeCollectorCamera()">
+                                        <span class="material-icons">close</span>
+                                    </button>
+                                </div>
+                                <div class="cform-camera-modal__video-wrap">
+                                    <video id="collector-camera-video" autoplay playsinline
+                                           style="width:100%;border-radius:10px;display:block;background:#000;"></video>
+                                    <canvas id="collector-camera-canvas" style="display:none;"></canvas>
+                                </div>
+                                <div class="cform-camera-modal__footer">
+                                    <button type="button" class="btn btn-outline"
+                                            onclick="closeCollectorCamera()">Annuler</button>
+                                    <button type="button" class="btn btn-primary"
+                                            onclick="captureCollectorPhoto()">
+                                        <span class="material-icons">camera</span> Capturer
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Champs texte -->

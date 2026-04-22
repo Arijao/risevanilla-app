@@ -120,21 +120,21 @@ function showCollectorDetails(collectorId) {
             <!-- Summary cards -->
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;">
                 <div class="collector-stat-card collector-stat-card--advances">
-                    <div class="collector-stat-card__value">${formatCurrency(totalAdvances)}</div>
                     <div class="collector-stat-card__label">Total Avances (${currentYear})</div>
+                    <div class="collector-stat-card__value">${formatCurrency(totalAdvances)}</div>
                 </div>
                 <div class="collector-stat-card collector-stat-card--receptions">
-                    <div class="collector-stat-card__value">${formatCurrency(totalDeliveries)}</div>
                     <div class="collector-stat-card__label">Total Réceptions (${currentYear})</div>
+                    <div class="collector-stat-card__value">${formatCurrency(totalDeliveries)}</div>
                 </div>
                 <div class="collector-stat-card ${balance >= 0 ? 'collector-stat-card--balance-ok' : 'collector-stat-card--balance-bad'}">
-                    <div class="collector-stat-card__value">${formatCurrency(Math.abs(balance))}</div>
                     <div class="collector-stat-card__label">Solde ${currentYear}</div>
+                    <div class="collector-stat-card__value">${formatCurrency(Math.abs(balance))}</div>
                     <div class="collector-stat-card__status">${status.label}</div>
                 </div>
                 <div class="collector-stat-card ${globalBalance >= 0 ? 'collector-stat-card--global-ok' : 'collector-stat-card--global-bad'}">
-                    <div class="collector-stat-card__value">${formatCurrency(Math.abs(globalBalance))}</div>
                     <div class="collector-stat-card__label">Dette Totale (Toutes années)</div>
+                    <div class="collector-stat-card__value">${formatCurrency(Math.abs(globalBalance))}</div>
                     <div class="collector-stat-card__status">${globalStatus.label}</div>
                 </div>
             </div>

@@ -146,6 +146,81 @@ function saveCollector() {
 }
 
 // ── Collector Photo ───────────────────────────────────────────
+
+// Flux caméra actif (getUserMedia)
+let _cameraStream = null;
+
+/**
+ * Ouvre le picker photo.
+ * Sur mobile  → input[capture=environment] déclenche la caméra native directement.
+ * Sur desktop → tente getUserMedia pour un flux live ; si refus/absent, fallback upload.
+ */
+function openCollectorCameraPicker() {
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (isMobile) {
+        // Mobile : laisser le browser gérer la caméra native
+        document.getElementById('collector-camera-input').click();
+        return;
+    }
+
+    // Desktop : tenter getUserMedia pour caméra live
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } })
+            .then(stream => {
+                _cameraStream = stream;
+                const modal = document.getElementById('collector-camera-modal');
+                const video = document.getElementById('collector-camera-video');
+                video.srcObject = stream;
+                modal.style.display = 'flex';
+            })
+            .catch(err => {
+                console.warn('Camera access denied or unavailable:', err);
+                // Fallback : ouvrir la galerie
+                showToast('Caméra indisponible — sélectionnez une image', 'info', 3000);
+                document.getElementById('collector-photo-input').click();
+            });
+    } else {
+        // Pas de mediaDevices → fallback galerie
+        document.getElementById('collector-photo-input').click();
+    }
+}
+
+/** Capturer une frame depuis le flux live (desktop) */
+function captureCollectorPhoto() {
+    const video  = document.getElementById('collector-camera-video');
+    const canvas = document.getElementById('collector-camera-canvas');
+    if (!video || !canvas) return;
+
+    canvas.width  = video.videoWidth  || 640;
+    canvas.height = video.videoHeight || 480;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(blob => {
+        if (!blob) return;
+        const file = new File([blob], 'photo-camera.jpg', { type: 'image/jpeg' });
+        closeCollectorCamera();
+        // Réutiliser le pipeline de compression existant
+        _compressImage(file, 400, 400, 0.82, base64 => {
+            _collectorPhotoData = base64;
+            _renderCollectorPhotoPreview(base64);
+        });
+    }, 'image/jpeg', 0.90);
+}
+
+/** Fermer le modal caméra et libérer le flux */
+function closeCollectorCamera() {
+    const modal = document.getElementById('collector-camera-modal');
+    if (modal) modal.style.display = 'none';
+    if (_cameraStream) {
+        _cameraStream.getTracks().forEach(t => t.stop());
+        _cameraStream = null;
+    }
+    const video = document.getElementById('collector-camera-video');
+    if (video) video.srcObject = null;
+}
+
+/** Gère la sélection de fichier (galerie OU caméra native mobile) */
 function handleCollectorPhotoSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -156,7 +231,6 @@ function handleCollectorPhotoSelect(event) {
         _collectorPhotoData = base64;
         _renderCollectorPhotoPreview(base64);
     });
-    // Reset input pour permettre re-sélection du même fichier
     event.target.value = '';
 }
 
@@ -171,13 +245,13 @@ function _renderCollectorPhotoPreview(base64) {
     const removeBtn   = document.getElementById('collector-photo-remove');
     if (!preview) return;
     if (base64) {
-        preview.src       = base64;
-        preview.style.display    = 'block';
+        preview.src               = base64;
+        preview.style.display     = 'block';
         placeholder.style.display = 'none';
         removeBtn.style.display   = 'flex';
     } else {
-        preview.src       = '';
-        preview.style.display    = 'none';
+        preview.src               = '';
+        preview.style.display     = 'none';
         placeholder.style.display = 'flex';
         removeBtn.style.display   = 'none';
     }
