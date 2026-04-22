@@ -304,7 +304,17 @@ function importCollectors(collectors, callback) {
     const tx    = db.transaction(['collectors'], 'readwrite');
     const store = tx.objectStore('collectors');
     collectors.forEach((c, i) => {
-        const clean = { name: c.name, phone: c.phone, address: c.address, cin: c.cin || '', cinDate: c.cinDate || '', createdAt: c.createdAt || new Date().toISOString() };
+        const clean = {
+            name:      c.name,
+            phone:     c.phone,
+            address:   c.address,
+            cin:       c.cin      || '',
+            cinDate:   c.cinDate  || '',
+            createdAt: c.createdAt || new Date().toISOString(),
+            // Préserver les médias s'ils sont présents dans le fichier d'import
+            photo:     c.photo     || null,
+            documents: c.documents || []
+        };
         const req   = store.add(clean);
         req.onsuccess = e => { newIds[i] = e.target.result; if (++processed === collectors.length && callback) callback(newIds); };
         req.onerror   = ()  => { newIds[i] = null;           if (++processed === collectors.length && callback) callback(newIds); };

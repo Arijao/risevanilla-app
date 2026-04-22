@@ -5,6 +5,34 @@
 
 'use strict';
 
+// ── Open / Edit collector modal ───────────────────────────────
+function openCollectorModal(collectorId) {
+    const form = document.getElementById('collector-form');
+    if (!form) return;
+    form.reset();
+    delete form.dataset.editId;
+
+    const titleEl = document.querySelector('#collector-modal .modal-title');
+
+    if (collectorId) {
+        const c = appData.collectors.find(c => c.id === collectorId);
+        if (!c) return;
+        form.dataset.editId = collectorId;
+        if (titleEl) titleEl.textContent = 'Modifier Collecteur';
+        document.getElementById('collector-name').value    = c.name    || '';
+        document.getElementById('collector-phone').value   = formatPhoneForInput(c.phone);
+        document.getElementById('collector-cin').value     = c.cin     || '';
+        document.getElementById('collector-cin-date').value = c.cinDate || '';
+        document.getElementById('collector-address').value = c.address  || '';
+        // Charger les médias existants dans les buffers
+        resetCollectorMediaBuffers(c);
+    } else {
+        if (titleEl) titleEl.textContent = 'Ajouter Collecteur';
+        resetCollectorMediaBuffers(null);
+    }
+    openModal('collector-modal');
+}
+
 function showCollectorDetails(collectorId) {
     const collector = appData.collectors.find(c => c.id === collectorId);
     if (!collector) { showToast('Collecteur introuvable.', 'error'); return; }
@@ -70,12 +98,23 @@ function showCollectorDetails(collectorId) {
         <div style="max-height:80vh;overflow-y:auto;padding-right:8px;">
             <!-- Info collecteur -->
             <div style="background:linear-gradient(135deg,var(--md-sys-color-primary-container),var(--md-sys-color-tertiary-container));padding:20px;border-radius:16px;margin-bottom:20px;color:var(--md-sys-color-on-primary-container);">
-                <h4 style="margin-bottom:16px;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="material-icons">account_circle</span> Informations</h4>
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
-                    <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">phone</span> Téléphone</div><div style="font-weight:600;">${formatPhoneNumberForDisplay(collector.phone)}</div></div>
-                    <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">fingerprint</span> CIN</div><div style="font-weight:600;">${collector.cin||'N/A'} ${collector.cinDate?`<small>(${formatDate(collector.cinDate)})</small>`:''}</div></div>
-                    <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">location_on</span> Adresse</div><div style="font-weight:600;">${collector.address||'N/A'}</div></div>
-                    <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">calendar_today</span> Inscription</div><div style="font-weight:600;">${formatDate(collector.createdAt)}</div></div>
+                <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+                    ${collector.photo ? `
+                    <div style="flex-shrink:0;">
+                        <img src="${collector.photo}" alt="${collector.name}"
+                             style="width:80px;height:80px;border-radius:12px;object-fit:cover;
+                                    border:3px solid rgba(255,255,255,0.35);
+                                    box-shadow:0 4px 16px rgba(0,0,0,0.25);">
+                    </div>` : ''}
+                    <div style="flex:1;min-width:0;">
+                        <h4 style="margin-bottom:16px;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="material-icons">account_circle</span> Informations</h4>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+                            <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">phone</span> Téléphone</div><div style="font-weight:600;">${formatPhoneNumberForDisplay(collector.phone)}</div></div>
+                            <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">fingerprint</span> CIN</div><div style="font-weight:600;">${collector.cin||'N/A'} ${collector.cinDate?`<small>(${formatDate(collector.cinDate)})</small>`:''}</div></div>
+                            <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">location_on</span> Adresse</div><div style="font-weight:600;">${collector.address||'N/A'}</div></div>
+                            <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">calendar_today</span> Inscription</div><div style="font-weight:600;">${formatDate(collector.createdAt)}</div></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- Summary cards -->
@@ -106,11 +145,13 @@ function showCollectorDetails(collectorId) {
                     <button class="detail-tab-btn" onclick="switchDetailTab(event,'dt-receptions')" style="padding:10px 16px;border:none;background:none;color:var(--md-sys-color-on-surface);opacity:.7;font-weight:500;border-bottom:2px solid transparent;cursor:pointer;">📦 Réceptions (${receptions.length})</button>
                     <button class="detail-tab-btn" onclick="switchDetailTab(event,'dt-remb')"       style="padding:10px 16px;border:none;background:none;color:var(--md-sys-color-on-surface);opacity:.7;font-weight:500;border-bottom:2px solid transparent;cursor:pointer;">💵 Remboursements (${remboursements.length})</button>
                     <button class="detail-tab-btn" onclick="switchDetailTab(event,'dt-paiements')"  style="padding:10px 16px;border:none;background:none;color:var(--md-sys-color-on-surface);opacity:.7;font-weight:500;border-bottom:2px solid transparent;cursor:pointer;">💸 Paiements (${paiements.length})</button>
+                    <button class="detail-tab-btn" onclick="switchDetailTab(event,'dt-documents')"  style="padding:10px 16px;border:none;background:none;color:var(--md-sys-color-on-surface);opacity:.7;font-weight:500;border-bottom:2px solid transparent;cursor:pointer;">🗂 Documents (${(collector.documents||[]).length})</button>
                 </div>
                 <div id="dt-advances"   class="detail-tab-content" style="display:block;">${advTable}</div>
                 <div id="dt-receptions" class="detail-tab-content" style="display:none;">${recTable}</div>
                 <div id="dt-remb"       class="detail-tab-content" style="display:none;">${rembTable}</div>
                 <div id="dt-paiements"  class="detail-tab-content" style="display:none;">${paiTable}</div>
+                <div id="dt-documents"  class="detail-tab-content" style="display:none;">${_renderCollectorDocsTab(collector)}</div>
             </div>
             <!-- Actions -->
             <div style="display:flex;gap:12px;border-top:1px solid var(--md-sys-color-outline-variant);padding-top:16px;margin-top:16px;flex-wrap:wrap;">
@@ -145,6 +186,47 @@ function switchDetailTab(event, tabId) {
     event.target.style.borderBottomColor = 'var(--md-sys-color-primary)';
     event.target.style.color = 'var(--md-sys-color-primary)';
     event.target.style.opacity = '1';
+}
+
+// ── Documents tab renderer (fiche détail, lecture seule) ─────
+function _renderCollectorDocsTab(collector) {
+    const docs = collector.documents || [];
+    if (!docs.length) {
+        return `<div style="text-align:center;padding:32px 20px;opacity:.55;">
+            <span class="material-icons" style="font-size:40px;display:block;margin-bottom:8px;">folder_open</span>
+            Aucun document enregistré
+        </div>`;
+    }
+    return `<div class="cdetail-doc-grid">
+        ${docs.map(doc => {
+            const isPdf   = doc.type === 'application/pdf';
+            const sizeStr = doc.size < 1024*1024
+                ? `${(doc.size/1024).toFixed(0)} Ko`
+                : `${(doc.size/(1024*1024)).toFixed(1)} Mo`;
+            const dateStr = doc.addedAt ? formatDate(doc.addedAt.split('T')[0]) : '';
+            const thumb   = isPdf
+                ? `<div class="cdetail-doc-card__thumb cdetail-doc-card__thumb--pdf">
+                       <span class="material-icons" style="font-size:32px;">picture_as_pdf</span>
+                   </div>`
+                : `<div class="cdetail-doc-card__thumb">
+                       <img src="${doc.data}" alt="${doc.name}"
+                            style="width:100%;height:100%;object-fit:cover;">
+                   </div>`;
+            return `
+            <div class="cdetail-doc-card" onclick="_detailDocPreview(${JSON.stringify(doc).replace(/"/g,'&quot;')})" title="Cliquer pour voir">
+                ${thumb}
+                <div class="cdetail-doc-card__info">
+                    <div class="cdetail-doc-card__name" title="${doc.name}">${doc.name}</div>
+                    <div class="cdetail-doc-card__meta">${sizeStr}${dateStr ? ' · '+dateStr : ''}</div>
+                </div>
+                <span class="material-icons cdetail-doc-card__eye">visibility</span>
+            </div>`;
+        }).join('')}
+    </div>`;
+}
+
+function _detailDocPreview(doc) {
+    _openDocPreviewModal(doc);
 }
 
 function exportCollectorReport(collectorId) {

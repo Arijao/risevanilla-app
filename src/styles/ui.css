@@ -3021,3 +3021,346 @@
  * --csc-global-ok-rgb:   232, 121, 249;   Magenta
  * --csc-global-bad-rgb:  255,  69,  96;
  * ══════════════════════════════════════════════════════════════ */
+
+
+/* ============================================================
+ * COLLECTOR FORM — Photo & Documents (cform-*)
+ * Composants du formulaire ajout/édition collecteur.
+ * Isolation totale : préfixe "cform-" réservé à ce module.
+ * ============================================================ */
+
+/* ── Section wrapper ── */
+.cform-section {
+    background: var(--md-sys-color-surface-variant);
+    border-radius: 14px;
+    padding: 18px 16px 16px;
+    margin-bottom: 16px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+[data-theme="dark"] .cform-section {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.cform-section__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--md-sys-color-primary);
+    margin-bottom: 14px;
+}
+
+.cform-section__title .material-icons {
+    font-size: 18px;
+}
+
+/* Badge compteur documents */
+.cform-doc-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+/* ── Zone photo ── */
+.cform-photo-zone {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border-radius: 14px;
+    border: 2px dashed var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface);
+    cursor: pointer;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cform-photo-zone:hover {
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-primary-container);
+    box-shadow: 0 0 0 3px rgba(var(--csc-global-ok-rgb, 139,92,246), 0.12);
+}
+
+[data-theme="dark"] .cform-photo-zone {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+.cform-photo-zone__placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--md-sys-color-on-surface-variant);
+    pointer-events: none;
+    text-align: center;
+}
+
+.cform-photo-zone__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+}
+
+/* Bouton ×  supprimer photo */
+.cform-photo-zone__remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.60);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, transform 0.15s ease;
+    z-index: 2;
+}
+
+.cform-photo-zone__remove:hover {
+    background: var(--md-sys-color-error);
+    transform: scale(1.1);
+}
+
+/* ── Drop zone documents ── */
+.cform-dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 18px 12px;
+    border-radius: 12px;
+    border: 2px dashed var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface);
+    cursor: pointer;
+    text-align: center;
+    color: var(--md-sys-color-on-surface-variant);
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 12px;
+    user-select: none;
+}
+
+.cform-dropzone:hover,
+.cform-dropzone--over {
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    box-shadow: 0 0 0 3px rgba(var(--csc-global-ok-rgb, 139,92,246), 0.10);
+}
+
+[data-theme="dark"] .cform-dropzone {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .cform-dropzone:hover,
+[data-theme="dark"] .cform-dropzone--over {
+    background: rgba(var(--csc-global-ok-rgb, 139,92,246), 0.12);
+    border-color: rgba(var(--csc-global-ok-rgb, 139,92,246), 0.45);
+    color: var(--md-sys-color-on-surface);
+}
+
+/* ── Liste de documents (formulaire) ── */
+.cform-doc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cform-doc-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    transition: background 0.15s ease;
+}
+
+[data-theme="dark"] .cform-doc-item {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.cform-doc-item:hover {
+    background: var(--md-sys-color-surface-variant);
+}
+
+.cform-doc-item__thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--md-sys-color-surface-variant);
+}
+
+.cform-doc-item__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cform-doc-item__name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cform-doc-item__meta {
+    font-size: 11px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: 2px;
+}
+
+.cform-doc-item__actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+
+/* ============================================================
+ * COLLECTOR DETAIL — Documents Tab (cdetail-*)
+ * Onglet lecture-seule dans la fiche détail collecteur.
+ * ============================================================ */
+
+.cdetail-doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.cdetail-doc-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface-variant);
+    cursor: pointer;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.22s ease,
+                border-color 0.2s ease;
+
+    /* Glass léger */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+[data-theme="dark"] .cdetail-doc-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+.cdetail-doc-card:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    border-color: var(--md-sys-color-primary);
+}
+
+/* Vignette image */
+.cdetail-doc-card__thumb {
+    width: 100%;
+    height: 100px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--md-sys-color-surface);
+}
+
+/* Vignette PDF */
+.cdetail-doc-card__thumb--pdf {
+    background: linear-gradient(135deg,
+        rgba(244, 63, 94, 0.12) 0%,
+        rgba(244, 63, 94, 0.06) 100%);
+    color: var(--md-sys-color-error);
+}
+
+/* Infos bas de carte */
+.cdetail-doc-card__info {
+    padding: 8px 10px;
+}
+
+.cdetail-doc-card__name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cdetail-doc-card__meta {
+    font-size: 11px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: 2px;
+}
+
+/* Icône œil au hover */
+.cdetail-doc-card__eye {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 16px !important;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    border-radius: 50%;
+    padding: 3px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.cdetail-doc-card:hover .cdetail-doc-card__eye {
+    opacity: 1;
+}
+
+/* Responsive mobile */
+@media (max-width: 480px) {
+    .cform-photo-zone {
+        width: 80px;
+        height: 80px;
+    }
+
+    .cdetail-doc-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 8px;
+    }
+
+    .cdetail-doc-card__thumb {
+        height: 80px;
+    }
+}

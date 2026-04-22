@@ -96,6 +96,12 @@ function formatCIN(input) {
     input.value = v;
 }
 
+// ── Collector Media State ─────────────────────────────────────
+// Buffers temporaires pendant l'édition du formulaire.
+// Vidés à chaque ouverture du modal.
+let _collectorPhotoData = null;    // base64 string ou null
+let _collectorDocs      = [];      // [{ id, name, type, size, data, addedAt }]
+
 // ── Collector Save ────────────────────────────────────────────
 function saveCollector() {
     const form    = document.getElementById('collector-form');
@@ -117,18 +123,229 @@ function saveCollector() {
         showToast('❌ Un collecteur avec ce N° CIN existe déjà!', 'error'); return;
     }
 
+    // Préserver les médias existants en cas d'édition
+    const existing = editId ? (appData.collectors.find(c => c.id == editId) || {}) : {};
+
     const collector = {
         name,
-        phone:   phone   || '',
-        cin:     cin     || '',
-        cinDate: cinDate || '',
-        address: address || '',
-        createdAt: new Date().toISOString()
+        phone:     phone   || '',
+        cin:       cin     || '',
+        cinDate:   cinDate || '',
+        address:   address || '',
+        createdAt: existing.createdAt || new Date().toISOString(),
+        // Médias : utiliser le buffer courant (modifié) ou conserver l'existant
+        photo:     _collectorPhotoData !== undefined ? _collectorPhotoData : (existing.photo || null),
+        documents: _collectorDocs.length || existing.documents
+                   ? _collectorDocs.length ? [..._collectorDocs] : (existing.documents || [])
+                   : []
     };
     if (editId) collector.id = parseInt(editId);
     saveToDB('collectors', collector);
     closeModal('collector-modal');
     showToast('✅ Collecteur enregistré avec succès!', 'success');
+}
+
+// ── Collector Photo ───────────────────────────────────────────
+function handleCollectorPhotoSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('Photo trop lourde (max 5 Mo)', 'error'); return;
+    }
+    _compressImage(file, 400, 400, 0.82, base64 => {
+        _collectorPhotoData = base64;
+        _renderCollectorPhotoPreview(base64);
+    });
+    // Reset input pour permettre re-sélection du même fichier
+    event.target.value = '';
+}
+
+function removeCollectorPhoto() {
+    _collectorPhotoData = null;
+    _renderCollectorPhotoPreview(null);
+}
+
+function _renderCollectorPhotoPreview(base64) {
+    const preview     = document.getElementById('collector-photo-preview');
+    const placeholder = document.getElementById('collector-photo-placeholder');
+    const removeBtn   = document.getElementById('collector-photo-remove');
+    if (!preview) return;
+    if (base64) {
+        preview.src       = base64;
+        preview.style.display    = 'block';
+        placeholder.style.display = 'none';
+        removeBtn.style.display   = 'flex';
+    } else {
+        preview.src       = '';
+        preview.style.display    = 'none';
+        placeholder.style.display = 'flex';
+        removeBtn.style.display   = 'none';
+    }
+}
+
+// ── Collector Documents ───────────────────────────────────────
+function handleCollectorDocSelect(event) {
+    Array.from(event.target.files).forEach(file => _addCollectorDoc(file));
+    event.target.value = '';
+}
+
+function handleCollectorDocDrop(event) {
+    event.preventDefault();
+    document.getElementById('collector-doc-dropzone').classList.remove('cform-dropzone--over');
+    Array.from(event.dataTransfer.files).forEach(file => {
+        if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+            _addCollectorDoc(file);
+        }
+    });
+}
+
+function _addCollectorDoc(file) {
+    if (file.size > 5 * 1024 * 1024) {
+        showToast(`"${file.name}" dépasse 5 Mo`, 'error'); return;
+    }
+    if (_collectorDocs.length >= 10) {
+        showToast('Maximum 10 documents par collecteur', 'error'); return;
+    }
+    const allowed = ['image/jpeg','image/png','image/webp','image/gif','application/pdf'];
+    if (!allowed.includes(file.type)) {
+        showToast(`Type non supporté : ${file.name}`, 'error'); return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+        const doc = {
+            id:      Date.now() + Math.random(),
+            name:    file.name,
+            type:    file.type,
+            size:    file.size,
+            data:    e.target.result,  // base64
+            addedAt: new Date().toISOString()
+        };
+        _collectorDocs.push(doc);
+        _renderCollectorDocList();
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeCollectorDoc(docId) {
+    _collectorDocs = _collectorDocs.filter(d => d.id !== docId);
+    _renderCollectorDocList();
+}
+
+function _renderCollectorDocList() {
+    const list     = document.getElementById('collector-doc-list');
+    const countBadge = document.getElementById('cform-doc-count');
+    if (!list) return;
+    if (countBadge) countBadge.textContent = _collectorDocs.length;
+
+    if (!_collectorDocs.length) {
+        list.innerHTML = '';
+        return;
+    }
+    list.innerHTML = _collectorDocs.map(doc => {
+        const isPdf   = doc.type === 'application/pdf';
+        const sizeStr = doc.size < 1024 * 1024
+            ? `${(doc.size / 1024).toFixed(0)} Ko`
+            : `${(doc.size / (1024*1024)).toFixed(1)} Mo`;
+        const thumb   = isPdf
+            ? `<span class="material-icons" style="font-size:28px;color:var(--md-sys-color-error);">picture_as_pdf</span>`
+            : `<img src="${doc.data}" alt="${doc.name}"
+                    style="width:40px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0;">`;
+        return `
+        <div class="cform-doc-item" data-doc-id="${doc.id}">
+            <div class="cform-doc-item__thumb">${thumb}</div>
+            <div class="cform-doc-item__info">
+                <div class="cform-doc-item__name" title="${doc.name}">${doc.name}</div>
+                <div class="cform-doc-item__meta">${sizeStr}</div>
+            </div>
+            <div class="cform-doc-item__actions">
+                <button type="button" class="btn-icon btn-outline" title="Aperçu"
+                        onclick="previewCollectorDoc(${doc.id})">
+                    <span class="material-icons" style="font-size:16px;">visibility</span>
+                </button>
+                <button type="button" class="btn-icon btn-danger" title="Supprimer"
+                        onclick="removeCollectorDoc(${doc.id})">
+                    <span class="material-icons" style="font-size:16px;">delete</span>
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function previewCollectorDoc(docId) {
+    const doc = _collectorDocs.find(d => d.id === docId);
+    if (!doc) return;
+    _openDocPreviewModal(doc);
+}
+
+// ── Doc Preview Modal (générique) ────────────────────────────
+function _openDocPreviewModal(doc) {
+    let modal = document.getElementById('doc-preview-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id        = 'doc-preview-modal';
+        document.body.appendChild(modal);
+    }
+    const isPdf = doc.type === 'application/pdf';
+    const content = isPdf
+        ? `<iframe src="${doc.data}" style="width:100%;height:70vh;border:none;border-radius:8px;"></iframe>`
+        : `<img src="${doc.data}" alt="${doc.name}"
+                style="max-width:100%;max-height:72vh;object-fit:contain;border-radius:8px;display:block;margin:0 auto;">`;
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:860px;width:95%;">
+            <div class="modal-header">
+                <h3 class="modal-title" style="display:flex;align-items:center;gap:8px;">
+                    <span class="material-icons" style="color:var(--md-sys-color-primary);">${isPdf ? 'picture_as_pdf' : 'image'}</span>
+                    ${doc.name}
+                </h3>
+                <button class="close-btn" onclick="closeModal('doc-preview-modal')">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div style="padding:8px 0 4px;">${content}</div>
+            <div style="display:flex;justify-content:flex-end;padding-top:12px;border-top:1px solid var(--md-sys-color-outline-variant);margin-top:12px;">
+                <a class="btn btn-outline" href="${doc.data}" download="${doc.name}">
+                    <span class="material-icons">download</span> Télécharger
+                </a>
+                <button class="btn btn-primary" style="margin-left:10px;" onclick="closeModal('doc-preview-modal')">Fermer</button>
+            </div>
+        </div>`;
+    openModal('doc-preview-modal');
+}
+
+// ── Reset media buffers (à appeler à chaque ouverture du modal) ──
+function resetCollectorMediaBuffers(collector) {
+    // collector = objet existant (édition) ou null (création)
+    _collectorPhotoData = collector ? (collector.photo || null) : null;
+    _collectorDocs      = collector ? [...(collector.documents || [])] : [];
+    _renderCollectorPhotoPreview(_collectorPhotoData);
+    _renderCollectorDocList();
+    // reset le badge
+    const badge = document.getElementById('cform-doc-count');
+    if (badge) badge.textContent = _collectorDocs.length;
+}
+
+// ── Image compression ────────────────────────────────────────
+function _compressImage(file, maxW, maxH, quality, callback) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+            let { width, height } = img;
+            if (width > maxW || height > maxH) {
+                const ratio = Math.min(maxW / width, maxH / height);
+                width  = Math.round(width  * ratio);
+                height = Math.round(height * ratio);
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width  = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            callback(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
 }
 
 async function deleteCollector(id) {

@@ -754,37 +754,97 @@
     <!-- ===== MODALS ===== -->
     <!-- Collector Modal -->
     <div class="modal" id="collector-modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width:680px;">
             <div class="modal-header">
                 <h3 class="modal-title">Ajouter/Modifier Collecteur</h3>
                 <button class="close-btn" onclick="closeModal('collector-modal')"><span class="material-icons">close</span></button>
             </div>
-            <form id="collector-form">
-                <div class="form-group">
-                    <label class="form-label">Nom Complet</label>
-                    <input type="text" id="collector-name" class="form-input" required aria-required="true" oninput="capitalizeLive(this)">
+            <form id="collector-form" style="max-height:80vh;overflow-y:auto;padding-right:4px;">
+
+                <!-- ── Identité ── -->
+                <div class="cform-section">
+                    <div class="cform-section__title">
+                        <span class="material-icons">person</span> Identité
+                    </div>
+
+                    <!-- Photo + champs côte à côte -->
+                    <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;">
+
+                        <!-- Zone photo -->
+                        <div class="cform-photo-zone" id="collector-photo-zone" onclick="document.getElementById('collector-photo-input').click()" title="Cliquer pour changer la photo">
+                            <div class="cform-photo-zone__placeholder" id="collector-photo-placeholder">
+                                <span class="material-icons" style="font-size:40px;opacity:.45;">add_a_photo</span>
+                                <span style="font-size:11px;opacity:.5;margin-top:4px;">Photo</span>
+                            </div>
+                            <img id="collector-photo-preview" class="cform-photo-zone__img" src="" alt="Photo" style="display:none;">
+                            <button type="button" class="cform-photo-zone__remove" id="collector-photo-remove"
+                                    onclick="event.stopPropagation();removeCollectorPhoto()" style="display:none;" title="Supprimer la photo">
+                                <span class="material-icons" style="font-size:14px;">close</span>
+                            </button>
+                            <input type="file" id="collector-photo-input" accept="image/*" style="display:none;"
+                                   onchange="handleCollectorPhotoSelect(event)">
+                        </div>
+
+                        <!-- Champs texte -->
+                        <div style="flex:1;min-width:200px;">
+                            <div class="form-group" style="margin-bottom:14px;">
+                                <label class="form-label">Nom Complet <span style="color:var(--md-sys-color-error)">*</span></label>
+                                <input type="text" id="collector-name" class="form-input" required aria-required="true" oninput="capitalizeLive(this)">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label for="collector-phone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-input" id="collector-phone" placeholder="032 12 345 67" oninput="formatPhoneNumber(event)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" style="display:flex;align-items:center;gap:6px;">
+                                <span class="material-icons" style="font-size:18px;">badge</span> CIN
+                            </label>
+                            <input type="text" class="form-input" id="collector-cin" placeholder="000 000 000 000" maxlength="17" oninput="formatCIN(this)">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label" for="collector-cin-date">Date de délivrance CIN</label>
+                            <input type="date" class="form-input" id="collector-cin-date">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top:14px;margin-bottom:0;">
+                        <label class="form-label">Adresse</label>
+                        <input type="text" class="form-input" id="collector-address" placeholder="Adresse du collecteur">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="collector-phone" class="form-label">Téléphone</label>
-                    <input type="tel" class="form-input" id="collector-phone" placeholder="032 12 345 67" oninput="formatPhoneNumber(event)">
+
+                <!-- ── Documents ── -->
+                <div class="cform-section">
+                    <div class="cform-section__title">
+                        <span class="material-icons">folder_open</span> Documents
+                        <span class="cform-doc-badge" id="cform-doc-count">0</span>
+                    </div>
+
+                    <!-- Drop zone upload -->
+                    <div class="cform-dropzone" id="collector-doc-dropzone"
+                         onclick="document.getElementById('collector-doc-input').click()"
+                         ondragover="event.preventDefault();this.classList.add('cform-dropzone--over')"
+                         ondragleave="this.classList.remove('cform-dropzone--over')"
+                         ondrop="handleCollectorDocDrop(event)">
+                        <span class="material-icons" style="font-size:28px;opacity:.45;">upload_file</span>
+                        <span style="font-size:13px;font-weight:500;margin-top:4px;">Glisser ou cliquer pour ajouter</span>
+                        <span style="font-size:11px;opacity:.5;">Images (JPG, PNG, WEBP) · PDF — max 5 Mo</span>
+                        <input type="file" id="collector-doc-input" accept="image/*,.pdf" multiple style="display:none;"
+                               onchange="handleCollectorDocSelect(event)">
+                    </div>
+
+                    <!-- Liste des documents -->
+                    <div id="collector-doc-list" class="cform-doc-list"></div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label" style="display: flex; align-items: center; gap: 6px;">
-                        <span class="material-icons" style="font-size: 18px;">badge</span> CIN
-                    </label>
-                    <input type="text" class="form-input" id="collector-cin" placeholder="000 000 000 000" maxlength="17" oninput="formatCIN(this)">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="collector-cin-date">Date de délivrance CIN</label>
-                    <input type="date" class="form-input" id="collector-cin-date">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Adresse</label>
-                    <input type="text" class="form-input" id="collector-address" placeholder="Adresse du collecteur">
-                </div>
+
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline" onclick="closeModal('collector-modal')">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="material-icons">save</span> Enregistrer
+                    </button>
                 </div>
             </form>
         </div>
