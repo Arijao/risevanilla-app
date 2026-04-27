@@ -78,6 +78,7 @@ function updateAnalysisTable() {
         // Avatar collecteur
         const collTd = row.querySelector('td[data-label="Collecteur"]');
         if (collTd) {
+            collTd.dataset.noHighlight = '1'; // ← protège l'avatar du highlightTable
             const avatarCell = renderCollectorAvatar(c, false);
             const nameSpan = document.createElement('span');
             nameSpan.innerHTML = RiseVanillaSearch.highlightText(c.name, _q);

@@ -96,6 +96,7 @@ function updateAdvancesTable() {
         const collTd = row.querySelector('td[data-label="Collecteur"]');
         if (collTd) {
             if (collector) {
+                collTd.dataset.noHighlight = '1'; // ← protège l'avatar du highlightTable
                 const avatarCell = renderCollectorAvatar(collector, false);
                 const nameSpan = document.createElement('span');
                 nameSpan.innerHTML = RiseVanillaSearch.highlightText(collector.name, _q);
@@ -380,6 +381,7 @@ function updateRemboursementsTable() {
         const collTd = row.querySelector('td[data-label="Collecteur"]');
         if (collTd) {
             if (collector) {
+                collTd.dataset.noHighlight = '1'; // ← protège l'avatar du highlightTable
                 const avatarCell = renderCollectorAvatar(collector, false);
                 const nameSpan = document.createElement('span');
                 nameSpan.innerHTML = RiseVanillaSearch.highlightText(collector.name, _q);
@@ -500,6 +502,7 @@ function updatePaiementsTable() {
         const collTdP = row.querySelector('td[data-label="Collecteur"]');
         if (collTdP) {
             if (collector) {
+                collTdP.dataset.noHighlight = '1'; // ← protège l'avatar du highlightTable
                 const avatarCell = renderCollectorAvatar(collector, false);
                 const nameSpan = document.createElement('span');
                 nameSpan.innerHTML = RiseVanillaSearch.highlightText(collector.name, _q);
