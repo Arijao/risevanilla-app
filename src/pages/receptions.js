@@ -118,14 +118,21 @@ function _setupAdjRowEvents(rowId) {
     const priceInp = row.querySelector('.adj-price');
     const totalInp = row.querySelector('.adj-total');
 
-    qualSel.addEventListener('change', function() {
+    qualSel.addEventListener('change', async function() {
         if (this.value === '__NEW__') {
-            const q = prompt('Entrez le nom de la nouvelle qualité:');
-            if (q && q.trim()) {
+            const sel = this;
+            const q = await promptModal({
+                title:       'Nouvelle qualité',
+                placeholder: 'Ex: VANILLE VERTE',
+                confirmText: 'Ajouter',
+                cancelText:  'Annuler',
+                icon:        'new_label'
+            });
+            if (q) {
                 const opt = document.createElement('option');
-                opt.value = q.trim(); opt.textContent = q.trim(); opt.selected = true;
-                this.insertBefore(opt, this.lastElementChild);
-            } else { this.value = ''; }
+                opt.value = q; opt.textContent = q; opt.selected = true;
+                sel.insertBefore(opt, sel.lastElementChild);
+            } else { sel.value = ''; }
         }
         if (this.value && !priceInp.value) {
             const defaults = { 'LAVA': 9600, 'VANILLE': 8500, 'FOHY': 7000 };

@@ -146,6 +146,136 @@ function confirmModal({
     });
 }
 
+// ── Prompt Modal ──────────────────────────────────────────────
+/**
+ * promptModal({ title, message, placeholder, confirmText, cancelText, icon })
+ * Affiche un modal de saisie de texte stylisé, cohérent avec confirmModal.
+ * Retourne une Promise<string|null> — null si annulé ou valeur vide.
+ */
+function promptModal({
+    title       = 'Nouvelle entrée',
+    message     = '',
+    placeholder = '',
+    confirmText = 'OK',
+    cancelText  = 'Annuler',
+    icon        = 'edit'
+} = {}) {
+    return new Promise(resolve => {
+        _ensurePromptModal();
+
+        const overlay    = document.getElementById('prompt-modal-overlay');
+        const titleEl    = document.getElementById('prompt-modal-title');
+        const messageEl  = document.getElementById('prompt-modal-message');
+        const iconEl     = document.getElementById('prompt-modal-icon');
+        const inputEl    = document.getElementById('prompt-modal-input');
+        const confirmBtn = document.getElementById('prompt-modal-confirm');
+        const cancelBtn  = document.getElementById('prompt-modal-cancel');
+
+        titleEl.textContent       = title;
+        messageEl.textContent     = message;
+        messageEl.style.display   = message ? '' : 'none';
+        iconEl.textContent        = icon;
+        inputEl.value             = '';
+        inputEl.placeholder       = placeholder;
+        confirmBtn.textContent    = confirmText;
+        cancelBtn.textContent     = cancelText;
+
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Nettoyage des anciens handlers via cloneNode
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        const newCancelBtn  = cancelBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        newConfirmBtn.textContent = confirmText;
+        newCancelBtn.textContent  = cancelText;
+
+        function close(value) {
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+            document.removeEventListener('keydown', escHandler);
+            resolve(value);
+        }
+
+        newConfirmBtn.addEventListener('click', () => {
+            const val = document.getElementById('prompt-modal-input').value.trim();
+            close(val || null);
+        });
+        newCancelBtn.addEventListener('click', () => close(null));
+
+        // Entrée clavier → confirme
+        const newInput = document.getElementById('prompt-modal-input');
+        newInput.addEventListener('keydown', function handler(e) {
+            if (e.key === 'Enter') { e.preventDefault(); newConfirmBtn.click(); }
+        });
+
+        // Click hors du contenu → annule
+        overlay.addEventListener('click', function handler(e) {
+            if (e.target === overlay) { close(null); overlay.removeEventListener('click', handler); }
+        });
+
+        // ESC → annule
+        function escHandler(e) { if (e.key === 'Escape') close(null); }
+        document.addEventListener('keydown', escHandler);
+
+        // Focus sur l'input
+        setTimeout(() => document.getElementById('prompt-modal-input').focus(), 80);
+    });
+}
+
+/** Injecte le markup du prompt modal dans le DOM (une seule fois) */
+function _ensurePromptModal() {
+    if (document.getElementById('prompt-modal-overlay')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'prompt-modal-overlay';
+    overlay.innerHTML = `
+        <div class="confirm-modal-box" role="dialog" aria-modal="true" aria-labelledby="prompt-modal-title">
+            <div class="confirm-modal-icon-wrap" style="background:rgba(0,97,164,0.12);color:var(--md-sys-color-primary);box-shadow:0 0 0 8px rgba(0,97,164,0.06);">
+                <span class="material-icons" id="prompt-modal-icon">edit</span>
+            </div>
+            <h2 class="confirm-modal-title" id="prompt-modal-title">Nouvelle entrée</h2>
+            <p class="confirm-modal-message" id="prompt-modal-message"></p>
+            <input
+                type="text"
+                id="prompt-modal-input"
+                class="form-input"
+                autocomplete="off"
+                style="width:100%;margin-bottom:20px;box-sizing:border-box;"
+            >
+            <div class="confirm-modal-actions">
+                <button class="confirm-modal-btn confirm-modal-btn--ghost"  id="prompt-modal-cancel">Annuler</button>
+                <button class="confirm-modal-btn confirm-modal-btn--info"   id="prompt-modal-confirm">OK</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // CSS spécifique au prompt modal (réutilise les classes confirm-modal-*)
+    if (!document.getElementById('prompt-modal-style')) {
+        const style = document.createElement('style');
+        style.id = 'prompt-modal-style';
+        style.textContent = `
+            #prompt-modal-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                z-index: 3100;
+                background: rgba(0, 0, 0, 0.55);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                justify-content: center;
+                align-items: center;
+                animation: fadeInModal 0.2s ease;
+            }
+            #prompt-modal-overlay.active { display: flex; }
+            #prompt-modal-overlay .confirm-modal-message { margin-bottom: 16px; }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
 /** Injecte le markup du confirm modal dans le DOM (une seule fois) */
 function _ensureConfirmModal() {
     if (document.getElementById('confirm-modal-overlay')) return;
