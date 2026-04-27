@@ -61,7 +61,7 @@ function formatPhoneNumber(e) {
 }
 
 function formatPhoneNumberForDisplay(phoneString) {
-    if (!phoneString) return 'N/A';
+    if (!phoneString) return '—';
     const c = phoneString.replace(/\s/g, '');
     if (c.length === 10 && /^\d+$/.test(c))
         return `${c.substring(0,3)} ${c.substring(3,5)} ${c.substring(5,8)} ${c.substring(8,10)}`;

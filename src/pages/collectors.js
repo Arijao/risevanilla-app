@@ -110,8 +110,8 @@ function showCollectorDetails(collectorId) {
                         <h4 style="margin-bottom:16px;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="material-icons">account_circle</span> Informations</h4>
                         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
                             <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">phone</span> Téléphone</div><div style="font-weight:600;">${formatPhoneNumberForDisplay(collector.phone)}</div></div>
-                            <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">fingerprint</span> CIN</div><div style="font-weight:600;">${collector.cin||'N/A'} ${collector.cinDate?`<small>(${formatDate(collector.cinDate)})</small>`:''}</div></div>
-                            <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">location_on</span> Adresse</div><div style="font-weight:600;">${collector.address||'N/A'}</div></div>
+                            <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">fingerprint</span> CIN</div><div style="font-weight:600;">${collector.cin||'—'} ${collector.cinDate?`<small>(${formatDate(collector.cinDate)})</small>`:''}</div></div>
+                            <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">location_on</span> Adresse</div><div style="font-weight:600;">${collector.address||'—'}</div></div>
                             <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">calendar_today</span> Inscription</div><div style="font-weight:600;">${formatDate(collector.createdAt)}</div></div>
                         </div>
                     </div>
@@ -253,7 +253,7 @@ function exportCollectorReport(collectorId) {
     .val{font-size:18px;font-weight:700}.lbl{font-size:11px;color:#666}.total{font-weight:700;background:#f8f9fa}</style>
     </head><body>
     <h1>RISEVANILLA — Rapport Collecteur</h1>
-    <p><strong>Collecteur:</strong> ${collector.name} &nbsp; <strong>CIN:</strong> ${collector.cin||'N/A'} &nbsp; <strong>Adresse:</strong> ${collector.address||'N/A'}</p>
+    <p><strong>Collecteur:</strong> ${collector.name} &nbsp; <strong>CIN:</strong> ${collector.cin||'—'} &nbsp; <strong>Adresse:</strong> ${collector.address||'—'}</p>
     <div class="summary">
         <div class="card"><div class="val" style="color:#ba1a1a">${formatCurrency(totalAdv+totalPai)}</div><div class="lbl">Total Débits</div></div>
         <div class="card"><div class="val" style="color:#2e7d32">${formatCurrency(totalRec+totalRemb)}</div><div class="lbl">Total Crédits</div></div>
