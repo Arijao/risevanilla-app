@@ -308,10 +308,10 @@ function generateReceiptThermal(receptionId) {
     if (!w) { showToast('Popup bloqué — autorisez les popups', 'error'); return; }
 
     /* Stratégie format thermique :
-     * - En écran  : body = fond gris, #ticket = bloc blanc 72mm centré → aperçu fidèle ticket
+     * - En écran  : body = fond gris, #ticket = bloc blanc 80mm centré → aperçu fidèle ticket
      * - À l'impression (@media print) : fond gris masqué, seul #ticket imprimé,
      *   @page margin:0 + le ticket porte ses propres paddings.
-     * Chrome respecte alors la largeur du contenu (72mm) sans forcer A4.         */
+     * Chrome respecte alors la largeur du contenu (80mm) sans forcer A4.         */
     const html = `<!DOCTYPE html>
 <html lang="fr"><head>
 <meta charset="UTF-8">
@@ -337,7 +337,7 @@ body {
 
 /* ── Barre d'actions (masquée à l'impression) ── */
 .toolbar {
-    width: 72mm;
+    width: 80mm;
     display: flex;
     gap: 8px;
     margin-bottom: 12px;
@@ -357,7 +357,7 @@ body {
 
 /* ── Ticket ── */
 #ticket {
-    width: 72mm;
+    width: 80mm;
     background: #fff;
     padding: 4mm 4mm 6mm;
     line-height: 1.6;
@@ -426,7 +426,7 @@ body {
 
 /* ── Impression ── */
 @media print {
-    @page { size: 72mm auto; margin: 0; }
+    @page { size: 80mm auto; margin: 0; }
 
     /* Masquer tout sauf le ticket */
     html  { background: #fff !important; }
@@ -435,7 +435,7 @@ body {
     .toolbar { display: none !important; }
 
     #ticket {
-        width: 72mm !important;
+        width: 80mm !important;
         box-shadow: none !important;
         padding: 3mm 3mm 5mm !important;
         /* Pas de page-break parasite */
