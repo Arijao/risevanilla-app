@@ -81,7 +81,7 @@ function updateAdvancesTable() {
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(adv.date)}</td>
-            <td data-label="Collecteur">${collector ? RiseVanillaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur"></td>
             <td data-label="Montant">${formatCurrency(adv.amount)}</td>
             <td data-label="Motif">${RiseVanillaSearch.highlightText(adv.motif || '—', _q)}</td>
             <td class="actions-cell">
@@ -92,6 +92,19 @@ function updateAdvancesTable() {
                     <span class="material-icons">delete</span>
                 </button>
             </td>`;
+        // Avatar collecteur
+        const collTd = row.querySelector('td[data-label="Collecteur"]');
+        if (collTd) {
+            if (collector) {
+                const avatarCell = renderCollectorAvatar(collector, false);
+                const nameSpan = document.createElement('span');
+                nameSpan.innerHTML = RiseVanillaSearch.highlightText(collector.name, _q);
+                avatarCell.appendChild(nameSpan);
+                collTd.appendChild(avatarCell);
+            } else {
+                collTd.innerHTML = '<em style="opacity:.6">Supprimé</em>';
+            }
+        }
         tbody.appendChild(row);
     });
 
@@ -352,7 +365,7 @@ function updateRemboursementsTable() {
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(r.date)}</td>
-            <td data-label="Collecteur">${collector ? RiseVanillaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur"></td>
             <td data-label="Montant Remboursé">${formatCurrency(r.amount)}</td>
             <td data-label="Note">${RiseVanillaSearch.highlightText(r.note || '—', _q)}</td>
             <td class="actions-cell">
@@ -363,6 +376,19 @@ function updateRemboursementsTable() {
                     <span class="material-icons">delete</span>
                 </button>
             </td>`;
+        // Avatar collecteur
+        const collTd = row.querySelector('td[data-label="Collecteur"]');
+        if (collTd) {
+            if (collector) {
+                const avatarCell = renderCollectorAvatar(collector, false);
+                const nameSpan = document.createElement('span');
+                nameSpan.innerHTML = RiseVanillaSearch.highlightText(collector.name, _q);
+                avatarCell.appendChild(nameSpan);
+                collTd.appendChild(avatarCell);
+            } else {
+                collTd.innerHTML = '<em style="opacity:.6">Supprimé</em>';
+            }
+        }
         tbody.appendChild(row);
     });
 }
@@ -462,7 +488,7 @@ function updatePaiementsTable() {
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(p.date)}</td>
-            <td data-label="Collecteur">${collector ? RiseVanillaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur"></td>
             <td data-label="Montant Payé">${formatCurrency(p.amount)}</td>
             <td data-label="Note">${RiseVanillaSearch.highlightText(p.note || '—', _q)}</td>
             <td class="actions-cell">
@@ -470,6 +496,19 @@ function updatePaiementsTable() {
                     <span class="material-icons">delete</span>
                 </button>
             </td>`;
+        // Avatar collecteur
+        const collTdP = row.querySelector('td[data-label="Collecteur"]');
+        if (collTdP) {
+            if (collector) {
+                const avatarCell = renderCollectorAvatar(collector, false);
+                const nameSpan = document.createElement('span');
+                nameSpan.innerHTML = RiseVanillaSearch.highlightText(collector.name, _q);
+                avatarCell.appendChild(nameSpan);
+                collTdP.appendChild(avatarCell);
+            } else {
+                collTdP.innerHTML = '<em style="opacity:.6">Supprimé</em>';
+            }
+        }
         tbody.appendChild(row);
     });
 }

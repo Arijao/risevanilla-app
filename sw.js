@@ -5,7 +5,7 @@
  * ============================================================ */
 
 const CACHE_NAME    = 'risevanilla-v3';
-const CACHE_VERSION = '3.0.0';
+const CACHE_VERSION = '3.1.0';
 const STATIC_CACHE  = `${CACHE_NAME}-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_NAME}-runtime-${CACHE_VERSION}`;
 

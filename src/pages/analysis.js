@@ -66,7 +66,7 @@ function updateAnalysisTable() {
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td data-label="Collecteur">${RiseVanillaSearch.highlightText(c.name, _q)}</td>
+            <td data-label="Collecteur"></td>
             <td data-label="Total Débits">${formatCurrency(totalDebits)}</td>
             <td data-label="Total Crédits">${formatCurrency(totalCred)}</td>
             <td data-label="Solde">${formatCurrency(balance)}</td>
@@ -75,6 +75,15 @@ function updateAnalysisTable() {
                 <button class="btn btn-icon btn-outline" onclick="showCollectorDetails(${c.id})" title="Détails"><span class="material-icons">visibility</span></button>
                 ${actionBtn}
             </td>`;
+        // Avatar collecteur
+        const collTd = row.querySelector('td[data-label="Collecteur"]');
+        if (collTd) {
+            const avatarCell = renderCollectorAvatar(c, false);
+            const nameSpan = document.createElement('span');
+            nameSpan.innerHTML = RiseVanillaSearch.highlightText(c.name, _q);
+            avatarCell.appendChild(nameSpan);
+            collTd.appendChild(avatarCell);
+        }
         fragment.appendChild(row);
     });
 

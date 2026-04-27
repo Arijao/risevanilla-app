@@ -3376,3 +3376,72 @@
         height: 80px;
     }
 }
+
+/* ── Collector Avatar ─────────────────────────────────────────
+ * Utilisé dans tous les tableaux affichant des collecteurs.
+ * Cohérent avec le thème glassmorphism existant.
+ * ──────────────────────────────────────────────────────────── */
+.collector-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--md-sys-color-primary);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 2px 8px rgba(0,0,0,0.28);
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+    background: var(--md-sys-color-surface-variant);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    cursor: default;
+}
+.collector-avatar:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 2px var(--md-sys-color-primary), 0 4px 14px rgba(0,0,0,0.35);
+}
+
+.collector-avatar-placeholder {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    vertical-align: middle;
+    border: 2px solid rgba(255,255,255,0.18);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.22);
+    letter-spacing: 0.04em;
+    user-select: none;
+    transition: transform 0.18s ease;
+    cursor: default;
+}
+.collector-avatar-placeholder:hover {
+    transform: scale(1.15);
+}
+
+/* Cellule combinant avatar + nom dans les tableaux */
+.collector-avatar-cell {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+.collector-avatar-cell > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Responsive : réduire légèrement sur mobile */
+@media (max-width: 600px) {
+    .collector-avatar,
+    .collector-avatar-placeholder {
+        width: 28px;
+        height: 28px;
+        font-size: 0.68rem;
+    }
+}

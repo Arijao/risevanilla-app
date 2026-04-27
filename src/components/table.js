@@ -11,6 +11,54 @@
 
 'use strict';
 
+// ── Avatar collecteur ─────────────────────────────────────────
+/**
+ * Génère un élément DOM (div.collector-avatar-cell) affichant
+ * la photo du collecteur (ou ses initiales colorées si absent).
+ *
+ * @param {{ name?: string, photo?: string }|null} collector
+ * @param {boolean} withName - afficher le nom à côté de l'avatar
+ * @returns {HTMLElement}
+ */
+function renderCollectorAvatar(collector, withName = true) {
+    const wrap = document.createElement('div');
+    wrap.className = 'collector-avatar-cell';
+
+    if (collector && collector.photo) {
+        const img = document.createElement('img');
+        img.className = 'collector-avatar';
+        img.src = collector.photo;
+        img.alt = collector.name || '';
+        img.loading = 'lazy';
+        img.title = collector.name || '';
+        wrap.appendChild(img);
+    } else {
+        // Initiales (1 ou 2 lettres)
+        const initials = (collector && collector.name)
+            ? collector.name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase()
+            : '?';
+        // Couleur déterministe selon le nom — évite les couleurs aléatoires au rechargement
+        const hue = (collector && collector.name)
+            ? [...collector.name].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % 360
+            : 0;
+        const ph = document.createElement('div');
+        ph.className = 'collector-avatar-placeholder';
+        ph.textContent = initials;
+        ph.title = collector && collector.name ? collector.name : '';
+        ph.style.background =
+            `linear-gradient(135deg, hsl(${hue},55%,42%) 0%, hsl(${(hue + 45) % 360},65%,54%) 100%)`;
+        wrap.appendChild(ph);
+    }
+
+    if (withName) {
+        const span = document.createElement('span');
+        span.textContent = (collector && collector.name) ? collector.name : '—';
+        wrap.appendChild(span);
+    }
+
+    return wrap;
+}
+
 // ── Point d'entrée global ─────────────────────────────────────
 function updateAllTables() {
     invalidateCache();
@@ -81,7 +129,7 @@ function updateCollectorsTable() {
         const row = document.createElement('tr');
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
-            <td data-label="Nom">${RiseVanillaSearch.highlightText(c.name, _q)}</td>
+            <td data-label="Nom"></td>
             <td data-label="Téléphone">${RiseVanillaSearch.highlightText(formatPhoneNumberForDisplay(c.phone), _q)}</td>
             <td data-label="C.I.N">${RiseVanillaSearch.highlightText(c.cin || '', _q)}</td>
             <td data-label="Délivré le">${c.cinDate ? formatDate(c.cinDate) : ''}</td>
@@ -104,6 +152,15 @@ function updateCollectorsTable() {
                     <span class="material-icons">visibility</span>
                 </button>
             </td>`;
+        // Injecter avatar dans la cellule Nom
+        const nameTd = row.querySelector('td[data-label="Nom"]');
+        if (nameTd) {
+            const avatarCell = renderCollectorAvatar(c, false);
+            const nameSpan = document.createElement('span');
+            nameSpan.innerHTML = RiseVanillaSearch.highlightText(c.name, _q);
+            avatarCell.appendChild(nameSpan);
+            nameTd.appendChild(avatarCell);
+        }
         tbody.appendChild(row);
     });
 
@@ -141,7 +198,7 @@ function updateReceptionTable() {
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
         row.innerHTML = `
             <td data-label="Date">${formatDate(r.date)}</td>
-            <td data-label="Collecteur">${collector ? RiseVanillaSearch.highlightText(collector.name, _q) : '<em style="opacity:.6">Supprimé</em>'}</td>
+            <td data-label="Collecteur"></td>
             <td data-label="Poids Brut">${grossWeight} kg</td>
             <td data-label="Poids Net">${netWeight} kg</td>
             <td data-label="Qualité">
@@ -167,6 +224,19 @@ function updateReceptionTable() {
                     <span class="material-icons">print</span>
                 </button>
             </td>`;
+        // Avatar collecteur
+        const collTd = row.querySelector('td[data-label="Collecteur"]');
+        if (collTd) {
+            if (collector) {
+                const avatarCell = renderCollectorAvatar(collector, false);
+                const nameSpan = document.createElement('span');
+                nameSpan.innerHTML = RiseVanillaSearch.highlightText(collector.name, _q);
+                avatarCell.appendChild(nameSpan);
+                collTd.appendChild(avatarCell);
+            } else {
+                collTd.innerHTML = '<em style="opacity:.6">Supprimé</em>';
+            }
+        }
         tbody.appendChild(row);
     });
 
