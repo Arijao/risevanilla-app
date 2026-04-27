@@ -203,6 +203,18 @@ function searchInAllData(query) {
 
             // Highlight dans les cellules textuelles (hors actions-cell)
             row.querySelectorAll('td:not(.actions-cell)').forEach(td => {
+                // Cellules DOM riches (avatars) : re-surligner uniquement le <span> interne
+                if (td.dataset.noHighlight) {
+                    const span = td.querySelector('.collector-avatar-cell > span');
+                    if (span) {
+                        const orig = span.dataset.origText ?? span.textContent;
+                        span.dataset.origText = orig;
+                        span.innerHTML = isMatch
+                            ? RiseVanillaSearch.highlightText(orig, query)
+                            : RiseVanillaSearch.escapeHtml(orig);
+                    }
+                    return;
+                }
                 const orig = td.dataset.origText ?? td.textContent;
                 td.dataset.origText = orig;
                 td.innerHTML = isMatch
