@@ -155,6 +155,7 @@ function updateCollectorsTable() {
         // Injecter avatar dans la cellule Nom
         const nameTd = row.querySelector('td[data-label="Nom"]');
         if (nameTd) {
+            nameTd.dataset.noHighlight = '1'; // ← protège l'avatar du highlightTable
             const avatarCell = renderCollectorAvatar(c, false);
             const nameSpan = document.createElement('span');
             nameSpan.innerHTML = RiseVanillaSearch.highlightText(c.name, _q);
@@ -228,6 +229,7 @@ function updateReceptionTable() {
         const collTd = row.querySelector('td[data-label="Collecteur"]');
         if (collTd) {
             if (collector) {
+                collTd.dataset.noHighlight = '1'; // ← protège l'avatar du highlightTable
                 const avatarCell = renderCollectorAvatar(collector, false);
                 const nameSpan = document.createElement('span');
                 nameSpan.innerHTML = RiseVanillaSearch.highlightText(collector.name, _q);

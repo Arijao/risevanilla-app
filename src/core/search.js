@@ -162,6 +162,16 @@ window.RiseVanillaSearch = (() => {
       tr.querySelectorAll('td').forEach((td, i) => {
         // Ne jamais toucher aux cellules d'actions (boutons)
         if (td.classList.contains('actions-cell')) return;
+        // Cellules DOM riches (avatars) : re-surligner uniquement le <span> interne
+        if (td.dataset.noHighlight) {
+          const span = td.querySelector('.collector-avatar-cell > span');
+          if (span) {
+            const orig = span.dataset.origText ?? span.textContent;
+            span.dataset.origText = orig;
+            span.innerHTML = query ? highlightText(orig, query) : escapeHtml(orig);
+          }
+          return;
+        }
         if (cols && !cols.includes(i)) return;
         const orig = td.dataset.origText ?? td.textContent;
         td.dataset.origText = orig;
