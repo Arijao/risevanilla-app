@@ -884,118 +884,330 @@ window.SearchAnalytics = (() => {
 })();
 
 /* ══════════════════════════════════════════════════════════════════════════
- * HOOK AUTONOME — Réceptions & fermeture automatique sur navigation
+ * HOOK AUTONOME — Recherche contextuelle par module + fermeture automatique
  *
  * Ce bloc s'installe une fois le DOM prêt.
  * Il ne modifie aucune fonction existante.
  *
  * Responsabilités :
- *   1. Écouter l'input de recherche globale pour déclencher l'analyse
- *      sur la section Réceptions (table.js / main.js non fournis).
- *   2. Fermer le panneau quand l'utilisateur change de section,
- *      vide la recherche, ou change d'année.
+ *   1. Écouter l'input de recherche GLOBALE pour déclencher l'analyse
+ *      sur le MODULE ACTUELLEMENT ACTIF (respects la contexte)
+ *   2. Filtrer les données UNIQUEMENT du module actif
+ *   3. Fermer le panneau au changement de section, vide la recherche, ou changement d'année
+ *
+ * MODULES SUPPORTÉS :
+ *   'reception' → Réceptions
+ *   'advances' → Avances  
+ *   'remboursements' → Remboursements
+ *   'paiements' → Paiements
+ *   'expenses' → Dépenses
+ *   'delivery' → Livraisons
+ *   'analysis' → Suivi & Analyse
  * ══════════════════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
-  /* ── 1. Hook sur la barre de recherche globale pour les Réceptions ── */
-
   const searchInput = document.getElementById('global-search-input');
   if (!searchInput) return;
 
-  /**
-   * Identifie la section actuellement visible.
-   * Utilise le même mécanisme que router.js (section.classList.contains('active')).
-   */
+  // ── Détection de la section active ──
   function _getActiveSection() {
     const active = document.querySelector('.content-section.active');
     return active ? active.id : null;
   }
 
-  /**
-   * Déclenche l'analyse pour le module Réceptions depuis le DOM actuel.
-   * Appelé uniquement si la section active est "reception".
-   */
+  // ── Analyseurs par module ──
+  // Chacun filtre UNIQUEMENT les données de son module et appelle SearchAnalytics.analyze()
+
   function _analyzeReceptions(query) {
-    if (!query) { SearchAnalytics.close(); return; }
-
-    // Collecter les lignes visibles du tableau de réceptions
-    const tbody = document.getElementById('receptions-table');
-    if (!tbody) return;
-
-    const visibleRows = Array.from(tbody.querySelectorAll('tr'))
-      .filter(tr => !tr.querySelector('.empty-state') && tr.style.display !== 'none');
-
-    if (!visibleRows.length) { SearchAnalytics.close(); return; }
-
-    // Reconstruire des objets depuis appData en croisant les IDs de ligne
-    // Les boutons edit/delete portent l'ID via onclick="openAdjustModal(ID)" ou similaire
-    // On utilise appData.receptions directement et on filtre avec RiseVanillaSearch
-    if (typeof appData === 'undefined' || !appData.receptions) return;
-
-    const RECEPTION_FIELDS = [
-      'quality', 'date', 'note',
-      // noms fréquents pour le collecteur dénormalisé — table.js peut varier
-      'collectorName', 'collector', 'collecteurNom',
-    ];
-
-    // Filtrage via le moteur existant
-    let filtered = RiseVanillaSearch.filter(appData.receptions, query, RECEPTION_FIELDS);
-
-    // Si le moteur ne trouve rien sur les champs ci-dessus, tenter sur le nom du collecteur
+    if (!appData?.receptions) { SearchAnalytics.close(); return; }
+    
+    // Filtrer UNIQUEMENT par année actuelle (cohérence avec les autres analyseurs)
+    const dataForYear = (appData.receptions || []).filter(r => {
+      if (!r.date) return false;
+      const d = new Date(r.date);
+      if (Number.isNaN(d.getTime())) return false;
+      return d.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+    });
+    
+    const RECEPTION_FIELDS = ['quality', 'date', 'note', 'collectorName', 'collector', 'collecteurNom'];
+    let filtered = RiseVanillaSearch.filter(dataForYear, query, RECEPTION_FIELDS);
+    
+    // Recherche par collecteur si aucun résultat sur les champs principaux
     if (!filtered.length && appData.collectors) {
       const nq = RiseVanillaSearch.normalize(query);
-      filtered = appData.receptions.filter(r => {
+      filtered = dataForYear.filter(r => {
         const col = appData.collectors.find(c => c.id === r.collectorId);
         return col && RiseVanillaSearch.normalize(col.name).includes(nq);
       });
     }
-
+    
     if (!filtered.length) { SearchAnalytics.close(); return; }
-
-    // Enrichir avec le nom du collecteur pour que l'agrégateur puisse regrouper
+    
+    // Enrichir avec le nom du collecteur (requis par l'agrégateur)
     const enriched = filtered.map(r => {
       const col = (appData.collectors || []).find(c => c.id === r.collectorId);
       return { ...r, collecteur: col ? col.name : 'Inconnu' };
     });
-
+    
     SearchAnalytics.analyze(query, enriched, 'receptions');
   }
 
-  // Debounce léger pour ne pas surcharger pendant la frappe
-  let _saReceptionTimer = null;
-  searchInput.addEventListener('input', function () {
-    clearTimeout(_saReceptionTimer);
-    _saReceptionTimer = setTimeout(function () {
-      const query = searchInput.value.trim();
-      // N'intervenir que si la section Réceptions est active
-      // (les autres sections gèrent elles-mêmes l'appel à analyze())
-      if (_getActiveSection() === 'reception') {
-        _analyzeReceptions(query);
+  function _analyzeAdvances(query) {
+    if (!appData?.advances) { SearchAnalytics.close(); return; }
+    
+    // Filtrer UNIQUEMENT par année (pas de filtres supplémentaires comme collecteur/dates)
+    const dataForYear = (appData.advances || []).filter(a => {
+      if (!a.date) return false;
+      const d = new Date(a.date);
+      if (Number.isNaN(d.getTime())) return false;
+      return d.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+    });
+    
+    const ADVANCE_FIELDS = ['motif', 'type', 'note', 'collectorName', 'collector'];
+    let filtered = RiseVanillaSearch.filter(dataForYear, query, ADVANCE_FIELDS);
+    
+    // Recherche par collecteur si aucun résultat
+    if (!filtered.length && appData.collectors) {
+      const nq = RiseVanillaSearch.normalize(query);
+      filtered = dataForYear.filter(a => {
+        const col = appData.collectors.find(c => c.id === a.collectorId);
+        return col && RiseVanillaSearch.normalize(col.name).includes(nq);
+      });
+    }
+    
+    if (!filtered.length) { SearchAnalytics.close(); return; }
+    
+    const enriched = filtered.map(a => {
+      const col = (appData.collectors || []).find(c => c.id === a.collectorId);
+      return { ...a, collecteur: col ? col.name : 'Inconnu' };
+    });
+    
+    SearchAnalytics.analyze(query, enriched, 'advances');
+  }
+
+  function _analyzeRemboursements(query) {
+    if (!appData?.remboursements) { SearchAnalytics.close(); return; }
+    
+    const dataForYear = (appData.remboursements || []).filter(r => {
+      if (!r.date) return false;
+      const d = new Date(r.date);
+      if (Number.isNaN(d.getTime())) return false;
+      return d.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+    });
+    
+    const REM_FIELDS = ['note', 'montant', 'collectorName', 'collector'];
+    let filtered = RiseVanillaSearch.filter(dataForYear, query, REM_FIELDS);
+    
+    if (!filtered.length && appData.collectors) {
+      const nq = RiseVanillaSearch.normalize(query);
+      filtered = dataForYear.filter(r => {
+        const col = appData.collectors.find(c => c.id === r.collectorId);
+        return col && RiseVanillaSearch.normalize(col.name).includes(nq);
+      });
+    }
+    
+    if (!filtered.length) { SearchAnalytics.close(); return; }
+    
+    const enriched = filtered.map(r => {
+      const col = (appData.collectors || []).find(c => c.id === r.collectorId);
+      return { ...r, collecteur: col ? col.name : 'Inconnu' };
+    });
+    
+    SearchAnalytics.analyze(query, enriched, 'remboursements');
+  }
+
+  function _analyzePaiements(query) {
+    if (!appData?.paiements) { SearchAnalytics.close(); return; }
+    
+    const dataForYear = (appData.paiements || []).filter(p => {
+      if (!p.date) return false;
+      const d = new Date(p.date);
+      if (Number.isNaN(d.getTime())) return false;
+      return d.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+    });
+    
+    const PAI_FIELDS = ['note', 'montant', 'solde', 'collectorName', 'collector'];
+    let filtered = RiseVanillaSearch.filter(dataForYear, query, PAI_FIELDS);
+    
+    if (!filtered.length && appData.collectors) {
+      const nq = RiseVanillaSearch.normalize(query);
+      filtered = dataForYear.filter(p => {
+        const col = appData.collectors.find(c => c.id === p.collectorId);
+        return col && RiseVanillaSearch.normalize(col.name).includes(nq);
+      });
+    }
+    
+    if (!filtered.length) { SearchAnalytics.close(); return; }
+    
+    const enriched = filtered.map(p => {
+      const col = (appData.collectors || []).find(c => c.id === p.collectorId);
+      return { ...p, collecteur: col ? col.name : 'Inconnu' };
+    });
+    
+    SearchAnalytics.analyze(query, enriched, 'paiements');
+  }
+
+  function _analyzeExpenses(query) {
+    if (!appData?.expenses) { SearchAnalytics.close(); return; }
+    
+    const dataForYear = (appData.expenses || []).filter(e => {
+      if (!e.date) return false;
+      const d = new Date(e.date);
+      if (Number.isNaN(d.getTime())) return false;
+      return d.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+    });
+    
+    const EXP_FIELDS = ['description', 'categorie', 'category', 'note'];
+    let filtered = RiseVanillaSearch.filter(dataForYear, query, EXP_FIELDS);
+    
+    if (!filtered.length) { SearchAnalytics.close(); return; }
+    
+    SearchAnalytics.analyze(query, filtered, 'depenses');
+  }
+
+  function _analyzeDeliveries(query) {
+    if (!appData?.deliveries) { SearchAnalytics.close(); return; }
+    
+    const dataForYear = (appData.deliveries || []).filter(d => {
+      if (!d.date) return false;
+      const date = new Date(d.date);
+      if (Number.isNaN(date.getTime())) return false;
+      return date.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+    });
+    
+    const DEL_FIELDS = ['quality', 'client', 'destinataire', 'acheteur', 'nom_client', 'note'];
+    let filtered = RiseVanillaSearch.filter(dataForYear, query, DEL_FIELDS);
+    
+    if (!filtered.length) { SearchAnalytics.close(); return; }
+    
+    const enriched = filtered.map(del => {
+      const col = (appData.collectors || []).find(c => c.id === del.collectorId);
+      return { ...del, collecteur: col ? col.name : 'Inconnu' };
+    });
+    
+    SearchAnalytics.analyze(query, enriched, 'livraisons');
+  }
+
+  function _analyzeAnalysis(query) {
+    if (!appData?.collectors) { SearchAnalytics.close(); return; }
+    
+    const nq = RiseVanillaSearch.normalize(query);
+    const currentYr = typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear();
+    
+    // Filtrer les collecteurs par nom
+    let filtered = appData.collectors.filter(c => {
+      // Filtrer par année de création
+      if (c.createdAt) {
+        const cYear = new Date(c.createdAt).getFullYear();
+        if (cYear > currentYr) return false;
       }
-      // Fermer si la recherche est vidée quelle que soit la section
-      if (!query) SearchAnalytics.close();
+      // Filtrer par correspondance du nom
+      return RiseVanillaSearch.normalize(c.name).includes(nq);
+    });
+    
+    if (!filtered.length) { SearchAnalytics.close(); return; }
+    
+    // Pré-calculer les maps une seule fois (efficacité)
+    const paiMap = {}, rembMap = {}, recMap = {}, advMap = {};
+    
+    if (appData.paiements) {
+      appData.paiements
+        .filter(p => p.date && new Date(p.date).getFullYear() === currentYr)
+        .forEach(p => { paiMap[p.collectorId] = (paiMap[p.collectorId] || 0) + (p.amount || 0); });
+    }
+    
+    if (appData.remboursements) {
+      appData.remboursements
+        .filter(r => r.date && new Date(r.date).getFullYear() === currentYr)
+        .forEach(r => { rembMap[r.collectorId] = (rembMap[r.collectorId] || 0) + (r.amount || 0); });
+    }
+    
+    if (appData.receptions) {
+      appData.receptions
+        .filter(r => r.date && new Date(r.date).getFullYear() === currentYr)
+        .forEach(r => { recMap[r.collectorId] = (recMap[r.collectorId] || 0) + (r.totalValue || 0); });
+    }
+    
+    if (appData.advances) {
+      appData.advances
+        .filter(a => a.date && new Date(a.date).getFullYear() === currentYr)
+        .forEach(a => { advMap[a.collectorId] = (advMap[a.collectorId] || 0) + (a.amount || 0); });
+    }
+    
+    // Enrichir avec les données financières pre-calculées
+    const enriched = filtered.map(c => {
+      const totalDebits = (advMap[c.id] || 0) + (paiMap[c.id] || 0);
+      const totalCredits = (recMap[c.id] || 0) + (rembMap[c.id] || 0);
+      const solde = totalCredits - totalDebits;
+      
+      return {
+        collecteur: c.name,
+        totalDebits,
+        totalCredits,
+        solde,
+        statut: solde < 0 ? 'Débiteur' : (solde > 0 ? 'Créditeur' : 'Équilibré'),
+      };
+    });
+    
+    SearchAnalytics.analyze(query, enriched, 'analysis');
+  }
+
+  // ── Map : section → analyseur ──
+  const ANALYZERS = {
+    'reception': _analyzeReceptions,
+    'advances': _analyzeAdvances,
+    'remboursements': _analyzeRemboursements,
+    'paiements': _analyzePaiements,
+    'expenses': _analyzeExpenses,
+    'delivery': _analyzeDeliveries,
+    'analysis': _analyzeAnalysis,
+  };
+
+  // ── Débounce et dispatch contextuel ──
+  let _saTimer = null;
+  searchInput.addEventListener('input', function () {
+    clearTimeout(_saTimer);
+    _saTimer = setTimeout(function () {
+      const query = searchInput.value.trim();
+      
+      if (!query) {
+        SearchAnalytics.close();
+        return;
+      }
+      
+      const activeSection = _getActiveSection();
+      const analyzer = ANALYZERS[activeSection];
+      
+      if (analyzer && typeof SearchAnalytics !== 'undefined') {
+        try {
+          analyzer(query);
+        } catch (e) {
+          console.warn('[SearchAnalytics] Erreur d\'analyse pour la section ' + activeSection + ':', e);
+          SearchAnalytics.close();
+        }
+      } else {
+        SearchAnalytics.close();
+      }
     }, 200);
   });
 
-  /* ── 2. Fermeture automatique lors du changement de section ── */
-
-  // router.js active les sections via data-section sur les liens de nav
+  // ── Fermeture au changement de section ──
   document.querySelectorAll('.nav-link[data-section]').forEach(function (link) {
     link.addEventListener('click', function () {
-      SearchAnalytics.close();
+      if (typeof SearchAnalytics !== 'undefined') SearchAnalytics.close();
     });
   });
 
-  /* ── 3. Fermeture lors du changement d'année (year-slider) ── */
-
-  // L'année change via les boutons year-mobile-btn, le range, ou le thumb
+  // ── Fermeture au changement d'année ──
   document.addEventListener('risevanilla:yearchange', function () {
-    SearchAnalytics.close();
+    if (typeof SearchAnalytics !== 'undefined') SearchAnalytics.close();
   });
-  // Fallback direct sur les contrôles connus
-  ['yearMobileRange'].forEach(function (id) {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('change', function () { SearchAnalytics.close(); });
-  });
+  
+  const yearEl = document.getElementById('yearMobileRange');
+  if (yearEl) {
+    yearEl.addEventListener('change', function () {
+      if (typeof SearchAnalytics !== 'undefined') SearchAnalytics.close();
+    });
+  }
 });
