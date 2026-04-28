@@ -70,8 +70,9 @@ function updateAdvancesTable() {
                 <div class="material-icons">account_balance_wallet</div>
                 <div>Aucune avance enregistrée</div>
             </td></tr>`;
-        // Total = 0
         _setAdvancesTotal(0);
+        // ── SearchAnalytics : fermer le panneau si aucun résultat
+        SearchAnalytics.close();
         return;
     }
 
@@ -122,6 +123,19 @@ function updateAdvancesTable() {
     _setAdvancesTotal(filtered.reduce((s, a) => s + (a.amount || 0), 0));
 
     initTableSorting();
+
+    // ── SearchAnalytics : afficher les agrégats si une recherche est active
+    const _searchQuery = document.getElementById('global-search-input')?.value?.trim() || '';
+    if (_searchQuery) {
+        // Enrichir les items avec le nom du collecteur pour l'agrégation par collecteur
+        const _enriched = filtered.map(a => {
+            const c = (appData.collectors || []).find(col => col.id === a.collectorId);
+            return { ...a, collecteur: c ? c.name : 'Inconnu' };
+        });
+        SearchAnalytics.analyze(_searchQuery, _enriched, 'advances');
+    } else {
+        SearchAnalytics.close();
+    }
 }
 
 function _filterAdvancesData() {
@@ -357,6 +371,8 @@ function updateRemboursementsTable() {
                 <div class="material-icons">paid</div>
                 <div>Aucun remboursement pour ${currentYear}</div>
             </td></tr>`;
+        // ── SearchAnalytics : fermer si aucun résultat
+        SearchAnalytics.close();
         return;
     }
 
@@ -393,6 +409,18 @@ function updateRemboursementsTable() {
         }
         tbody.appendChild(row);
     });
+
+    // ── SearchAnalytics : afficher les agrégats si une recherche est active
+    const _searchQuery = document.getElementById('global-search-input')?.value?.trim() || '';
+    if (_searchQuery) {
+        const _enriched = rembs.map(r => {
+            const c = (appData.collectors || []).find(col => col.id === r.collectorId);
+            return { ...r, collecteur: c ? c.name : 'Inconnu' };
+        });
+        SearchAnalytics.analyze(_searchQuery, _enriched, 'remboursements');
+    } else {
+        SearchAnalytics.close();
+    }
 }
 
 // ── Paiements Solde Créditeur ─────────────────────────────────
@@ -481,6 +509,8 @@ function updatePaiementsTable() {
                 <div class="material-icons">payments</div>
                 <div>Aucun paiement pour ${currentYear}</div>
             </td></tr>`;
+        // ── SearchAnalytics : fermer si aucun résultat
+        SearchAnalytics.close();
         return;
     }
 
@@ -514,6 +544,18 @@ function updatePaiementsTable() {
         }
         tbody.appendChild(row);
     });
+
+    // ── SearchAnalytics : afficher les agrégats si une recherche est active
+    const _searchQuery = document.getElementById('global-search-input')?.value?.trim() || '';
+    if (_searchQuery) {
+        const _enriched = paiements.map(p => {
+            const c = (appData.collectors || []).find(col => col.id === p.collectorId);
+            return { ...p, collecteur: c ? c.name : 'Inconnu' };
+        });
+        SearchAnalytics.analyze(_searchQuery, _enriched, 'paiements');
+    } else {
+        SearchAnalytics.close();
+    }
 }
 
 // ── Live formatting pour champs montant ───────────────────────

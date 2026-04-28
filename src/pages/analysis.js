@@ -94,6 +94,26 @@ function updateAnalysisTable() {
     if (!pDiv && tableWrapper) { pDiv = document.createElement('div'); pDiv.className='pagination-controls'; tableWrapper.appendChild(pDiv); }
     if (pDiv) pDiv.innerHTML = createPaginationControls('analysis', toShow.length);
     initTableSorting();
+
+    // ── SearchAnalytics : vue synthétique des collecteurs filtrés ──
+    const _searchQuery = document.getElementById('global-search-input')?.value?.trim() || '';
+    if (_searchQuery && toShow.length) {
+        // Construire des items plats avec les totaux calculés pour l'agrégateur
+        const _analyticsItems = toShow.map(c => ({
+            collecteur:    c.name,
+            totalDebits:   getTotalAdvances(c.id) + (paiMap[c.id] || 0),
+            totalCredits:  (recMap[c.id] || 0) + (rembMap[c.id] || 0),
+            solde:         ((recMap[c.id] || 0) + (rembMap[c.id] || 0)) -
+                           (getTotalAdvances(c.id) + (paiMap[c.id] || 0)),
+            statut:        getCollectorStatus(
+                               ((recMap[c.id] || 0) + (rembMap[c.id] || 0)) -
+                               (getTotalAdvances(c.id) + (paiMap[c.id] || 0))
+                           ).label,
+        }));
+        SearchAnalytics.analyze(_searchQuery, _analyticsItems, 'analysis');
+    } else {
+        SearchAnalytics.close();
+    }
 }
 
 function filterAnalysisByStatus(statusClass) {

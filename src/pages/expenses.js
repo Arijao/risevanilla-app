@@ -36,6 +36,8 @@ function updateExpensesTable() {
                 <div>Aucune dépense pour ${currentYear}</div>
             </td></tr>`;
         _setExpensesTotal(0);
+        // ── SearchAnalytics : fermer le panneau si aucun résultat ──
+        SearchAnalytics.close();
         return;
     }
 
@@ -76,6 +78,14 @@ function updateExpensesTable() {
     _setExpensesTotal(expenses.reduce((s, e) => s + (e.amount || 0), 0));
 
     initTableSorting();
+
+    // ── SearchAnalytics : agrégats contextuels si recherche active ──
+    const _searchQuery = document.getElementById('global-search-input')?.value?.trim() || '';
+    if (_searchQuery) {
+        SearchAnalytics.analyze(_searchQuery, expenses, 'depenses');
+    } else {
+        SearchAnalytics.close();
+    }
 }
 
 function _setExpensesTotal(total) {
