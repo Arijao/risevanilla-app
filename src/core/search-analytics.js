@@ -1005,6 +1005,14 @@ document.addEventListener('DOMContentLoaded', function () {
     return active ? active.id : null;
   }
 
+  // ── Année active (lit depuis le DOM en priorité, puis variable globale, puis système) ──
+  function _getActiveYear() {
+    const el = document.getElementById('yearMobileRange');
+    if (el && el.value) return parseInt(el.value, 10);
+    if (typeof currentYear !== 'undefined' && currentYear) return currentYear;
+    return new Date().getFullYear();
+  }
+
   // ── Analyseurs par module ──
   // Chacun filtre UNIQUEMENT les données de son module et appelle SearchAnalytics.analyze()
 
@@ -1016,7 +1024,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!r.date) return false;
       const d = new Date(r.date);
       if (Number.isNaN(d.getTime())) return false;
-      return d.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+      return d.getFullYear() === _getActiveYear();
     });
     
     const RECEPTION_FIELDS = ['quality', 'date', 'note', 'collectorName', 'collector', 'collecteurNom'];
@@ -1050,7 +1058,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!a.date) return false;
       const d = new Date(a.date);
       if (Number.isNaN(d.getTime())) return false;
-      return d.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+      return d.getFullYear() === _getActiveYear();
     });
     
     const ADVANCE_FIELDS = ['motif', 'type', 'note', 'collectorName', 'collector'];
@@ -1082,7 +1090,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!r.date) return false;
       const d = new Date(r.date);
       if (Number.isNaN(d.getTime())) return false;
-      return d.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+      return d.getFullYear() === _getActiveYear();
     });
     
     const REM_FIELDS = ['note', 'montant', 'collectorName', 'collector'];
@@ -1113,7 +1121,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!p.date) return false;
       const d = new Date(p.date);
       if (Number.isNaN(d.getTime())) return false;
-      return d.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+      return d.getFullYear() === _getActiveYear();
     });
     
     const PAI_FIELDS = ['note', 'montant', 'solde', 'collectorName', 'collector'];
@@ -1144,7 +1152,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!e.date) return false;
       const d = new Date(e.date);
       if (Number.isNaN(d.getTime())) return false;
-      return d.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+      return d.getFullYear() === _getActiveYear();
     });
     
     const EXP_FIELDS = ['description', 'categorie', 'category', 'note'];
@@ -1162,7 +1170,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!d.date) return false;
       const date = new Date(d.date);
       if (Number.isNaN(date.getTime())) return false;
-      return date.getFullYear() === (typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear());
+      return date.getFullYear() === _getActiveYear();
     });
     
     const DEL_FIELDS = ['quality', 'client', 'destinataire', 'acheteur', 'nom_client', 'note'];
@@ -1182,7 +1190,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!appData?.collectors) { SearchAnalytics.close(); return; }
     
     const nq = RiseVanillaSearch.normalize(query);
-    const currentYr = typeof currentYear !== 'undefined' ? currentYear : new Date().getFullYear();
+    const currentYr = _getActiveYear();
     
     // Filtrer les collecteurs par nom
     let filtered = appData.collectors.filter(c => {
@@ -1254,9 +1262,6 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   // ── Débounce et dispatch contextuel ──
-  // IMPORTANT : délai volontairement > 300 ms (délai de router.js/initGlobalSearch)
-  // Cela garantit que le rerender de table est terminé AVANT l'analyse contextuelle,
-  // éliminant la race condition qui faisait basculer le panneau sur "Suivi & Analyse".
   let _saTimer = null;
   searchInput.addEventListener('input', function () {
     clearTimeout(_saTimer);
@@ -1281,7 +1286,7 @@ document.addEventListener('DOMContentLoaded', function () {
       } else {
         SearchAnalytics.close();
       }
-    }, 350);
+    }, 200);
   });
 
   // ── Fermeture au changement de section ──
