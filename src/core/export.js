@@ -560,7 +560,8 @@ function _nombreEnLettres(n) {
     ];
 
     /**
-     * Convertit un entier 1–999 en lettres.
+     * Convertit un entier 1–999 en lettres (style traditionnel : espaces entre groupes,
+     * tirets conservés uniquement dans les composés figés : quatre-vingt, dix-sept…).
      * @param {number} nb        - Nombre à convertir (1–999)
      * @param {boolean} centPlur - Autoriser l'accord de « cents » (true seulement pour le dernier groupe)
      */
@@ -572,12 +573,12 @@ function _nombreEnLettres(n) {
 
         // Centaines
         if (c > 0) {
-            r += (c === 1 ? '' : UNITES[c] + '-') + 'cent';
+            r += (c === 1 ? '' : UNITES[c] + ' ') + 'cent';
             // « cents » uniquement si multiple exact de 100, > 1 cent, et dernier groupe
             if (rest === 0 && centPlur && c > 1) r += 's';
         }
         if (rest === 0) return r;
-        if (r) r += '-';
+        if (r) r += ' ';
 
         // Unités et dizaines
         if (rest < 20) {
@@ -587,19 +588,19 @@ function _nombreEnLettres(n) {
             const u   = rest % 10;
 
             if (diz === 7 || diz === 9) {
-                // 70–79 : soixante-dix, soixante-et-onze…
-                // 90–99 : quatre-vingt-dix, quatre-vingt-onze…
-                // 71 prend « et » (soixante-et-onze) mais pas 91 (quatre-vingt-onze)
-                const liaison = (u === 1 && diz === 7) ? '-et-' : '-';
+                // 70–79 : soixante dix-sept… soixante et onze
+                // 90–99 : quatre-vingt dix… quatre-vingt onze
+                // 71 prend « et » (soixante et onze) mais pas 91 (quatre-vingt onze)
+                const liaison = (u === 1 && diz === 7) ? ' et ' : ' ';
                 r += DIZAINES[diz] + liaison + UNITES[10 + u];
             } else {
                 r += DIZAINES[diz];
                 if (u === 1 && diz !== 8) {
-                    r += '-et-un';          // vingt-et-un, trente-et-un…
+                    r += ' et un';       // vingt et un, trente et un…
                 } else if (u > 0) {
-                    r += '-' + UNITES[u];
+                    r += ' ' + UNITES[u];
                 } else if (diz === 8) {
-                    r += 's';              // quatre-vingts (sans unité)
+                    r += 's';           // quatre-vingts (sans unité)
                 }
             }
         }
@@ -618,7 +619,7 @@ function _nombreEnLettres(n) {
     }
     if (milliers > 0) {
         // « mille » est invariable ; « cent » dans ce groupe ne prend jamais de s (suivi de mille)
-        const prefixe = milliers === 1 ? '' : _centaine(milliers, false) + '-';
+        const prefixe = milliers === 1 ? '' : _centaine(milliers, false) + ' ';
         parts.push(prefixe + 'mille');
     }
     if (reste > 0) {
@@ -626,7 +627,7 @@ function _nombreEnLettres(n) {
         parts.push(_centaine(reste, true));
     }
 
-    return parts.join('-');
+    return parts.join(' ');
 }
 
 function generateDeliveryPDF(deliveryId, type = 'BL') {
