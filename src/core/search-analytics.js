@@ -130,35 +130,42 @@ window.SearchAnalytics = (() => {
     /* ── Réceptions ─────────────────────────────────────────────────────── */
     receptions(results) {
       const s = results[0];
-      // Utiliser netWeight en priorité, fallback grossWeight
-      const kPoidsNet = findKey(s, ['netWeight', 'net_weight', 'poids_net', 'poidsnet']);
-      const kPoidsBrut = findKey(s, ['grossWeight', 'gross_weight', 'poids_brut', 'poidsbrut', 'poids', 'weight', 'kg', 'masse']);
-      const kQualite  = findKey(s, ['qualite', 'quality', 'type_vanille', 'type']);
-      const kValeur   = findKey(s, ['valeur', 'prix_total', 'montant', 'total']);
-      const kPrixUnit = findKey(s, ['prix_unit', 'prix_kg', 'prix_par_kg', 'prixkg', 'prix']);
-      const kCollect  = findKey(s, ['collecteur', 'collector', 'nom_collecteur', 'nom']);
-      const kStatut   = findKey(s, ['statut', 'status', 'etat']);
 
-      // Fonction pour extraire le poids en priorité net, puis brut
+      // ── Clés avec candidats STRICTS — évite les faux positifs sur 'type'/'nom' ──
+      // On utilise des noms complets pour ne pas matcher 'netWeight' comme statut
+      const kPoidsNet  = findKey(s, ['netweight', 'net_weight', 'poidsnet', 'poids_net']);
+      const kPoidsBrut = findKey(s, ['grossweight', 'gross_weight', 'poidsbrut', 'poids_brut']);
+      // Fallback sur poids/weight seulement si net/brut absents
+      const kPoidsGen  = (!kPoidsNet && !kPoidsBrut)
+        ? findKey(s, ['poids', 'weight', 'kg', 'masse'])
+        : null;
+
+      // Qualité : candidats explicites UNIQUEMENT — jamais 'type' seul (trop générique)
+      const kQualite  = findKey(s, ['quality', 'qualite', 'type_vanille', 'qualityname']);
+      // Valeur : candidats explicites
+      const kValeur   = findKey(s, ['totalvalue', 'total_value', 'valeur', 'prix_total']);
+      const kPrixUnit = findKey(s, ['price', 'prix', 'prix_unit', 'prix_kg', 'prixkg']);
+      // Collecteur : on enrichit avec 'collecteur' dans _analyzeReceptions, c'est la clé utilisée
+      const kCollect  = findKey(s, ['collecteur']);
+      // Statut : JAMAIS automatique sur Réceptions — ce module n'a pas de statut de transaction
+      // (le champ 'statut' n'existe pas sur appData.receptions dans RISEVANILLA)
+
+      // Fonction weight : priorité netWeight → grossWeight → champ générique
       const getWeight = (item) => {
-        if (kPoidsNet && item[kPoidsNet] !== undefined && item[kPoidsNet] !== null && item[kPoidsNet] !== 0) {
-          return parseFloat(item[kPoidsNet]) || 0;
-        }
-        if (kPoidsBrut && item[kPoidsBrut] !== undefined && item[kPoidsBrut] !== null) {
-          return parseFloat(item[kPoidsBrut]) || 0;
-        }
+        if (kPoidsNet)  { const v = parseFloat(item[kPoidsNet]);  if (v > 0) return v; }
+        if (kPoidsBrut) { const v = parseFloat(item[kPoidsBrut]); if (v > 0) return v; }
+        if (kPoidsGen)  { const v = parseFloat(item[kPoidsGen]);  if (v > 0) return v; }
         return 0;
       };
 
-      const totalPoids = results.reduce((sum, item) => sum + getWeight(item), 0);
-
-      const totalValeur = kValeur 
+      const totalPoids = results.reduce((acc, item) => acc + getWeight(item), 0);
+      const totalValeur = kValeur
         ? sum(results, kValeur)
-        : (kPoidsNet || kPoidsBrut) && kPrixUnit
+        : kPrixUnit
           ? results.reduce((a, r) => a + getWeight(r) * (parseFloat(r[kPrixUnit]) || 0), 0)
           : null;
 
-      /* Répartition par qualité avec poids net prioritaire */
+      /* ── Répartition par qualité ── */
       const byQualite = {};
       if (kQualite) {
         results.forEach(r => {
@@ -172,7 +179,7 @@ window.SearchAnalytics = (() => {
         });
       }
 
-      /* Répartition par collecteur avec poids net prioritaire */
+      /* ── Répartition par collecteur (clé 'collecteur' injectée par _analyzeReceptions) ── */
       const byCollect = {};
       if (kCollect) {
         results.forEach(r => {
@@ -186,40 +193,16 @@ window.SearchAnalytics = (() => {
         });
       }
 
-      /* Répartition par statut */
-      const byStatut = {};
-      if (kStatut) {
-        results.forEach(r => {
-          const st = r[kStatut] || 'Inconnu';
-          if (!byStatut[st]) byStatut[st] = { poids: 0, valeur: 0, count: 0 };
-          byStatut[st].count++;
-          byStatut[st].poids  += getWeight(r);
-          byStatut[st].valeur += kValeur
-            ? parseFloat(r[kValeur]) || 0
-            : getWeight(r) * (parseFloat(r[kPrixUnit]) || 0);
-        });
-      }
-
       return {
         icon: 'scale',
         module: 'Réceptions',
         cards: [
-          totalPoids > 0 && { label: 'Poids total (net)', value: fmt.kg(totalPoids), accent: true },
+          totalPoids > 0 && { label: 'Poids net total', value: fmt.kg(totalPoids), accent: true },
           totalValeur !== null && totalValeur > 0 && { label: 'Valeur totale', value: fmt.ar(totalValeur), accent: false },
           { label: 'Nb de lots', value: fmt.int(results.length), accent: false },
         ].filter(Boolean),
         sections: [
-          Object.keys(byStatut).length > 0 && {
-            title: 'Par statut',
-            icon: 'info',
-            cols: ['Poids net', 'Valeur', 'Lots'],
-            rows: Object.entries(byStatut)
-              .sort((a, b) => b[1].poids - a[1].poids)
-              .map(([st, d]) => ({
-                label: st,
-                cols: [fmt.kg(d.poids), fmt.ar(d.valeur), fmt.int(d.count)],
-              })),
-          },
+          // ⚠️  PAS de section "Par statut" pour les Réceptions
           Object.keys(byQualite).length > 0 && {
             title: 'Par qualité',
             icon: 'category',
@@ -231,7 +214,7 @@ window.SearchAnalytics = (() => {
                 cols: [fmt.kg(d.poids), fmt.ar(d.valeur), fmt.int(d.count)],
               })),
           },
-          Object.keys(byCollect).length > 1 && {
+          Object.keys(byCollect).length > 0 && {
             title: 'Par collecteur',
             icon: 'person',
             cols: ['Poids net', 'Valeur', 'Lots'],
@@ -641,6 +624,7 @@ window.SearchAnalytics = (() => {
   position: fixed;
   top: 72px;
   right: 20px;
+  left: auto;
   width: 340px;
   max-height: calc(100vh - 96px);
   overflow-y: auto;
@@ -660,14 +644,23 @@ window.SearchAnalytics = (() => {
   pointer-events: none;
   scrollbar-width: thin;
   scrollbar-color: var(--md-sys-color-outline-variant) transparent;
+  user-select: none;
 }
 #sa-panel.sa-visible {
   transform: translateX(0);
   opacity: 1;
   pointer-events: auto;
 }
+/* Quand le panneau est en cours de déplacement, désactiver la transition */
+#sa-panel.sa-dragging {
+  transition: none;
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+  cursor: grabbing;
+}
 
-/* ── Header ── */
+/* ── Header (handle de drag) ── */
 .sa-header {
   display: flex;
   align-items: center;
@@ -679,6 +672,22 @@ window.SearchAnalytics = (() => {
   border-radius: 19px 19px 0 0;
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
   position: relative;
+  cursor: grab;
+}
+.sa-header:active {
+  cursor: grabbing;
+}
+/* Indicateur visuel de drag */
+.sa-drag-hint {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3px;
+  background: var(--md-sys-color-outline-variant);
+  border-radius: 2px;
+  opacity: 0.5;
 }
 .sa-module-icon {
   font-size: 22px !important;
@@ -910,7 +919,8 @@ window.SearchAnalytics = (() => {
     /* ── Assemblage ── */
     const escapedQuery = query.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     return `
-      <div class="sa-header">
+      <div class="sa-header" id="sa-drag-handle">
+        <div class="sa-drag-hint"></div>
         <i class="material-icons sa-module-icon">${data.icon}</i>
         <div class="sa-header-text">
           <span class="sa-module-name">${data.module}</span>
@@ -965,14 +975,134 @@ window.SearchAnalytics = (() => {
 
     /* Animation d'entrée (légèrement différée pour laisser le DOM se rendre) */
     clearTimeout(_currentTimer);
-    _currentTimer = setTimeout(() => panel.classList.add('sa-visible'), 10);
+    _currentTimer = setTimeout(() => {
+      panel.classList.add('sa-visible');
+      _makeDraggable(panel);
+    }, 10);
   }
 
-  /** Ferme et masque le panneau */
+  /* ══════════════════════════════════════════════════════════════════════════
+   * 8. DRAGGABLE — Rend le panneau déplaçable par son header
+   * ══════════════════════════════════════════════════════════════════════════ */
+
+  function _makeDraggable(panel) {
+    const handle = panel.querySelector('#sa-drag-handle');
+    if (!handle || handle._dragBound) return;
+    handle._dragBound = true;
+
+    let startX, startY, startLeft, startTop, isDragging = false;
+
+    function _panelRect() {
+      return {
+        left: parseInt(panel.style.left) || panel.getBoundingClientRect().left,
+        top:  parseInt(panel.style.top)  || panel.getBoundingClientRect().top,
+      };
+    }
+
+    function onMouseDown(e) {
+      // Ne pas déclencher le drag sur le bouton fermer
+      if (e.target.classList.contains('sa-close') || e.target.closest('.sa-close')) return;
+      if (e.button !== 0) return;
+
+      isDragging = true;
+      const rect = panel.getBoundingClientRect();
+
+      // Passer en positionnement absolu précis dès le premier drag
+      if (!panel.style.left || !panel.style.top) {
+        panel.style.left  = rect.left + 'px';
+        panel.style.top   = rect.top  + 'px';
+        panel.style.right = 'auto';
+      }
+
+      startX    = e.clientX;
+      startY    = e.clientY;
+      startLeft = rect.left;
+      startTop  = rect.top;
+
+      panel.classList.add('sa-dragging');
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup',   onMouseUp);
+      e.preventDefault();
+    }
+
+    function onMouseMove(e) {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      // Contraindre dans les limites de la fenêtre
+      const maxLeft = window.innerWidth  - panel.offsetWidth  - 8;
+      const maxTop  = window.innerHeight - panel.offsetHeight - 8;
+      const newLeft = Math.max(8, Math.min(maxLeft, startLeft + dx));
+      const newTop  = Math.max(8, Math.min(maxTop,  startTop  + dy));
+
+      panel.style.left = newLeft + 'px';
+      panel.style.top  = newTop  + 'px';
+    }
+
+    function onMouseUp() {
+      if (!isDragging) return;
+      isDragging = false;
+      panel.classList.remove('sa-dragging');
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup',   onMouseUp);
+    }
+
+    // Touch support (mobile)
+    function onTouchStart(e) {
+      if (e.target.classList.contains('sa-close') || e.target.closest('.sa-close')) return;
+      const t = e.touches[0];
+      const rect = panel.getBoundingClientRect();
+      isDragging = true;
+      if (!panel.style.left || !panel.style.top) {
+        panel.style.left  = rect.left + 'px';
+        panel.style.top   = rect.top  + 'px';
+        panel.style.right = 'auto';
+      }
+      startX    = t.clientX;
+      startY    = t.clientY;
+      startLeft = rect.left;
+      startTop  = rect.top;
+      panel.classList.add('sa-dragging');
+    }
+
+    function onTouchMove(e) {
+      if (!isDragging) return;
+      const t = e.touches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+      const maxLeft = window.innerWidth  - panel.offsetWidth  - 8;
+      const maxTop  = window.innerHeight - panel.offsetHeight - 8;
+      panel.style.left = Math.max(8, Math.min(maxLeft, startLeft + dx)) + 'px';
+      panel.style.top  = Math.max(8, Math.min(maxTop,  startTop  + dy)) + 'px';
+      e.preventDefault();
+    }
+
+    function onTouchEnd() {
+      isDragging = false;
+      panel.classList.remove('sa-dragging');
+    }
+
+    handle.addEventListener('mousedown',  onMouseDown);
+    handle.addEventListener('touchstart', onTouchStart, { passive: false });
+    handle.addEventListener('touchmove',  onTouchMove,  { passive: false });
+    handle.addEventListener('touchend',   onTouchEnd);
+  }
+
+  /** Ferme et masque le panneau — réinitialise la position custom si déplacé */
   function close() {
     const panel = document.getElementById('sa-panel');
     if (!panel) return;
     panel.classList.remove('sa-visible');
+    // Réinitialiser la position après la fermeture pour que le prochain
+    // affichage reparte du coin haut-droit par défaut
+    setTimeout(() => {
+      if (!panel.classList.contains('sa-visible')) {
+        panel.style.left  = '';
+        panel.style.top   = '';
+        panel.style.right = '';
+      }
+    }, 350); // Après la transition CSS (0.32s)
   }
 
   /* Fermeture sur Échap (si le panneau est ouvert) */
@@ -1059,11 +1189,16 @@ document.addEventListener('DOMContentLoaded', function () {
       const col = (appData.collectors || []).find(c => c.id === r.collectorId);
       return { 
         ...r, 
+        // 'collecteur' est la clé lue par l'agrégateur (findKey ['collecteur'])
         collecteur: col ? col.name : 'Inconnu',
-        // Ajouter explicitement netWeight comme champ préféré
-        weight: r.netWeight ?? r.grossWeight ?? 0,
-        netWeight: r.netWeight ?? 0,
-        grossWeight: r.grossWeight ?? 0
+        // Garantir les champs de poids avec les noms exacts attendus par findKey
+        netWeight:   r.netWeight   ?? 0,
+        grossWeight: r.grossWeight ?? 0,
+        // Garantir la clé de qualité exacte
+        quality: r.quality || '',
+        // Garantir la clé de valeur exacte
+        totalValue: r.totalValue ?? r.totalvalue ?? 0,
+        price: r.price ?? 0,
       };
     });
     
