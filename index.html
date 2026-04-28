@@ -742,7 +742,7 @@
                     </div>
                     <table>
                         <thead>
-                            <tr><th>Nom de la Qualité</th><th>Description</th><th style="width: 120px;">Actions</th></tr>
+                            <tr><th>Type &amp; Nom</th><th>Description</th><th style="width: 120px;">Actions</th></tr>
                         </thead>
                         <tbody id="qualities-table"></tbody>
                     </table>
@@ -1060,6 +1060,11 @@
                     <label class="form-label">Qualité de la Vanille</label>
                     <input type="text" class="form-input" id="delivery-quality" list="quality-list" required placeholder="Sélectionner ou saisir la qualité">
                     <datalist id="delivery-quality-list"></datalist>
+                    <!-- Avertissement vanilleType — géré par _checkDeliveryQualityType() -->
+                    <div id="delivery-quality-warning" style="display:none;align-items:center;gap:6px;
+                         margin-top:8px;padding:8px 12px;border-radius:8px;font-size:13px;
+                         background:var(--md-sys-color-error-container);
+                         color:var(--md-sys-color-on-error-container);"></div>
                 </div>
                 <!-- Pesage Rapide Livraison -->
                 <div class="form-group" style="background: var(--md-sys-color-secondary-container); padding: 20px; border-radius: 12px; margin-bottom: 10px;">
@@ -1204,6 +1209,16 @@
             </div>
             <form id="quality-form" onsubmit="saveQuality(event)">
                 <input type="hidden" id="quality-id">
+                <div class="form-group">
+                    <label class="form-label">Type de vanille <span style="color:var(--md-sys-color-error)">*</span></label>
+                    <select class="form-select" id="quality-vanille-type" required>
+                        <option value="preparee">&#9989; Préparée — livrable à l'exportateur</option>
+                        <option value="verte">&#127807; Verte — achat brut, non livrable</option>
+                    </select>
+                    <small style="display:block;margin-top:6px;color:var(--md-sys-color-on-surface-variant);">
+                        Détermine si cette qualité peut être livrée à l'exportateur (préparée) ou non (verte).
+                    </small>
+                </div>
                 <div class="form-group"><label class="form-label">Nom de la Qualité</label><input type="text" id="quality-name" class="form-input" required></div>
                 <div class="form-group"><label class="form-label">Description (optionnel)</label><input type="text" id="quality-description" class="form-input"></div>
                 <div class="btn-group">

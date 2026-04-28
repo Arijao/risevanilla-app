@@ -38,7 +38,8 @@ function _generateDeliveryNumber(prefix, dateStr) {
     return `${base}${String(maxSeq + 1).padStart(3, '0')}`;
 }
 
-/** Met à jour la datalist des qualités dans le formulaire livraison */
+/** Met à jour la datalist des qualités dans le formulaire livraison
+ *  et ajoute un avertissement temps réel si qualité verte sélectionnée */
 function _populateDeliveryQualityDatalist() {
     const dl = document.getElementById('delivery-quality-list') ||
                document.getElementById('quality-list');
@@ -46,6 +47,40 @@ function _populateDeliveryQualityDatalist() {
     dl.innerHTML = (appData.qualities || [])
         .map(q => `<option value="${q.name}">`)
         .join('');
+
+    // ── Avertissement temps réel sur le champ qualité ──────────────────
+    const qualityInput = document.getElementById('delivery-quality');
+    if (qualityInput && !qualityInput._typeWarnBound) {
+        qualityInput._typeWarnBound = true;
+        qualityInput.addEventListener('input', _checkDeliveryQualityType);
+        qualityInput.addEventListener('change', _checkDeliveryQualityType);
+    }
+}
+
+// ── Avertissement visuel qualité verte dans le formulaire livraison ───
+
+function _checkDeliveryQualityType() {
+    const qualityInput = document.getElementById('delivery-quality');
+    const warningEl    = document.getElementById('delivery-quality-warning');
+    if (!qualityInput || !warningEl) return;
+
+    const val = qualityInput.value.trim();
+    if (!val) { warningEl.style.display = 'none'; return; }
+
+    if (!isQualityLivrable(val)) {
+        warningEl.innerHTML = `
+            <span class="material-icons" style="font-size:16px;vertical-align:middle;color:var(--md-sys-color-error);">warning</span>
+            <strong>"${val}"</strong> est une vanille <strong>verte</strong> — non livrable à l'exportateur.
+            Elle doit d'abord être préparée.`;
+        warningEl.style.display = 'flex';
+    } else {
+        warningEl.innerHTML = `
+            <span class="material-icons" style="font-size:16px;vertical-align:middle;color:var(--md-sys-color-success);">check_circle</span>
+            <strong>"${val}"</strong> — vanille préparée, livraison autorisée.`;
+        warningEl.style.display = 'flex';
+        // Masquer le message positif après 3s
+        setTimeout(() => { if (warningEl) warningEl.style.display = 'none'; }, 3000);
+    }
 }
 
 // ── Table des livraisons ──────────────────────────────────────
@@ -187,6 +222,13 @@ function saveDelivery(event) {
 
     if (!date || !invoice || !weight) {
         showToast('Date, N° Facture et Poids Net sont obligatoires', 'error');
+        return;
+    }
+
+    // ── Règle métier : une livraison = vanille préparée uniquement ──────
+    if (quality && !isQualityLivrable(quality)) {
+        showToast(`"${quality}" est une vanille verte — non livrable à l'exportateur. Veuillez d'abord la faire préparer.`, 'error', 5000);
+        document.getElementById('delivery-quality')?.focus();
         return;
     }
 
