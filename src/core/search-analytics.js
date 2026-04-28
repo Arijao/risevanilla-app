@@ -130,13 +130,14 @@ window.SearchAnalytics = (() => {
     /* ── Réceptions ─────────────────────────────────────────────────────── */
     receptions(results) {
       const s = results[0];
-      const kPoids    = findKey(s, ['poids', 'weight', 'kg', 'masse']);
+      const kPoids    = findKey(s, ['poids', 'weight', 'kg', 'masse', 'grossWeight', 'netWeight']);
       const kQualite  = findKey(s, ['qualite', 'quality', 'type_vanille', 'type']);
       const kValeur   = findKey(s, ['valeur', 'prix_total', 'montant', 'total']);
       const kPrixUnit = findKey(s, ['prix_unit', 'prix_kg', 'prix_par_kg', 'prixkg', 'prix']);
       const kCollect  = findKey(s, ['collecteur', 'collector', 'nom_collecteur', 'nom']);
       const kStatut   = findKey(s, ['statut', 'status', 'etat']);
 
+      // Utiliser 0 comme valeur par défaut pour les champs optionnels
       const totalPoids  = kPoids  ? sum(results, kPoids)  : null;
       const totalValeur = kValeur ? sum(results, kValeur) :
         (kPoids && kPrixUnit)
@@ -150,6 +151,7 @@ window.SearchAnalytics = (() => {
           const q = r[kQualite] || 'Inconnue';
           if (!byQualite[q]) byQualite[q] = { poids: 0, valeur: 0, count: 0 };
           byQualite[q].count++;
+          //  Utiliser 0 comme valeur par défaut
           byQualite[q].poids  += parseFloat(r[kPoids]) || 0;
           byQualite[q].valeur += kValeur
             ? parseFloat(r[kValeur]) || 0
@@ -1021,13 +1023,13 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // Filtrer UNIQUEMENT par année actuelle (cohérence avec les autres analyseurs)
     const dataForYear = (appData.receptions || []).filter(r => {
-      if (!r.date) return false;
+      if (!r.date) return true; // Certains enregistrements peuvent ne pas avoir de date, on les inclut par défaut
       const d = new Date(r.date);
-      if (Number.isNaN(d.getTime())) return false;
+      if (Number.isNaN(d.getTime())) return true; // Si la date est invalide, on l'inclut par défaut
       return d.getFullYear() === _getActiveYear();
     });
     
-    const RECEPTION_FIELDS = ['quality', 'date', 'note', 'collectorName', 'collector', 'collecteurNom'];
+    const RECEPTION_FIELDS = ['quality', 'date', 'note', 'collectorName', 'collector', 'collecteurNom', 'grossWeight', 'netWeight'];
     let filtered = RiseVanillaSearch.filter(dataForYear, query, RECEPTION_FIELDS);
     
     // Recherche par collecteur si aucun résultat sur les champs principaux
@@ -1044,7 +1046,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Enrichir avec le nom du collecteur (requis par l'agrégateur)
     const enriched = filtered.map(r => {
       const col = (appData.collectors || []).find(c => c.id === r.collectorId);
-      return { ...r, collecteur: col ? col.name : 'Inconnu' };
+      return { ...r, collecteur: col ? col.name : 'Inconnu', grossWeight: r.grossWeight ?? 0, netWeight: r.netWeight ?? 0 };
     });
     
     SearchAnalytics.analyze(query, enriched, 'receptions');

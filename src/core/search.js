@@ -64,7 +64,11 @@ window.RiseVanillaSearch = (() => {
     const nq = normalize(query);
     return fields.some(f => {
       const val = f.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : null), item);
-      return val !== null && normalize(String(val)).includes(nq);
+      // Gérer null/undefined en les convertissant en chaîne vide
+      if (val === null || val === undefined) return false;
+      // Convertir les nombres en chaîne (ex: grossWeight)
+      const strVal = typeof val === 'number' ? val.toString() : String(val);
+      return normalize(strVal).includes(nq);
     });
   }
 
