@@ -177,6 +177,9 @@ function searchInAllData(query) {
         analysis:      'analysis',
     };
 
+    // Déterminer la section active pour le rendu contextuel
+    const _activeSection = document.querySelector('.content-section.active')?.id;
+
     sections.forEach(sectionId => {
         const tableName = TABLE_MAP[sectionId];
 
@@ -185,8 +188,9 @@ function searchInAllData(query) {
             paginationState[tableName].page = 1;
         }
 
-        // Rerendre la table (getPaginatedData retournera TOUT si _searchActive)
-        if (tableName) {
+        // Ne rerendre que la table de la section active (évite que updateAnalysisTable()
+        // ou d'autres tables inactives déclenchent SearchAnalytics sur le mauvais module)
+        if (tableName && sectionId === _activeSection) {
             rerenderPaginatedTable(tableName);
         }
 
@@ -226,8 +230,11 @@ function searchInAllData(query) {
 }
 
 function _rerenderAllTables() {
-    ['collectors','advances','receptions','expenses','deliveries','analysis']
+    ['collectors','advances','receptions','expenses','deliveries']
         .forEach(t => rerenderPaginatedTable(t));
+    // Analysis uniquement si la section analysis est active (évite le conflit SearchAnalytics)
+    const activeId = document.querySelector('.content-section.active')?.id;
+    if (activeId === 'analysis') rerenderPaginatedTable('analysis');
     // Remboursements et paiements n'ont pas de rerenderPaginatedTable — on les force
     if (typeof updateRemboursementsTable === 'function') updateRemboursementsTable();
     if (typeof updatePaiementsTable      === 'function') updatePaiementsTable();

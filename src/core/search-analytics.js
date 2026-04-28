@@ -1254,6 +1254,9 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   // ── Débounce et dispatch contextuel ──
+  // IMPORTANT : délai volontairement > 300 ms (délai de router.js/initGlobalSearch)
+  // Cela garantit que le rerender de table est terminé AVANT l'analyse contextuelle,
+  // éliminant la race condition qui faisait basculer le panneau sur "Suivi & Analyse".
   let _saTimer = null;
   searchInput.addEventListener('input', function () {
     clearTimeout(_saTimer);
@@ -1278,7 +1281,7 @@ document.addEventListener('DOMContentLoaded', function () {
       } else {
         SearchAnalytics.close();
       }
-    }, 200);
+    }, 350);
   });
 
   // ── Fermeture au changement de section ──
