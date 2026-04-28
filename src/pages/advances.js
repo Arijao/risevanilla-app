@@ -7,6 +7,20 @@
 
 'use strict';
 
+// ── Guard SearchAnalytics ─────────────────────────────────────
+// Centralise tous les appels à SearchAnalytics.
+// Sécurise contre un chargement manquant ou un ordre inattendu.
+// Ne fait rien si SearchAnalytics n'est pas disponible ou si
+// aucune recherche n'est active (query vide).
+function _sa(query, items, module) {
+    if (typeof SearchAnalytics === 'undefined') return;
+    if (query && items && items.length) {
+        SearchAnalytics.analyze(query, items, module);
+    } else {
+        SearchAnalytics.close();
+    }
+}
+
 // ── Helpers locaux ────────────────────────────────────────────
 
 /** Retourne la date du jour au format YYYY-MM-DD */
@@ -70,9 +84,9 @@ function updateAdvancesTable() {
                 <div class="material-icons">account_balance_wallet</div>
                 <div>Aucune avance enregistrée</div>
             </td></tr>`;
+        // Total = 0
         _setAdvancesTotal(0);
-        // ── SearchAnalytics : fermer le panneau si aucun résultat
-        SearchAnalytics.close();
+        _sa('', null, 'advances');   // ferme le panneau
         return;
     }
 
@@ -124,17 +138,16 @@ function updateAdvancesTable() {
 
     initTableSorting();
 
-    // ── SearchAnalytics : afficher les agrégats si une recherche est active
-    const _searchQuery = document.getElementById('global-search-input')?.value?.trim() || '';
-    if (_searchQuery) {
-        // Enrichir les items avec le nom du collecteur pour l'agrégation par collecteur
+    // ── SearchAnalytics : agrégats avances si recherche active ──────────
+    const _q = document.getElementById('global-search-input')?.value?.trim() || '';
+    if (_q) {
         const _enriched = filtered.map(a => {
             const c = (appData.collectors || []).find(col => col.id === a.collectorId);
-            return { ...a, collecteur: c ? c.name : 'Inconnu' };
+            return Object.assign({}, a, { collecteur: c ? c.name : 'Inconnu' });
         });
-        SearchAnalytics.analyze(_searchQuery, _enriched, 'advances');
+        _sa(_q, _enriched, 'advances');
     } else {
-        SearchAnalytics.close();
+        _sa('', null, 'advances');
     }
 }
 
@@ -371,8 +384,7 @@ function updateRemboursementsTable() {
                 <div class="material-icons">paid</div>
                 <div>Aucun remboursement pour ${currentYear}</div>
             </td></tr>`;
-        // ── SearchAnalytics : fermer si aucun résultat
-        SearchAnalytics.close();
+        _sa('', null, 'remboursements');   // ferme le panneau
         return;
     }
 
@@ -410,16 +422,16 @@ function updateRemboursementsTable() {
         tbody.appendChild(row);
     });
 
-    // ── SearchAnalytics : afficher les agrégats si une recherche est active
-    const _searchQuery = document.getElementById('global-search-input')?.value?.trim() || '';
-    if (_searchQuery) {
-        const _enriched = rembs.map(r => {
+    // ── SearchAnalytics : agrégats remboursements si recherche active ───
+    const _qR = document.getElementById('global-search-input')?.value?.trim() || '';
+    if (_qR) {
+        const _enrichedR = rembs.map(r => {
             const c = (appData.collectors || []).find(col => col.id === r.collectorId);
-            return { ...r, collecteur: c ? c.name : 'Inconnu' };
+            return Object.assign({}, r, { collecteur: c ? c.name : 'Inconnu' });
         });
-        SearchAnalytics.analyze(_searchQuery, _enriched, 'remboursements');
+        _sa(_qR, _enrichedR, 'remboursements');
     } else {
-        SearchAnalytics.close();
+        _sa('', null, 'remboursements');
     }
 }
 
@@ -509,8 +521,7 @@ function updatePaiementsTable() {
                 <div class="material-icons">payments</div>
                 <div>Aucun paiement pour ${currentYear}</div>
             </td></tr>`;
-        // ── SearchAnalytics : fermer si aucun résultat
-        SearchAnalytics.close();
+        _sa('', null, 'paiements');   // ferme le panneau
         return;
     }
 
@@ -545,16 +556,16 @@ function updatePaiementsTable() {
         tbody.appendChild(row);
     });
 
-    // ── SearchAnalytics : afficher les agrégats si une recherche est active
-    const _searchQuery = document.getElementById('global-search-input')?.value?.trim() || '';
-    if (_searchQuery) {
-        const _enriched = paiements.map(p => {
+    // ── SearchAnalytics : agrégats paiements si recherche active ────────
+    const _qP = document.getElementById('global-search-input')?.value?.trim() || '';
+    if (_qP) {
+        const _enrichedP = paiements.map(p => {
             const c = (appData.collectors || []).find(col => col.id === p.collectorId);
-            return { ...p, collecteur: c ? c.name : 'Inconnu' };
+            return Object.assign({}, p, { collecteur: c ? c.name : 'Inconnu' });
         });
-        SearchAnalytics.analyze(_searchQuery, _enriched, 'paiements');
+        _sa(_qP, _enrichedP, 'paiements');
     } else {
-        SearchAnalytics.close();
+        _sa('', null, 'paiements');
     }
 }
 

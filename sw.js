@@ -5,7 +5,7 @@
  * ============================================================ */
 
 const CACHE_NAME    = 'risevanilla-v3';
-const CACHE_VERSION = '3.1.0';
+const CACHE_VERSION = '3.2.0';
 const STATIC_CACHE  = `${CACHE_NAME}-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_NAME}-runtime-${CACHE_VERSION}`;
 
@@ -27,6 +27,7 @@ const STATIC_ASSETS = [
     './src/core/router.js',
     './src/core/export.js',
     './src/core/search.js',
+    './src/core/search-analytics.js',
 
     // Components
     './src/components/toast.js',

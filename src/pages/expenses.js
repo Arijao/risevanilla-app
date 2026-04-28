@@ -36,8 +36,7 @@ function updateExpensesTable() {
                 <div>Aucune dépense pour ${currentYear}</div>
             </td></tr>`;
         _setExpensesTotal(0);
-        // ── SearchAnalytics : fermer le panneau si aucun résultat ──
-        SearchAnalytics.close();
+        if (typeof SearchAnalytics !== 'undefined') SearchAnalytics.close();
         return;
     }
 
@@ -79,12 +78,14 @@ function updateExpensesTable() {
 
     initTableSorting();
 
-    // ── SearchAnalytics : agrégats contextuels si recherche active ──
-    const _searchQuery = document.getElementById('global-search-input')?.value?.trim() || '';
-    if (_searchQuery) {
-        SearchAnalytics.analyze(_searchQuery, expenses, 'depenses');
-    } else {
-        SearchAnalytics.close();
+    // ── SearchAnalytics : agrégats dépenses si recherche active ─────────
+    if (typeof SearchAnalytics !== 'undefined') {
+        const _qE = document.getElementById('global-search-input')?.value?.trim() || '';
+        if (_qE) {
+            SearchAnalytics.analyze(_qE, expenses, 'depenses');
+        } else {
+            SearchAnalytics.close();
+        }
     }
 }
 

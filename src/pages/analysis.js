@@ -14,6 +14,7 @@ function updateAnalysisTable() {
     const available = appData.collectors.filter(isCollectorAvailableInCurrentYear);
     if (!available.length) {
         tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><div class="material-icons">analytics</div><div>Aucun collecteur pour ${currentYear}</div></td></tr>`;
+        if (typeof SearchAnalytics !== 'undefined') SearchAnalytics.close();
         return;
     }
 
@@ -42,6 +43,7 @@ function updateAnalysisTable() {
 
     if (!toShow.length) {
         tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><div class="material-icons">inbox</div><div>Aucune transaction pour ${currentYear}</div></td></tr>`;
+        if (typeof SearchAnalytics !== 'undefined') SearchAnalytics.close();
         return;
     }
 
@@ -95,24 +97,25 @@ function updateAnalysisTable() {
     if (pDiv) pDiv.innerHTML = createPaginationControls('analysis', toShow.length);
     initTableSorting();
 
-    // ── SearchAnalytics : vue synthétique des collecteurs filtrés ──
-    const _searchQuery = document.getElementById('global-search-input')?.value?.trim() || '';
-    if (_searchQuery && toShow.length) {
-        // Construire des items plats avec les totaux calculés pour l'agrégateur
-        const _analyticsItems = toShow.map(c => ({
-            collecteur:    c.name,
-            totalDebits:   getTotalAdvances(c.id) + (paiMap[c.id] || 0),
-            totalCredits:  (recMap[c.id] || 0) + (rembMap[c.id] || 0),
-            solde:         ((recMap[c.id] || 0) + (rembMap[c.id] || 0)) -
-                           (getTotalAdvances(c.id) + (paiMap[c.id] || 0)),
-            statut:        getCollectorStatus(
-                               ((recMap[c.id] || 0) + (rembMap[c.id] || 0)) -
-                               (getTotalAdvances(c.id) + (paiMap[c.id] || 0))
-                           ).label,
-        }));
-        SearchAnalytics.analyze(_searchQuery, _analyticsItems, 'analysis');
-    } else {
-        SearchAnalytics.close();
+    // ── SearchAnalytics : synthèse collecteurs filtrés si recherche active
+    if (typeof SearchAnalytics !== 'undefined') {
+        const _qA = document.getElementById('global-search-input')?.value?.trim() || '';
+        if (_qA && toShow.length) {
+            const _analyticsItems = toShow.map(c => ({
+                collecteur:   c.name,
+                totalDebits:  getTotalAdvances(c.id) + (paiMap[c.id] || 0),
+                totalCredits: (recMap[c.id] || 0) + (rembMap[c.id] || 0),
+                solde:        ((recMap[c.id] || 0) + (rembMap[c.id] || 0)) -
+                              (getTotalAdvances(c.id) + (paiMap[c.id] || 0)),
+                statut:       getCollectorStatus(
+                                  ((recMap[c.id] || 0) + (rembMap[c.id] || 0)) -
+                                  (getTotalAdvances(c.id) + (paiMap[c.id] || 0))
+                              ).label,
+            }));
+            SearchAnalytics.analyze(_qA, _analyticsItems, 'analysis');
+        } else {
+            SearchAnalytics.close();
+        }
     }
 }
 
