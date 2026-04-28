@@ -64,10 +64,15 @@ window.RiseVanillaSearch = (() => {
     const nq = normalize(query);
     return fields.some(f => {
       const val = f.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : null), item);
-      // Gérer null/undefined en les convertissant en chaîne vide
       if (val === null || val === undefined) return false;
-      // Convertir les nombres en chaîne (ex: grossWeight)
-      const strVal = typeof val === 'number' ? val.toString() : String(val);
+      // Convertir les nombres pour permettre la recherche (ex: "500" pour trouver 500)
+      let strVal;
+      if (typeof val === 'number') {
+        // Garder les décimales pour les poids
+        strVal = val % 1 !== 0 ? val.toFixed(3).toString() : val.toString();
+      } else {
+        strVal = String(val);
+      }
       return normalize(strVal).includes(nq);
     });
   }

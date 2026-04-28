@@ -130,60 +130,73 @@ window.SearchAnalytics = (() => {
     /* ── Réceptions ─────────────────────────────────────────────────────── */
     receptions(results) {
       const s = results[0];
-      const kPoids    = findKey(s, ['poids', 'weight', 'kg', 'masse', 'grossWeight', 'netWeight']);
+      // Utiliser netWeight en priorité, fallback grossWeight
+      const kPoidsNet = findKey(s, ['netWeight', 'net_weight', 'poids_net', 'poidsnet']);
+      const kPoidsBrut = findKey(s, ['grossWeight', 'gross_weight', 'poids_brut', 'poidsbrut', 'poids', 'weight', 'kg', 'masse']);
       const kQualite  = findKey(s, ['qualite', 'quality', 'type_vanille', 'type']);
       const kValeur   = findKey(s, ['valeur', 'prix_total', 'montant', 'total']);
       const kPrixUnit = findKey(s, ['prix_unit', 'prix_kg', 'prix_par_kg', 'prixkg', 'prix']);
       const kCollect  = findKey(s, ['collecteur', 'collector', 'nom_collecteur', 'nom']);
       const kStatut   = findKey(s, ['statut', 'status', 'etat']);
 
-      // Utiliser 0 comme valeur par défaut pour les champs optionnels
-      const totalPoids  = kPoids  ? sum(results, kPoids)  : null;
-      const totalValeur = kValeur ? sum(results, kValeur) :
-        (kPoids && kPrixUnit)
-          ? results.reduce((a, r) => a + (parseFloat(r[kPoids]) || 0) * (parseFloat(r[kPrixUnit]) || 0), 0)
+      // Fonction pour extraire le poids en priorité net, puis brut
+      const getWeight = (item) => {
+        if (kPoidsNet && item[kPoidsNet] !== undefined && item[kPoidsNet] !== null && item[kPoidsNet] !== 0) {
+          return parseFloat(item[kPoidsNet]) || 0;
+        }
+        if (kPoidsBrut && item[kPoidsBrut] !== undefined && item[kPoidsBrut] !== null) {
+          return parseFloat(item[kPoidsBrut]) || 0;
+        }
+        return 0;
+      };
+
+      const totalPoids = results.reduce((sum, item) => sum + getWeight(item), 0);
+
+      const totalValeur = kValeur 
+        ? sum(results, kValeur)
+        : (kPoidsNet || kPoidsBrut) && kPrixUnit
+          ? results.reduce((a, r) => a + getWeight(r) * (parseFloat(r[kPrixUnit]) || 0), 0)
           : null;
 
-      /* Répartition par qualité */
+      /* Répartition par qualité avec poids net prioritaire */
       const byQualite = {};
       if (kQualite) {
         results.forEach(r => {
           const q = r[kQualite] || 'Inconnue';
           if (!byQualite[q]) byQualite[q] = { poids: 0, valeur: 0, count: 0 };
           byQualite[q].count++;
-          //  Utiliser 0 comme valeur par défaut
-          byQualite[q].poids  += parseFloat(r[kPoids]) || 0;
+          byQualite[q].poids  += getWeight(r);
           byQualite[q].valeur += kValeur
             ? parseFloat(r[kValeur]) || 0
-            : (parseFloat(r[kPoids]) || 0) * (parseFloat(r[kPrixUnit]) || 0);
+            : getWeight(r) * (parseFloat(r[kPrixUnit]) || 0);
         });
       }
 
-      /* Répartition par collecteur (seulement si ≥ 2 collecteurs distincts) */
+      /* Répartition par collecteur avec poids net prioritaire */
       const byCollect = {};
       if (kCollect) {
         results.forEach(r => {
           const c = r[kCollect] || 'Inconnu';
           if (!byCollect[c]) byCollect[c] = { poids: 0, valeur: 0, count: 0 };
           byCollect[c].count++;
-          byCollect[c].poids  += parseFloat(r[kPoids]) || 0;
+          byCollect[c].poids  += getWeight(r);
           byCollect[c].valeur += kValeur
             ? parseFloat(r[kValeur]) || 0
-            : (parseFloat(r[kPoids]) || 0) * (parseFloat(r[kPrixUnit]) || 0);
+            : getWeight(r) * (parseFloat(r[kPrixUnit]) || 0);
         });
       }
 
-      /* ✅ CORRECTION : Répartition par statut (nouveau) */
+      /* Répartition par statut */
       const byStatut = {};
       if (kStatut) {
         results.forEach(r => {
           const st = r[kStatut] || 'Inconnu';
           if (!byStatut[st]) byStatut[st] = { poids: 0, valeur: 0, count: 0 };
           byStatut[st].count++;
-          byStatut[st].poids  += parseFloat(r[kPoids]) || 0;
+          byStatut[st].poids  += getWeight(r);
           byStatut[st].valeur += kValeur
             ? parseFloat(r[kValeur]) || 0
-            : (parseFloat(r[kPoids]) || 0) * (parseFloat(r[kPrixUnit]) || 0);
+            : getWeight(r) * (parseFloat(r[kPrixUnit]) || 0);
         });
       }
 
@@ -191,15 +204,15 @@ window.SearchAnalytics = (() => {
         icon: 'scale',
         module: 'Réceptions',
         cards: [
-          totalPoids  !== null && { label: 'Poids total',      value: fmt.kg(totalPoids),  accent: true },
-          totalValeur !== null && { label: 'Valeur totale',    value: fmt.ar(totalValeur), accent: false },
+          totalPoids > 0 && { label: 'Poids total (net)', value: fmt.kg(totalPoids), accent: true },
+          totalValeur !== null && totalValeur > 0 && { label: 'Valeur totale', value: fmt.ar(totalValeur), accent: false },
           { label: 'Nb de lots', value: fmt.int(results.length), accent: false },
         ].filter(Boolean),
         sections: [
           Object.keys(byStatut).length > 0 && {
             title: 'Par statut',
             icon: 'info',
-            cols: ['Poids', 'Valeur', 'Lots'],
+            cols: ['Poids net', 'Valeur', 'Lots'],
             rows: Object.entries(byStatut)
               .sort((a, b) => b[1].poids - a[1].poids)
               .map(([st, d]) => ({
@@ -210,7 +223,7 @@ window.SearchAnalytics = (() => {
           Object.keys(byQualite).length > 0 && {
             title: 'Par qualité',
             icon: 'category',
-            cols: ['Poids', 'Valeur', 'Lots'],
+            cols: ['Poids net', 'Valeur', 'Lots'],
             rows: Object.entries(byQualite)
               .sort((a, b) => b[1].poids - a[1].poids)
               .map(([q, d]) => ({
@@ -221,7 +234,7 @@ window.SearchAnalytics = (() => {
           Object.keys(byCollect).length > 1 && {
             title: 'Par collecteur',
             icon: 'person',
-            cols: ['Poids', 'Valeur', 'Lots'],
+            cols: ['Poids net', 'Valeur', 'Lots'],
             rows: Object.entries(byCollect)
               .sort((a, b) => b[1].poids - a[1].poids)
               .map(([c, d]) => ({
@@ -1021,18 +1034,17 @@ document.addEventListener('DOMContentLoaded', function () {
   function _analyzeReceptions(query) {
     if (!appData?.receptions) { SearchAnalytics.close(); return; }
     
-    // Filtrer UNIQUEMENT par année actuelle (cohérence avec les autres analyseurs)
     const dataForYear = (appData.receptions || []).filter(r => {
-      if (!r.date) return true; // Certains enregistrements peuvent ne pas avoir de date, on les inclut par défaut
+      if (!r.date) return true;
       const d = new Date(r.date);
-      if (Number.isNaN(d.getTime())) return true; // Si la date est invalide, on l'inclut par défaut
+      if (Number.isNaN(d.getTime())) return true;
       return d.getFullYear() === _getActiveYear();
     });
     
-    const RECEPTION_FIELDS = ['quality', 'date', 'note', 'collectorName', 'collector', 'collecteurNom', 'grossWeight', 'netWeight'];
+    // Ajouter netWeight aux champs de recherche
+    const RECEPTION_FIELDS = ['quality', 'date', 'note', 'collectorName', 'collector', 'collecteurNom', 'netWeight', 'grossWeight'];
     let filtered = RiseVanillaSearch.filter(dataForYear, query, RECEPTION_FIELDS);
     
-    // Recherche par collecteur si aucun résultat sur les champs principaux
     if (!filtered.length && appData.collectors) {
       const nq = RiseVanillaSearch.normalize(query);
       filtered = dataForYear.filter(r => {
@@ -1043,10 +1055,16 @@ document.addEventListener('DOMContentLoaded', function () {
     
     if (!filtered.length) { SearchAnalytics.close(); return; }
     
-    // Enrichir avec le nom du collecteur (requis par l'agrégateur)
     const enriched = filtered.map(r => {
       const col = (appData.collectors || []).find(c => c.id === r.collectorId);
-      return { ...r, collecteur: col ? col.name : 'Inconnu', grossWeight: r.grossWeight ?? 0, netWeight: r.netWeight ?? 0 };
+      return { 
+        ...r, 
+        collecteur: col ? col.name : 'Inconnu',
+        // Ajouter explicitement netWeight comme champ préféré
+        weight: r.netWeight ?? r.grossWeight ?? 0,
+        netWeight: r.netWeight ?? 0,
+        grossWeight: r.grossWeight ?? 0
+      };
     });
     
     SearchAnalytics.analyze(query, enriched, 'receptions');
