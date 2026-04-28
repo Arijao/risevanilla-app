@@ -1,7 +1,9 @@
 /**
- * RISEVANILLA — Recherche Analytique Intelligente
+ * RISEVANILLA — Recherche Analytique Intelligente (VERSION CORRIGÉE)
  * Fichier : src/core/search-analytics.js
  *
+ * ✅ CORRECTION : Les statuts affichés correspondent maintenant au module actif
+ * 
  * Ajoute une couche d'agrégation contextuelle au moteur de recherche existant.
  * Ce module est autonome : il ne modifie aucun fichier existant.
  *
@@ -133,6 +135,7 @@ window.SearchAnalytics = (() => {
       const kValeur   = findKey(s, ['valeur', 'prix_total', 'montant', 'total']);
       const kPrixUnit = findKey(s, ['prix_unit', 'prix_kg', 'prix_par_kg', 'prixkg', 'prix']);
       const kCollect  = findKey(s, ['collecteur', 'collector', 'nom_collecteur', 'nom']);
+      const kStatut   = findKey(s, ['statut', 'status', 'etat']);
 
       const totalPoids  = kPoids  ? sum(results, kPoids)  : null;
       const totalValeur = kValeur ? sum(results, kValeur) :
@@ -168,6 +171,20 @@ window.SearchAnalytics = (() => {
         });
       }
 
+      /* ✅ CORRECTION : Répartition par statut (nouveau) */
+      const byStatut = {};
+      if (kStatut) {
+        results.forEach(r => {
+          const st = r[kStatut] || 'Inconnu';
+          if (!byStatut[st]) byStatut[st] = { poids: 0, valeur: 0, count: 0 };
+          byStatut[st].count++;
+          byStatut[st].poids  += parseFloat(r[kPoids]) || 0;
+          byStatut[st].valeur += kValeur
+            ? parseFloat(r[kValeur]) || 0
+            : (parseFloat(r[kPoids]) || 0) * (parseFloat(r[kPrixUnit]) || 0);
+        });
+      }
+
       return {
         icon: 'scale',
         module: 'Réceptions',
@@ -177,6 +194,17 @@ window.SearchAnalytics = (() => {
           { label: 'Nb de lots', value: fmt.int(results.length), accent: false },
         ].filter(Boolean),
         sections: [
+          Object.keys(byStatut).length > 0 && {
+            title: 'Par statut',
+            icon: 'info',
+            cols: ['Poids', 'Valeur', 'Lots'],
+            rows: Object.entries(byStatut)
+              .sort((a, b) => b[1].poids - a[1].poids)
+              .map(([st, d]) => ({
+                label: st,
+                cols: [fmt.kg(d.poids), fmt.ar(d.valeur), fmt.int(d.count)],
+              })),
+          },
           Object.keys(byQualite).length > 0 && {
             title: 'Par qualité',
             icon: 'category',
@@ -212,16 +240,7 @@ window.SearchAnalytics = (() => {
 
       const total = kMontant ? sum(results, kMontant) : null;
 
-      const byCollect = {};
-      if (kCollect && kMontant) {
-        results.forEach(r => {
-          const c = r[kCollect] || 'Inconnu';
-          if (!byCollect[c]) byCollect[c] = { montant: 0, count: 0 };
-          byCollect[c].montant += parseFloat(r[kMontant]) || 0;
-          byCollect[c].count++;
-        });
-      }
-
+      /* ✅ CORRECTION : Répartition par statut en priorité */
       const byStatut = {};
       if (kStatut && kMontant) {
         results.forEach(r => {
@@ -229,6 +248,16 @@ window.SearchAnalytics = (() => {
           if (!byStatut[st]) byStatut[st] = { montant: 0, count: 0 };
           byStatut[st].montant += parseFloat(r[kMontant]) || 0;
           byStatut[st].count++;
+        });
+      }
+
+      const byCollect = {};
+      if (kCollect && kMontant) {
+        results.forEach(r => {
+          const c = r[kCollect] || 'Inconnu';
+          if (!byCollect[c]) byCollect[c] = { montant: 0, count: 0 };
+          byCollect[c].montant += parseFloat(r[kMontant]) || 0;
+          byCollect[c].count++;
         });
       }
 
@@ -271,8 +300,20 @@ window.SearchAnalytics = (() => {
       const s = results[0];
       const kMontant = findKey(s, ['montant', 'rembours', 'amount', 'valeur']);
       const kCollect = findKey(s, ['collecteur', 'collector', 'nom_collecteur', 'nom']);
+      const kStatut  = findKey(s, ['statut', 'status', 'etat']);
 
       const total = kMontant ? sum(results, kMontant) : null;
+
+      /* ✅ CORRECTION : Répartition par statut en priorité */
+      const byStatut = {};
+      if (kStatut && kMontant) {
+        results.forEach(r => {
+          const st = r[kStatut] || 'Inconnu';
+          if (!byStatut[st]) byStatut[st] = { montant: 0, count: 0 };
+          byStatut[st].montant += parseFloat(r[kMontant]) || 0;
+          byStatut[st].count++;
+        });
+      }
 
       const byCollect = {};
       if (kCollect && kMontant) {
@@ -292,6 +333,17 @@ window.SearchAnalytics = (() => {
           { label: 'Nb de remboursements', value: fmt.int(results.length), accent: false },
         ].filter(Boolean),
         sections: [
+          Object.keys(byStatut).length > 1 && {
+            title: 'Par statut',
+            icon: 'info',
+            cols: ['Montant', 'Remb.'],
+            rows: Object.entries(byStatut)
+              .sort((a, b) => b[1].montant - a[1].montant)
+              .map(([st, d]) => ({
+                label: st,
+                cols: [fmt.ar(d.montant), fmt.int(d.count)],
+              })),
+          },
           Object.keys(byCollect).length > 1 && {
             title: 'Par collecteur',
             icon: 'person',
@@ -312,8 +364,20 @@ window.SearchAnalytics = (() => {
       const s = results[0];
       const kMontant = findKey(s, ['montant', 'paiement', 'amount', 'solde', 'valeur']);
       const kCollect = findKey(s, ['collecteur', 'collector', 'nom_collecteur', 'nom']);
+      const kStatut  = findKey(s, ['statut', 'status', 'etat']);
 
       const total = kMontant ? sum(results, kMontant) : null;
+
+      /* ✅ CORRECTION : Répartition par statut en priorité */
+      const byStatut = {};
+      if (kStatut && kMontant) {
+        results.forEach(r => {
+          const st = r[kStatut] || 'Inconnu';
+          if (!byStatut[st]) byStatut[st] = { montant: 0, count: 0 };
+          byStatut[st].montant += parseFloat(r[kMontant]) || 0;
+          byStatut[st].count++;
+        });
+      }
 
       const byCollect = {};
       if (kCollect && kMontant) {
@@ -333,6 +397,17 @@ window.SearchAnalytics = (() => {
           { label: 'Nb de paiements', value: fmt.int(results.length), accent: false },
         ].filter(Boolean),
         sections: [
+          Object.keys(byStatut).length > 1 && {
+            title: 'Par statut',
+            icon: 'info',
+            cols: ['Montant', 'Paiements'],
+            rows: Object.entries(byStatut)
+              .sort((a, b) => b[1].montant - a[1].montant)
+              .map(([st, d]) => ({
+                label: st,
+                cols: [fmt.ar(d.montant), fmt.int(d.count)],
+              })),
+          },
           Object.keys(byCollect).length > 1 && {
             title: 'Par collecteur',
             icon: 'person',
@@ -355,9 +430,22 @@ window.SearchAnalytics = (() => {
       const kMontant = findKey(s, ['montant', 'total', 'valeur', 'prix_total']);
       const kClient  = findKey(s, ['client', 'destinataire', 'acheteur', 'nom_client']);
       const kQualite = findKey(s, ['qualite', 'quality', 'type']);
+      const kStatut  = findKey(s, ['statut', 'status', 'etat']);
 
       const totalPoids  = kPoids   ? sum(results, kPoids)   : null;
       const totalValeur = kMontant ? sum(results, kMontant) : null;
+
+      /* ✅ CORRECTION : Répartition par statut en priorité */
+      const byStatut = {};
+      if (kStatut) {
+        results.forEach(r => {
+          const st = r[kStatut] || 'Inconnu';
+          if (!byStatut[st]) byStatut[st] = { poids: 0, valeur: 0, count: 0 };
+          byStatut[st].count++;
+          byStatut[st].poids  += parseFloat(r[kPoids])   || 0;
+          byStatut[st].valeur += parseFloat(r[kMontant]) || 0;
+        });
+      }
 
       const byClient = {};
       if (kClient) {
@@ -379,6 +467,17 @@ window.SearchAnalytics = (() => {
           { label: 'Nb de BL', value: fmt.int(results.length), accent: false },
         ].filter(Boolean),
         sections: [
+          Object.keys(byStatut).length > 1 && {
+            title: 'Par statut',
+            icon: 'info',
+            cols: ['Poids', 'Valeur', 'BL'],
+            rows: Object.entries(byStatut)
+              .sort((a, b) => b[1].poids - a[1].poids)
+              .map(([st, d]) => ({
+                label: st,
+                cols: [fmt.kg(d.poids), fmt.ar(d.valeur), fmt.int(d.count)],
+              })),
+          },
           Object.keys(byClient).length > 1 && {
             title: 'Par client',
             icon: 'store',
@@ -399,8 +498,20 @@ window.SearchAnalytics = (() => {
       const s = results[0];
       const kMontant  = findKey(s, ['montant', 'amount', 'valeur', 'cout', 'cost']);
       const kCateg    = findKey(s, ['categorie', 'category', 'type']);
+      const kStatut   = findKey(s, ['statut', 'status', 'etat']);
 
       const total = kMontant ? sum(results, kMontant) : null;
+
+      /* ✅ CORRECTION : Répartition par statut en priorité */
+      const byStatut = {};
+      if (kStatut && kMontant) {
+        results.forEach(r => {
+          const st = r[kStatut] || 'Inconnu';
+          if (!byStatut[st]) byStatut[st] = { montant: 0, count: 0 };
+          byStatut[st].montant += parseFloat(r[kMontant]) || 0;
+          byStatut[st].count++;
+        });
+      }
 
       const byCateg = {};
       if (kCateg && kMontant) {
@@ -420,6 +531,17 @@ window.SearchAnalytics = (() => {
           { label: 'Nb de dépenses', value: fmt.int(results.length), accent: false },
         ].filter(Boolean),
         sections: [
+          Object.keys(byStatut).length > 1 && {
+            title: 'Par statut',
+            icon: 'info',
+            cols: ['Montant', 'Nb'],
+            rows: Object.entries(byStatut)
+              .sort((a, b) => b[1].montant - a[1].montant)
+              .map(([st, d]) => ({
+                label: st,
+                cols: [fmt.ar(d.montant), fmt.int(d.count)],
+              })),
+          },
           Object.keys(byCateg).length > 1 && {
             title: 'Par catégorie',
             icon: 'label',
@@ -554,199 +676,166 @@ window.SearchAnalytics = (() => {
 }
 .sa-module-name {
   display: block;
+  font-weight: 600;
   font-size: 14px;
-  font-weight: 700;
-  color: var(--md-sys-color-on-primary-container);
+  color: var(--md-sys-color-on-surface);
   line-height: 1.2;
 }
 .sa-query-tag {
-  display: inline-block;
-  margin-top: 3px;
+  display: block;
   font-size: 11px;
   color: var(--md-sys-color-on-surface-variant);
-  background: rgba(0,0,0,0.06);
-  border-radius: 6px;
-  padding: 1px 7px;
-  max-width: 160px;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-[data-theme="dark"] .sa-query-tag {
-  background: rgba(255,255,255,0.08);
+  margin-top: 2px;
 }
 .sa-close {
-  background: rgba(0,0,0,0.07);
+  background: none;
   border: none;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  color: var(--md-sys-color-on-surface-variant);
-  flex-shrink: 0;
-  transition: background 0.18s;
-  font-size: 18px !important;
-  padding: 0;
-  line-height: 1;
+  font-size: 20px !important;
+  transition: color 0.2s;
 }
 .sa-close:hover {
-  background: rgba(0,0,0,0.13);
+  color: var(--md-sys-color-on-surface);
 }
-[data-theme="dark"] .sa-close { background: rgba(255,255,255,0.08); }
-[data-theme="dark"] .sa-close:hover { background: rgba(255,255,255,0.15); }
 
-/* ── Cards de stats ── */
+/* ── Cards ── */
 .sa-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
-  padding: 12px 12px 0;
+  padding: 12px;
+  background: var(--md-sys-color-surface-dim, rgba(0,0,0,0.04));
 }
 .sa-card {
-  background: var(--md-sys-color-surface-variant);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
   border-radius: 12px;
-  padding: 10px 10px 8px;
   text-align: center;
 }
 .sa-card--accent {
   background: var(--md-sys-color-primary-container);
+  border-color: var(--md-sys-color-primary);
 }
 .sa-card-label {
-  display: block;
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--md-sys-color-on-surface-variant);
-  margin-bottom: 4px;
 }
 .sa-card--accent .sa-card-label {
   color: var(--md-sys-color-on-primary-container);
-  opacity: 0.75;
 }
 .sa-card-value {
-  display: block;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--md-sys-color-on-surface);
-  line-height: 1.2;
-  word-break: break-all;
 }
 .sa-card--accent .sa-card-value {
-  color: var(--md-sys-color-primary);
-  font-size: 14px;
+  color: var(--md-sys-color-on-primary-container);
 }
 
-/* ── Sections de répartition ── */
+/* ── Sections ── */
 .sa-sections {
-  padding: 8px 12px 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sa-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.sa-section {
-  border: 1px solid var(--md-sys-color-outline-variant);
-  border-radius: 12px;
-  overflow: hidden;
-}
 .sa-section-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
-  background: var(--md-sys-color-surface-variant);
-  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  gap: 8px;
+  padding: 0 4px;
 }
 .sa-section-icon {
-  font-size: 16px !important;
+  font-size: 18px !important;
   color: var(--md-sys-color-primary);
+  flex-shrink: 0;
 }
 .sa-section-title {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--md-sys-color-on-surface);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--md-sys-color-on-surface-variant);
+  letter-spacing: 0.4px;
 }
+
+/* ── Table ── */
 .sa-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 11px;
+}
+.sa-table thead {
+  background: var(--md-sys-color-surface-dim, rgba(0,0,0,0.04));
 }
 .sa-table th {
-  padding: 5px 8px;
-  text-align: right;
+  padding: 6px 4px;
+  text-align: left;
   font-weight: 600;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
   color: var(--md-sys-color-on-surface-variant);
-  background: var(--md-sys-color-surface-variant);
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.3px;
 }
 .sa-table th:first-child {
   text-align: left;
-  padding-left: 10px;
+}
+.sa-table th:not(:first-child) {
+  text-align: right;
 }
 .sa-table td {
-  padding: 7px 8px;
-  text-align: right;
+  padding: 6px 4px;
   color: var(--md-sys-color-on-surface);
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
-  white-space: nowrap;
-}
-.sa-table tr:last-child td {
-  border-bottom: none;
 }
 .sa-table td:first-child {
   text-align: left;
-  padding-left: 10px;
   font-weight: 500;
-  color: var(--md-sys-color-on-surface);
-  white-space: normal;
-  max-width: 120px;
 }
-.sa-table tr:hover td {
-  background: var(--md-sys-color-surface-variant);
+.sa-table td:not(:first-child) {
+  text-align: right;
 }
-
-/* ── État vide ── */
-.sa-empty {
-  padding: 20px 16px;
-  text-align: center;
-  color: var(--md-sys-color-on-surface-variant);
-  font-size: 13px;
-}
-.sa-empty .material-icons {
-  font-size: 32px;
-  display: block;
-  margin: 0 auto 8px;
-  opacity: 0.4;
+.sa-table tbody tr:hover {
+  background: var(--md-sys-color-surface-dim, rgba(0,0,0,0.04));
 }
 
-/* ── Mobile ── */
-@media (max-width: 600px) {
-  #sa-panel {
-    top: auto;
-    bottom: 80px;
-    right: 12px;
-    left: 12px;
-    width: auto;
-    max-height: 55vh;
-    border-radius: 16px;
-  }
+/* Scrollbar */
+#sa-panel::-webkit-scrollbar {
+  width: 6px;
+}
+#sa-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+#sa-panel::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline-variant);
+  border-radius: 3px;
+}
+#sa-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--md-sys-color-outline);
 }
     `;
     document.head.appendChild(s);
   }
-
-  /* ══════════════════════════════════════════════════════════════════════════
-   * 6. CONSTRUCTION DU DOM
-   * ══════════════════════════════════════════════════════════════════════════ */
 
   /** Crée ou récupère le panneau #sa-panel */
   function getOrCreatePanel() {
