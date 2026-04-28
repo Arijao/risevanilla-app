@@ -2,6 +2,8 @@
 ├── assets
 │   ├── chart.min.js
 │   └── xlsx.full.min.js
+├── CHANGELOG.md
+├── DOCUMENTATION_TECHNIQUE_RECHERCHE.md
 ├── fonts
 │   ├── fa
 │   │   ├── all.min.css
@@ -19,13 +21,20 @@
 │   ├── roboto-condensed-v31-latin-700.woff2
 │   ├── roboto-condensed-v31-latin-regular.woff2
 │   └── roboto-v51-latin-regular.woff2
+├── .gitignore
+├── GUIDE_TEST_RECHERCHE.md
+├── icon-risevanilla.svg
+├── INDEX_DOCUMENTATION.md
 ├── index.html
 ├── logo-192.png
 ├── logo-512.png
 ├── logo.jpg
 ├── logo-maskable.png
+├── logo-risevanilla.svg
 ├── manifest.json
 ├── README.md
+├── RESUME_CHANGEMENTS.md
+├── SOLUTION_COHERENCE_RECHERCHE.md
 ├── src
 │   ├── components
 │   │   ├── form.js
@@ -36,6 +45,7 @@
 │   │   ├── db.js
 │   │   ├── export.js
 │   │   ├── router.js
+│   │   ├── search-analytics.js
 │   │   ├── search.js
 │   │   └── state.js
 │   ├── main.js
@@ -56,4 +66,4 @@
 ├── structure.txt
 └── sw.js
 
-10 directories, 47 files
+10 directories, 57 files

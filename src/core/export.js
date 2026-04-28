@@ -539,12 +539,162 @@ window.onload = function() {
 }
 
 // ── Delivery PDF ──────────────────────────────────────────────
+
+/**
+ * Convertit un entier positif en toutes lettres (français).
+ * Gère : 0–999 999 999, accords de « cent » et « vingt »,
+ * tirets, cas particuliers 71–79 et 91–99.
+ */
+function _nombreEnLettres(n) {
+    n = Math.round(Math.abs(n));
+    if (n === 0) return 'zéro';
+
+    const UNITES = [
+        '', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept',
+        'huit', 'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze',
+        'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf'
+    ];
+    const DIZAINES = [
+        '', '', 'vingt', 'trente', 'quarante', 'cinquante',
+        'soixante', 'soixante', 'quatre-vingt', 'quatre-vingt'
+    ];
+
+    /**
+     * Convertit un entier 1–999 en lettres.
+     * @param {number} nb        - Nombre à convertir (1–999)
+     * @param {boolean} centPlur - Autoriser l'accord de « cents » (true seulement pour le dernier groupe)
+     */
+    function _centaine(nb, centPlur) {
+        if (nb === 0) return '';
+        let r = '';
+        const c    = Math.floor(nb / 100);
+        const rest = nb % 100;
+
+        // Centaines
+        if (c > 0) {
+            r += (c === 1 ? '' : UNITES[c] + '-') + 'cent';
+            // « cents » uniquement si multiple exact de 100, > 1 cent, et dernier groupe
+            if (rest === 0 && centPlur && c > 1) r += 's';
+        }
+        if (rest === 0) return r;
+        if (r) r += '-';
+
+        // Unités et dizaines
+        if (rest < 20) {
+            r += UNITES[rest];
+        } else {
+            const diz = Math.floor(rest / 10);
+            const u   = rest % 10;
+
+            if (diz === 7 || diz === 9) {
+                // 70–79 : soixante-dix, soixante-et-onze…
+                // 90–99 : quatre-vingt-dix, quatre-vingt-onze…
+                // 71 prend « et » (soixante-et-onze) mais pas 91 (quatre-vingt-onze)
+                const liaison = (u === 1 && diz === 7) ? '-et-' : '-';
+                r += DIZAINES[diz] + liaison + UNITES[10 + u];
+            } else {
+                r += DIZAINES[diz];
+                if (u === 1 && diz !== 8) {
+                    r += '-et-un';          // vingt-et-un, trente-et-un…
+                } else if (u > 0) {
+                    r += '-' + UNITES[u];
+                } else if (diz === 8) {
+                    r += 's';              // quatre-vingts (sans unité)
+                }
+            }
+        }
+        return r;
+    }
+
+    const millions = Math.floor(n / 1_000_000);
+    const milliers = Math.floor((n % 1_000_000) / 1_000);
+    const reste    = n % 1_000;
+    const parts    = [];
+
+    if (millions > 0) {
+        // « cent » dans le groupe millions : pluriel uniquement s'il est le dernier groupe
+        const centPlurMil = (milliers === 0 && reste === 0);
+        parts.push(_centaine(millions, centPlurMil) + (millions === 1 ? ' million' : ' millions'));
+    }
+    if (milliers > 0) {
+        // « mille » est invariable ; « cent » dans ce groupe ne prend jamais de s (suivi de mille)
+        const prefixe = milliers === 1 ? '' : _centaine(milliers, false) + '-';
+        parts.push(prefixe + 'mille');
+    }
+    if (reste > 0) {
+        // Dernier groupe : « cent » peut prendre un « s »
+        parts.push(_centaine(reste, true));
+    }
+
+    return parts.join('-');
+}
+
 function generateDeliveryPDF(deliveryId, type = 'BL') {
     const delivery = appData.deliveries.find(d => d.id === deliveryId);
     if (!delivery) { showToast('Livraison introuvable', 'error'); return; }
 
     const number = type === 'BL' ? delivery.bl : delivery.invoice;
     const title  = type === 'BL' ? 'BON DE LIVRAISON' : 'FACTURE';
+
+    // ── Tableau et bloc financier selon le type ───────────────
+    let tableHead, tableBody, montantEnLettres = '';
+
+    if (type === 'BL') {
+        // BL : strictement descriptif — aucune information financière
+        tableHead = `<tr>
+            <th>Désignation</th>
+            <th>Qualité</th>
+            <th>Poids Brut (kg)</th>
+            <th>Tare (kg)</th>
+            <th>Poids Net (kg)</th>
+        </tr>`;
+        tableBody = `
+            <tr>
+                <td>Vanille</td>
+                <td>${delivery.quality||'N/A'}</td>
+                <td>${delivery.grossWeight||'0'}</td>
+                <td>${delivery.bagWeight||'0'}</td>
+                <td>${delivery.weight||'0'}</td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="4">TOTAL POIDS NET</td>
+                <td>${delivery.weight||'0'} kg</td>
+            </tr>`;
+    } else {
+        // Facture : colonnes complètes + montant en lettres
+        const total   = delivery.totalValue || 0;
+        const lettres = _nombreEnLettres(total);
+        const lettresMaj = lettres.charAt(0).toUpperCase() + lettres.slice(1);
+        montantEnLettres = `
+            <div style="margin-top:16px;padding:12px 16px;border:1px solid #bbb;border-radius:6px;
+                        font-size:12px;color:#333;line-height:1.7;">
+                <strong>Arrêté la présente facture à la somme de :</strong><br>
+                <span style="font-style:italic;">${lettresMaj} ariary</span>
+            </div>`;
+        tableHead = `<tr>
+            <th>Désignation</th>
+            <th>Qualité</th>
+            <th>Poids Brut (kg)</th>
+            <th>Tare (kg)</th>
+            <th>Poids Net (kg)</th>
+            <th>Prix/kg</th>
+            <th>Valeur</th>
+        </tr>`;
+        tableBody = `
+            <tr>
+                <td>Vanille</td>
+                <td>${delivery.quality||'N/A'}</td>
+                <td>${delivery.grossWeight||'0'}</td>
+                <td>${delivery.bagWeight||'0'}</td>
+                <td>${delivery.weight||'0'}</td>
+                <td>${formatCurrency(delivery.price||0)}</td>
+                <td>${formatCurrency(total)}</td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="6">TOTAL</td>
+                <td>${formatCurrency(total)}</td>
+            </tr>`;
+    }
 
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title} — RISEVANILLA</title>
     <style>
@@ -574,20 +724,10 @@ function generateDeliveryPDF(deliveryId, type = 'BL') {
         <div class="info-box"><div class="info-label">Exportateur</div><div class="info-value">${delivery.exporter||'N/A'}</div></div>
     </div>
     <table>
-        <thead><tr><th>Désignation</th><th>Qualité</th><th>Poids Brut (kg)</th><th>Tare (kg)</th><th>Poids Net (kg)</th><th>Prix/kg</th><th>Valeur</th></tr></thead>
-        <tbody>
-            <tr>
-                <td>Vanille</td>
-                <td>${delivery.quality||'N/A'}</td>
-                <td>${delivery.grossWeight||'0'}</td>
-                <td>${delivery.bagWeight||'0'}</td>
-                <td>${delivery.weight||'0'}</td>
-                <td>${formatCurrency(delivery.price||0)}</td>
-                <td>${formatCurrency(delivery.totalValue||0)}</td>
-            </tr>
-            <tr class="total-row"><td colspan="6">TOTAL</td><td>${formatCurrency(delivery.totalValue||0)}</td></tr>
-        </tbody>
+        <thead>${tableHead}</thead>
+        <tbody>${tableBody}</tbody>
     </table>
+    ${montantEnLettres}
     <div class="signatures">
         <div class="sig-line">Signature Livreur / RISEVANILLA</div>
         <div class="sig-line">Signature Destinataire / ${delivery.exporter||'Exportateur'}</div>
