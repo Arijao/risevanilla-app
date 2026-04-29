@@ -329,19 +329,19 @@
                     </div>
                     <div class="insight-item" id="insight-valeur-recuperable">
                         <div class="insight-icon" style="background-color: var(--md-sys-color-success);">
-                            <span class="material-icons">diamond</span>
+                            <span class="material-icons">verified</span>
                         </div>
                         <div class="insight-content">
-                            <div class="insight-text">Valeur Récupérable (Bonnes Qualités)</div>
+                            <div class="insight-text">Vanille Préparée (livrable)</div>
                             <div class="insight-detail" id="valeur-recuperable-detail">Calcul en cours...</div>
                         </div>
                     </div>
                     <div class="insight-item" id="insight-perte-qualite">
-                        <div class="insight-icon" style="background-color: var(--md-sys-color-error);">
-                            <span class="material-icons">trending_down</span>
+                        <div class="insight-icon" style="background-color: #2e7d32;">
+                            <span class="material-icons">grass</span>
                         </div>
                         <div class="insight-content">
-                            <div class="insight-text">Perte sur Qualité Inférieure</div>
+                            <div class="insight-text">Vanille Verte (achat brut)</div>
                             <div class="insight-detail" id="perte-qualite-detail">Calcul en cours...</div>
                         </div>
                     </div>
@@ -639,6 +639,9 @@
                         <div class="empty-state"><span class="material-icons">hourglass_empty</span><div>Aucune réception de vanille pour calculer le prix de revient.</div></div>
                     </div>
                 </div>
+                <!-- Barre de synthèse par qualité — remplie par _updateQualitySummaryBar() -->
+                <div id="quality-summary-bar" style="display:none;"></div>
+
                 <div class="data-table">
                     <div class="table-header">
                         <h2 class="table-title">État des Collecteurs</h2>
@@ -1209,6 +1212,16 @@
             </div>
             <form id="quality-form" onsubmit="saveQuality(event)">
                 <input type="hidden" id="quality-id">
+                <div class="form-group">
+                    <label class="form-label">Type de vanille <span style="color:var(--md-sys-color-error)">*</span></label>
+                    <select class="form-select" id="quality-vanille-type" required>
+                        <option value="preparee">&#9989; Préparée — livrable à l'exportateur</option>
+                        <option value="verte">&#127807; Verte — achat brut, non livrable</option>
+                    </select>
+                    <small style="display:block;margin-top:6px;color:var(--md-sys-color-on-surface-variant);">
+                        Détermine si cette qualité peut être livrée à l'exportateur (préparée) ou non (verte).
+                    </small>
+                </div>
                 <div class="form-group">
                     <label class="form-label">Type de vanille <span style="color:var(--md-sys-color-error)">*</span></label>
                     <select class="form-select" id="quality-vanille-type" required>
