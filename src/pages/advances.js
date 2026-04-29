@@ -285,7 +285,7 @@ function _updateAdvanceCollectorBalance() {
     }
 
     const balance = calculateCollectorBalance(collectorId);
-    info.style.display = '';
+    info.style.display = 'flex';
 
     // Supprimer les classes d'état précédentes
     info.classList.remove('balance-info--credit', 'balance-info--debit', 'balance-info--neutral');
