@@ -175,7 +175,9 @@ function generateAdvancePDF(advanceId) {
             *{box-sizing:border-box;margin:0;padding:0;}
             body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;color:#1a1a2e;padding:32px;max-width:600px;margin:0 auto;}
             .header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #6750a4;padding-bottom:16px;margin-bottom:24px;}
-            .header h1{font-size:20px;color:#6750a4;letter-spacing:.5px;}
+            .header-title-container{display:flex;align-items:center;gap:10px;}
+            .header-logo{width:32px;height:32px;object-fit:contain;}
+            .header h1{font-size:20px;color:#6750a4;letter-spacing:.5px;margin:0;}
             .header .sub{font-size:11px;color:#888;margin-top:2px;}
             .badge{background:#6750a4;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
             .section{background:#f5f0ff;border-radius:10px;padding:16px;margin-bottom:16px;}
@@ -192,7 +194,10 @@ function generateAdvancePDF(advanceId) {
     </head><body>
         <div class="header">
             <div>
-                <h1>🌿 RISEVANILLA</h1>
+                <div class="header-title-container">
+                    <img src="logo-risevanilla.svg" class="header-logo">
+                    <h1>RISEVANILLA</h1>
+                </div>
                 <div class="sub">Gestion de Collecte de Vanille</div>
             </div>
             <div>
