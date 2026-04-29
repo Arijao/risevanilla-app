@@ -82,7 +82,7 @@ function _updateAdvanceCollectorBalance() {
     }
 
     const balance = calculateCollectorBalance(collectorId);
-    const absVal  = formatCurrency(Math.abs(balance));
+    const absVal  = Math.abs(balance).toLocaleString('fr-MG') + ' Ar';
 
     if (balance < 0) {
         // Le collecteur est débiteur : il doit de l'argent à RiseVanilla
