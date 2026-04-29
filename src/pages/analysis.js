@@ -174,133 +174,158 @@ function updatePrixRevientAnalysis() {
         return;
     }
 
-    // ── Séparer strictement verte vs préparée via vanilleType ──────────
-    // getVanilleType() est défini dans qualities.js — retourne 'verte'|'preparee'
+    // ── Filtrage strict par vanilleType (source de vérité : qualities.js) ──
     const recVerte    = receptionsYear.filter(r => getVanilleType(r.quality) === 'verte');
     const recPreparee = receptionsYear.filter(r => getVanilleType(r.quality) === 'preparee');
 
-    // ── Agrégats verte ──────────────────────────────────────────────────
-    const poidsVerte    = recVerte.reduce((s, r)    => s + (r.netWeight  || 0), 0);
-    const valeurVerte   = recVerte.reduce((s, r)    => s + (r.totalValue || 0), 0);
-    const prixMoyVerte  = poidsVerte > 0 ? valeurVerte / poidsVerte : 0;
+    // ── Agrégats ────────────────────────────────────────────────────────────
+    const poidsVerte   = recVerte.reduce((s, r)    => s + (r.netWeight  || 0), 0);
+    const valeurVerte  = recVerte.reduce((s, r)    => s + (r.totalValue || 0), 0);
+    const prixMoyVerte = poidsVerte > 0 ? valeurVerte / poidsVerte : 0;
 
-    // ── Agrégats préparée ───────────────────────────────────────────────
     const poidsPrep    = recPreparee.reduce((s, r) => s + (r.netWeight  || 0), 0);
     const valeurPrep   = recPreparee.reduce((s, r) => s + (r.totalValue || 0), 0);
     const prixMoyPrep  = poidsPrep > 0 ? valeurPrep / poidsPrep : 0;
 
-    // ── Total dépenses (charge opérationnelle partagée) ─────────────────
     const totalDepenses = expensesYear.reduce((s, e) => s + (e.amount || 0), 0);
+    const poidsTotal    = poidsVerte + poidsPrep;
+    const valeurTotal   = valeurVerte + valeurPrep;
+    const prixRevient   = poidsTotal > 0 ? (valeurTotal + totalDepenses) / poidsTotal : 0;
 
-    // ── Prix de revient global (réceptions + dépenses) ──────────────────
-    const poidsTotal  = poidsVerte + poidsPrep;
-    const valeurTotal = valeurVerte + valeurPrep;
-    const prixRevient = poidsTotal > 0
-        ? (valeurTotal + totalDepenses) / poidsTotal
-        : 0;
+    // ── Helper : badge qualité ───────────────────────────────────────────────
+    function qualBadges(recs) {
+        return [...new Set(recs.map(r => r.quality))]
+            .map(q => `<span class="status-badge status-${q.toLowerCase()}"
+                              style="font-size:10px;padding:2px 7px;">${q}</span>`)
+            .join('');
+    }
 
-    // ── Rendu ───────────────────────────────────────────────────────────
+    // ── Helper : ligne métrique ──────────────────────────────────────────────
+    function metricRow(icon, label, value) {
+        return `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;
+                    border-bottom:1px solid var(--md-sys-color-outline-variant);">
+            <span class="material-icons"
+                  style="font-size:17px;color:var(--md-sys-color-on-surface-variant);flex-shrink:0;">${icon}</span>
+            <span style="flex:1;font-size:12px;color:var(--md-sys-color-on-surface-variant);">${label}</span>
+            <strong style="font-size:13px;color:var(--md-sys-color-on-surface);white-space:nowrap;">${value}</strong>
+        </div>`;
+    }
+
+    // ── Helper : carte glassmorphism ─────────────────────────────────────────
+    function buildCard({ accentColor, icon, iconBg, titleLabel, subtitle,
+                         metrics, emptyMsg, badges, badgeCount, badgeTotal }) {
+        const metricsHtml = metrics.length
+            ? metrics.map(m => metricRow(m.icon, m.label, m.value)).join('')
+            : `<div style="display:flex;align-items:center;gap:8px;padding:12px 0;
+                           color:var(--md-sys-color-on-surface-variant);font-size:13px;opacity:.7;">
+                   <span class="material-icons" style="font-size:18px;">inbox</span>${emptyMsg}
+               </div>`;
+
+        const badgesHtml = badges
+            ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:14px;padding-top:10px;
+                           border-top:1px solid var(--md-sys-color-outline-variant);">
+                   <span style="font-size:11px;color:var(--md-sys-color-on-surface-variant);
+                                align-self:center;margin-right:2px;">${badgeCount} réc. ·</span>
+                   ${badges}
+               </div>`
+            : '';
+
+        return `
+        <div style="
+            flex:1;min-width:220px;
+            background:var(--md-sys-color-surface);
+            border:1px solid var(--md-sys-color-outline-variant);
+            border-top:3px solid ${accentColor};
+            border-radius:16px;
+            padding:20px;
+            box-shadow:0 2px 12px rgba(0,0,0,0.06);
+            display:flex;flex-direction:column;gap:0;
+            transition:box-shadow .2s ease;
+            position:relative;overflow:hidden;">
+
+            <!-- Halo décoratif subtil -->
+            <div style="
+                position:absolute;top:-32px;right:-32px;
+                width:90px;height:90px;border-radius:50%;
+                background:${iconBg};opacity:.18;pointer-events:none;"></div>
+
+            <!-- En-tête -->
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <div style="
+                    width:38px;height:38px;border-radius:10px;
+                    background:${iconBg};
+                    display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span class="material-icons" style="font-size:20px;color:${accentColor};">${icon}</span>
+                </div>
+                <div>
+                    <div style="font-size:11px;font-weight:700;letter-spacing:.6px;
+                                color:${accentColor};text-transform:uppercase;">${titleLabel}</div>
+                    <div style="font-size:11px;color:var(--md-sys-color-on-surface-variant);margin-top:1px;">${subtitle}</div>
+                </div>
+            </div>
+
+            <!-- Métriques -->
+            <div style="flex:1;">${metricsHtml}</div>
+
+            <!-- Badges qualités -->
+            ${badgesHtml}
+        </div>`;
+    }
+
+    // ── Construction des 3 cartes ────────────────────────────────────────────
+    const cardVerte = buildCard({
+        accentColor: '#2e7d32',
+        icon:        'grass',
+        iconBg:      'rgba(46,125,50,.12)',
+        titleLabel:  'Analyse des poids — Vanille Verte',
+        subtitle:    'Réceptions non préparées',
+        metrics: poidsVerte > 0 ? [
+            { icon: 'scale',        label: 'Poids total reçu',     value: `${poidsVerte.toFixed(2)} kg` },
+            { icon: 'payments',     label: 'Valeur totale',         value: formatCurrency(Math.round(valeurVerte)) },
+            { icon: 'trending_up',  label: "Prix moyen d'achat",   value: `${formatCurrency(Math.round(prixMoyVerte))}/kg` },
+        ] : [],
+        emptyMsg:   `Aucune réception verte pour ${currentYear}`,
+        badges:     poidsVerte > 0 ? qualBadges(recVerte) : null,
+        badgeCount: recVerte.length,
+    });
+
+    const cardPreparee = buildCard({
+        accentColor: 'var(--md-sys-color-primary)',
+        icon:        'verified',
+        iconBg:      'rgba(103,80,164,.12)',
+        titleLabel:  'Analyse des poids — Vanille Préparée',
+        subtitle:    'Réceptions livrables à l\'exportateur',
+        metrics: poidsPrep > 0 ? [
+            { icon: 'scale',        label: 'Poids total reçu',     value: `${poidsPrep.toFixed(2)} kg` },
+            { icon: 'payments',     label: 'Valeur totale',         value: formatCurrency(Math.round(valeurPrep)) },
+            { icon: 'trending_up',  label: "Prix moyen d'achat",   value: `${formatCurrency(Math.round(prixMoyPrep))}/kg` },
+        ] : [],
+        emptyMsg:   `Aucune réception préparée pour ${currentYear}`,
+        badges:     poidsPrep > 0 ? qualBadges(recPreparee) : null,
+        badgeCount: recPreparee.length,
+    });
+
+    const cardGlobal = buildCard({
+        accentColor: 'var(--md-sys-color-tertiary)',
+        icon:        'calculate',
+        iconBg:      'rgba(125,82,96,.12)',
+        titleLabel:  'Prix de Revient Global',
+        subtitle:    'Toutes qualités confondues',
+        metrics: [
+            { icon: 'scale',         label: 'Poids total (toutes qualités)', value: `${poidsTotal.toFixed(2)} kg` },
+            { icon: 'receipt_long',  label: 'Total dépenses opérations',     value: formatCurrency(Math.round(totalDepenses)) },
+            { icon: 'price_check',   label: 'Prix de revient/kg',            value: `${formatCurrency(Math.round(prixRevient))}/kg` },
+        ],
+        emptyMsg:   '',
+        badges:     null,
+        badgeCount: 0,
+    });
+
     container.innerHTML = `
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
-
-            <!-- Carte VANILLE VERTE — données strictement filtrées -->
-            <div class="summary-insight-card" style="
-                border-left: 4px solid #2e7d32;
-                background: var(--md-sys-color-surface);">
-                <div class="insight-header" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-                    <span class="material-icons" style="color:#2e7d32;">grass</span>
-                    <span style="font-weight:700;font-size:13px;letter-spacing:.5px;color:#2e7d32;">
-                        ANALYSE DES POIDS (VANILLE VERTE)
-                    </span>
-                </div>
-                ${poidsVerte > 0 ? `
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">scale</span>
-                    Poids total reçu : <strong>${poidsVerte.toFixed(2)} kg</strong>
-                </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">payments</span>
-                    Valeur totale : <strong>${formatCurrency(Math.round(valeurVerte))}</strong>
-                </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">trending_up</span>
-                    Prix moyen d'achat : <strong>${formatCurrency(Math.round(prixMoyVerte))}/kg</strong>
-                </div>
-                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:8px;">
-                    ${recVerte.length} réception(s) — qualité(s) :
-                    ${[...new Set(recVerte.map(r => r.quality))].map(q =>
-                        `<span class="status-badge status-${q.toLowerCase()}" style="font-size:10px;">${q}</span>`
-                    ).join(' ')}
-                </div>` : `
-                <div class="insight-detail" style="opacity:.6;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">inbox</span>
-                    Aucune réception de vanille verte pour ${currentYear}.
-                </div>`}
-            </div>
-
-            <!-- Carte VANILLE PRÉPARÉE -->
-            <div class="summary-insight-card" style="
-                border-left: 4px solid var(--md-sys-color-primary);
-                background: var(--md-sys-color-surface);">
-                <div class="insight-header" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-                    <span class="material-icons" style="color:var(--md-sys-color-primary);">verified</span>
-                    <span style="font-weight:700;font-size:13px;letter-spacing:.5px;color:var(--md-sys-color-primary);">
-                        ANALYSE DES POIDS (VANILLE PRÉPARÉE)
-                    </span>
-                </div>
-                ${poidsPrep > 0 ? `
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">scale</span>
-                    Poids total reçu : <strong>${poidsPrep.toFixed(2)} kg</strong>
-                </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">payments</span>
-                    Valeur totale : <strong>${formatCurrency(Math.round(valeurPrep))}</strong>
-                </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">trending_up</span>
-                    Prix moyen d'achat : <strong>${formatCurrency(Math.round(prixMoyPrep))}/kg</strong>
-                </div>
-                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:8px;">
-                    ${recPreparee.length} réception(s) — qualité(s) :
-                    ${[...new Set(recPreparee.map(r => r.quality))].map(q =>
-                        `<span class="status-badge status-${q.toLowerCase()}" style="font-size:10px;">${q}</span>`
-                    ).join(' ')}
-                </div>` : `
-                <div class="insight-detail" style="opacity:.6;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">inbox</span>
-                    Aucune réception de vanille préparée pour ${currentYear}.
-                </div>`}
-            </div>
-
-            <!-- Carte PRIX DE REVIENT GLOBAL -->
-            <div class="summary-insight-card" style="
-                border-left: 4px solid var(--md-sys-color-tertiary);
-                background: var(--md-sys-color-surface);">
-                <div class="insight-header" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-                    <span class="material-icons" style="color:var(--md-sys-color-tertiary);">calculate</span>
-                    <span style="font-weight:700;font-size:13px;letter-spacing:.5px;color:var(--md-sys-color-tertiary);">
-                        PRIX DE REVIENT GLOBAL
-                    </span>
-                </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">scale</span>
-                    Poids total toutes qualités : <strong>${poidsTotal.toFixed(2)} kg</strong>
-                </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">receipt_long</span>
-                    Total dépenses : <strong>${formatCurrency(Math.round(totalDepenses))}</strong>
-                </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">price_check</span>
-                    Prix de revient/kg : <strong>${formatCurrency(Math.round(prixRevient))}</strong>
-                    <span style="font-size:11px;opacity:.65;"> (achats + charges)</span>
-                </div>
-                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:8px;">
-                    <span class="material-icons" style="font-size:14px;vertical-align:middle;">info</span>
-                    (Valeur achats + Dépenses) ÷ Poids total
-                </div>
-            </div>
-
+        <div style="display:flex;flex-wrap:wrap;gap:16px;">
+            ${cardVerte}
+            ${cardPreparee}
+            ${cardGlobal}
         </div>`;
 }
