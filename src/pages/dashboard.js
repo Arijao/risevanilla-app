@@ -123,25 +123,35 @@ function updateProgressBars(b, totalWeight) {
 
 function updateRentabiliteInsights() {
     const receptionsYear = getReceptionsForCurrentYear();
-    const BONNES         = ['Lava', 'Fendue'];
 
-    let poidsBon = 0, valeurBon = 0, poidsMauvais = 0, valeurMauvais = 0;
+    // ── Segmentation via vanilleType (source de vérité : qualities.js) ──
+    // "préparée" = vanille livrée/valorisée, "verte" = achat brut non traité
+    let poidsPrep = 0, valeurPrep = 0, poidsVerte = 0, valeurVerte = 0;
     receptionsYear.forEach(r => {
-        if (BONNES.includes(r.quality)) { poidsBon += r.netWeight; valeurBon += r.totalValue; }
-        else { poidsMauvais += r.netWeight; valeurMauvais += r.totalValue; }
+        if (getVanilleType(r.quality) === 'preparee') {
+            poidsPrep  += r.netWeight  || 0;
+            valeurPrep += r.totalValue || 0;
+        } else {
+            poidsVerte  += r.netWeight  || 0;
+            valeurVerte += r.totalValue || 0;
+        }
     });
 
-    const totalPoids = poidsBon + poidsMauvais;
+    const totalPoids = poidsPrep + poidsVerte;
 
     const vrEl = document.getElementById('valeur-recuperable-detail');
     const pqEl = document.getElementById('perte-qualite-detail');
     const roEl = document.getElementById('rendement-op-detail');
 
-    if (vrEl) vrEl.textContent = totalPoids > 0 ? `${poidsBon.toFixed(2)} kg (${formatCurrency(valeurBon)})` : 'Aucune réception';
-    if (pqEl) pqEl.textContent = poidsMauvais > 0 ? `${poidsMauvais.toFixed(2)} kg (${formatCurrency(valeurMauvais)}) — qualité inférieure` : 'Aucune perte détectée';
+    if (vrEl) vrEl.textContent = totalPoids > 0
+        ? `${poidsPrep.toFixed(2)} kg (${formatCurrency(Math.round(valeurPrep))}) — vanille préparée`
+        : 'Aucune réception';
+    if (pqEl) pqEl.textContent = poidsVerte > 0
+        ? `${poidsVerte.toFixed(2)} kg (${formatCurrency(Math.round(valeurVerte))}) — vanille verte (non préparée)`
+        : 'Aucune réception de vanille verte';
 
     const totalCout = (getAdvancesForCurrentYear().reduce((s,a)=>s+a.amount,0)) + (getExpensesForCurrentYear().reduce((s,e)=>s+e.amount,0));
-    const totalVal  = valeurBon + valeurMauvais;
+    const totalVal  = valeurPrep + valeurVerte;
     const taux      = totalCout > 0 ? ((totalVal / totalCout) * 100).toFixed(1) : 0;
     if (roEl) roEl.textContent = `${taux}% (Valeur vanille / Coûts totaux)`;
 }
@@ -263,7 +273,11 @@ function _buildQualityData() {
     const map = {};
 
     receptionsYear.forEach(r => {
-        if (!map[r.quality]) map[r.quality] = { quality: r.quality, totalWeight: 0, totalValue: 0, count: 0 };
+        if (!map[r.quality]) map[r.quality] = {
+            quality:     r.quality,
+            vanilleType: getVanilleType(r.quality),   // ← 'verte' | 'preparee'
+            totalWeight: 0, totalValue: 0, count: 0
+        };
         map[r.quality].totalWeight += r.netWeight;
         map[r.quality].totalValue  += r.totalValue || 0;
         map[r.quality].count       += 1;
@@ -510,6 +524,13 @@ function openQualityDetailModal() {
                             <span style="display:inline-block;width:10px;height:10px;
                                          border-radius:50%;background:${color};flex-shrink:0;"></span>
                             <span style="font-weight:500;">${row.quality}</span>
+                            <span style="
+                                font-size:10px;padding:1px 7px;border-radius:20px;
+                                background:${row.vanilleType === 'verte' ? 'rgba(46,125,50,.12)' : 'rgba(103,80,164,.10)'};
+                                color:${row.vanilleType === 'verte' ? '#2e7d32' : '#6750a4'};
+                                font-weight:600;white-space:nowrap;">
+                                ${row.vanilleType === 'verte' ? 'Verte' : 'Préparée'}
+                            </span>
                         </div>
                     </td>
                     <td style="padding:10px 14px;text-align:right;font-variant-numeric:tabular-nums;">
