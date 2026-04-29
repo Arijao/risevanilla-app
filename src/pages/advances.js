@@ -264,6 +264,48 @@ function _populateAdvanceCollectorSelect() {
             select.appendChild(opt);
         });
     select.value = current;
+    // Réinitialiser l'affichage du solde
+    _updateAdvanceCollectorBalance();
+}
+
+/** Met à jour l'affichage du solde du collecteur dans le formulaire d'avance */
+function _updateAdvanceCollectorBalance() {
+    const select = document.getElementById('advance-collector');
+    const info   = document.getElementById('advance-collector-balance-info');
+    const text   = document.getElementById('advance-balance-text');
+    const icon   = document.getElementById('advance-balance-icon');
+
+    if (!select || !info || !text) return;
+
+    const collectorId = parseInt(select.value);
+    if (!collectorId) {
+        info.style.display = 'none';
+        return;
+    }
+
+    const balance = calculateCollectorBalance(collectorId);
+    info.style.display = 'flex';
+
+    // Style selon le solde
+    if (balance > 0) {
+        // Créditeur (RiseVanilla doit de l'argent au collecteur)
+        info.style.background = '#e8f5e9';
+        info.style.color      = '#2e7d32';
+        if (icon) icon.style.color = '#2e7d32';
+        text.innerHTML = `Solde restant : <strong>${formatCurrency(balance)}</strong> (Créditeur)`;
+    } else if (balance < 0) {
+        // Débiteur (Le collecteur doit de l'argent à RiseVanilla)
+        info.style.background = '#ffebee';
+        info.style.color      = '#c62828';
+        if (icon) icon.style.color = '#c62828';
+        text.innerHTML = `Montant dû : <strong>${formatCurrency(Math.abs(balance))}</strong> (Débiteur)`;
+    } else {
+        // Neutre
+        info.style.background = '#f5f5f5';
+        info.style.color      = '#616161';
+        if (icon) icon.style.color = '#616161';
+        text.innerHTML = `Solde : <strong>0 Ar</strong>`;
+    }
 }
 
 /** Recharge le select collecteur dans les filtres */
@@ -468,7 +510,7 @@ function openAdvanceModal(advanceId = null) {
     const dateEl = document.getElementById('advance-date');
     if (dateEl && !advanceId) dateEl.value = _todayISO();
 
-    if (advanceId) {
+     if (advanceId) {
         const advance = (appData.advances || []).find(a => a.id === advanceId);
         if (advance) {
             form.dataset.editId = advanceId;
@@ -480,6 +522,9 @@ function openAdvanceModal(advanceId = null) {
             document.getElementById('advance-motif').value     = advance.motif || '';
         }
     }
+
+    // Mettre à jour le solde immédiatement
+    _updateAdvanceCollectorBalance();
 
     openModal('advance-modal');
     setTimeout(() => document.getElementById('advance-date')?.focus(), 200);
