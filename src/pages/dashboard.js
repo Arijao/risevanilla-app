@@ -29,6 +29,13 @@ function updateEnhancedDashboard() {
     const totalVanillaValue  = receptionsData.reduce((s, r) => s + r.totalValue, 0);
     const totalRemboursements = getRemboursementsForCurrentYear().reduce((s, r) => s + r.amount, 0);
     const totalVanillaWeight  = receptionsData.reduce((s, r) => s + r.netWeight, 0);
+
+    // ── Segmentation poids par vanilleType ────────────────────────────
+    const weightVerte    = receptionsData.filter(r => getVanilleType(r.quality) === 'verte')
+                                         .reduce((s, r) => s + (r.netWeight || 0), 0);
+    const weightPreparee = receptionsData.filter(r => getVanilleType(r.quality) === 'preparee')
+                                         .reduce((s, r) => s + (r.netWeight || 0), 0);
+
     const balance             = (totalVanillaValue + totalRemboursements) - totalMoneyOut;
     const recoveryRate        = totalMoneyOut > 0 ? (totalVanillaValue / totalMoneyOut) * 100 : 0;
 
@@ -42,6 +49,8 @@ function updateEnhancedDashboard() {
     _setEl('total-expenses',       formatCurrency(totalExpenses));
     _setEl('total-vanilla-value',  formatCurrency(totalVanillaValue));
     _setEl('total-vanilla-weight', totalVanillaWeight.toFixed(2) + ' kg');
+    _setEl('vanilla-weight-verte',    weightVerte    > 0 ? weightVerte.toFixed(2)    + ' kg' : '0 kg');
+    _setEl('vanilla-weight-preparee', weightPreparee > 0 ? weightPreparee.toFixed(2) + ' kg' : '0 kg');
 
     const totalTransactions = advancesData.length + receptionsData.length + deliveriesData.length + expensesData.length;
     _setEl('overview-collectors',   collectorsData.length);

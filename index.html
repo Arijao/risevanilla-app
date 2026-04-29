@@ -268,12 +268,27 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-header">
-                            <div>
+                            <div style="flex:1;">
                                 <div class="stat-value" id="total-vanilla-weight">0 kg</div>
                                 <div class="stat-label">Vanille Collectée</div>
                                 <div class="stat-trend positive">
                                     <span class="material-icons">trending_up</span>
                                     Stock physique
+                                </div>
+                                <!-- Détail par type — injecté par dashboard.js -->
+                                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                                    <span style="display:inline-flex;align-items:center;gap:4px;
+                                                 font-size:11px;padding:2px 8px;border-radius:20px;
+                                                 background:rgba(46,125,50,.12);color:#2e7d32;font-weight:600;">
+                                        <span class="material-icons" style="font-size:12px;">grass</span>
+                                        Verte : <span id="vanilla-weight-verte">— kg</span>
+                                    </span>
+                                    <span style="display:inline-flex;align-items:center;gap:4px;
+                                                 font-size:11px;padding:2px 8px;border-radius:20px;
+                                                 background:rgba(103,80,164,.10);color:var(--md-sys-color-primary);font-weight:600;">
+                                        <span class="material-icons" style="font-size:12px;">verified</span>
+                                        Préparée : <span id="vanilla-weight-preparee">— kg</span>
+                                    </span>
                                 </div>
                             </div>
                             <div class="stat-icon" style="background-color: var(--md-sys-color-primary);">
