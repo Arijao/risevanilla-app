@@ -465,6 +465,10 @@ async function openReceptionModal(receptionId = null) {
     updateQualitySelect();
     updateCollectorSelects();
 
+    // Valeur par défaut du champ Tare (0.2 kg) — réinitialisée après form.reset()
+    document.getElementById('reception-bag-weight').value = '0.2';
+    document.getElementById('quick-tare-input').value     = '0.2';
+
     const titleEl = form.closest('.modal')?.querySelector('.modal-title');
     if (titleEl) titleEl.textContent = receptionId ? 'Modifier Réception' : 'Nouvelle Réception';
 
