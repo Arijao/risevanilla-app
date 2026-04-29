@@ -68,6 +68,40 @@ function _populateAdvanceFilterSelect() {
     select.value = current;
 }
 
+/** Affiche le solde du collecteur sélectionné dans le formulaire avance */
+function _updateAdvanceCollectorBalance() {
+    const collectorId = parseInt(document.getElementById('advance-collector')?.value);
+    const infoEl      = document.getElementById('advance-collector-balance-info');
+    const textEl      = document.getElementById('advance-balance-text');
+    const iconEl      = document.getElementById('advance-balance-icon');
+    if (!infoEl || !textEl || !iconEl) return;
+
+    if (!collectorId) {
+        infoEl.style.display = 'none';
+        return;
+    }
+
+    const balance = calculateCollectorBalance(collectorId);
+    const absVal  = formatCurrency(Math.abs(balance));
+
+    if (balance < 0) {
+        // Le collecteur est débiteur : il doit de l'argent à RiseVanilla
+        infoEl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13px;background:rgba(var(--md-sys-color-error-rgb,176,0,32),0.12);color:var(--md-sys-color-error);border:1px solid rgba(var(--md-sys-color-error-rgb,176,0,32),0.25);';
+        iconEl.textContent = 'warning';
+        textEl.innerHTML   = `Doit encore <strong>${absVal}</strong> à RiseVanilla`;
+    } else if (balance > 0) {
+        // Le collecteur est créditeur : RiseVanilla lui doit de l'argent
+        infoEl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13px;background:rgba(46,125,50,0.10);color:#2e7d32;border:1px solid rgba(46,125,50,0.22);';
+        iconEl.textContent = 'check_circle';
+        textEl.innerHTML   = `Solde créditeur : <strong>${absVal}</strong> à percevoir`;
+    } else {
+        // Solde équilibré
+        infoEl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13px;background:rgba(103,80,164,0.08);color:var(--md-sys-color-on-surface-variant);border:1px solid var(--md-sys-color-outline-variant);';
+        iconEl.textContent = 'balance';
+        textEl.innerHTML   = 'Solde équilibré — aucune avance en cours';
+    }
+}
+
 // ── Table des avances ─────────────────────────────────────────
 
 function updateAdvancesTable() {
@@ -252,6 +286,9 @@ function openAdvanceModal(advanceId = null) {
             document.getElementById('advance-motif').value     = advance.motif || '';
         }
     }
+
+    // Afficher le solde du collecteur (mode édition : après peuplement ; mode création : réinitialise)
+    _updateAdvanceCollectorBalance();
 
     openModal('advance-modal');
     setTimeout(() => document.getElementById('advance-date')?.focus(), 200);
