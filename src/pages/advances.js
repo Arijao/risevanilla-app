@@ -274,6 +274,7 @@ function _updateAdvanceCollectorBalance() {
     const info   = document.getElementById('advance-collector-balance-info');
     const text   = document.getElementById('advance-balance-text');
     const icon   = document.getElementById('advance-balance-icon');
+    const amount = document.getElementById('advance-balance-amount');
 
     if (!select || !info || !text) return;
 
@@ -284,27 +285,32 @@ function _updateAdvanceCollectorBalance() {
     }
 
     const balance = calculateCollectorBalance(collectorId);
-    info.style.display = 'flex';
+    info.style.display = '';
 
-    // Style selon le solde
+    // Supprimer les classes d'état précédentes
+    info.classList.remove('balance-info--credit', 'balance-info--debit', 'balance-info--neutral');
+
     if (balance > 0) {
         // Créditeur (RiseVanilla doit de l'argent au collecteur)
-        info.style.background = '#e8f5e9';
-        info.style.color      = '#2e7d32';
-        if (icon) icon.style.color = '#2e7d32';
-        text.innerHTML = `Solde restant : <strong>${formatCurrency(balance)}</strong> (Créditeur)`;
+        info.classList.add('balance-info--credit');
+        if (icon) icon.textContent = 'trending_up';
+        if (text) text.textContent = 'Solde créditeur';
+        if (amount) amount.textContent = formatCurrency(balance);
+        else text.innerHTML = `Solde restant : <strong>${formatCurrency(balance)}</strong> <span class="balance-info__tag">Créditeur</span>`;
     } else if (balance < 0) {
         // Débiteur (Le collecteur doit de l'argent à RiseVanilla)
-        info.style.background = '#ffebee';
-        info.style.color      = '#c62828';
-        if (icon) icon.style.color = '#c62828';
-        text.innerHTML = `Montant dû : <strong>${formatCurrency(Math.abs(balance))}</strong> (Débiteur)`;
+        info.classList.add('balance-info--debit');
+        if (icon) icon.textContent = 'trending_down';
+        if (text) text.textContent = 'Montant dû';
+        if (amount) amount.textContent = formatCurrency(Math.abs(balance));
+        else text.innerHTML = `Montant dû : <strong>${formatCurrency(Math.abs(balance))}</strong> <span class="balance-info__tag">Débiteur</span>`;
     } else {
         // Neutre
-        info.style.background = '#f5f5f5';
-        info.style.color      = '#616161';
-        if (icon) icon.style.color = '#616161';
-        text.innerHTML = `Solde : <strong>0 Ar</strong>`;
+        info.classList.add('balance-info--neutral');
+        if (icon) icon.textContent = 'check_circle';
+        if (text) text.textContent = 'Solde équilibré';
+        if (amount) amount.textContent = formatCurrency(0);
+        else text.innerHTML = `Solde : <strong>0 Ar</strong>`;
     }
 }
 
