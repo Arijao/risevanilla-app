@@ -21,6 +21,216 @@ function _sa(query, items, module) {
     }
 }
 
+// ── Signature Pad State ───────────────────────────────────────
+let _sigCanvas   = null;
+let _sigCtx      = null;
+let _sigDrawing  = false;
+let _sigHasData  = false;
+
+// ── Signature Pad Init ────────────────────────────────────────
+function _initSignaturePad() {
+    _sigCanvas = document.getElementById('signature-canvas');
+    if (!_sigCanvas) return;
+
+    // Calibrer le canvas à sa taille CSS réelle (évite le flou)
+    const rect = _sigCanvas.getBoundingClientRect();
+    _sigCanvas.width  = rect.width  || 476;
+    _sigCanvas.height = rect.height || 200;
+
+    _sigCtx = _sigCanvas.getContext('2d');
+    _sigCtx.strokeStyle = '#1a1a2e';
+    _sigCtx.lineWidth   = 2.5;
+    _sigCtx.lineCap     = 'round';
+    _sigCtx.lineJoin    = 'round';
+    _sigHasData = false;
+
+    // Nettoyer les anciens listeners en recréant le canvas clone
+    const fresh = _sigCanvas.cloneNode(true);
+    _sigCanvas.parentNode.replaceChild(fresh, _sigCanvas);
+    _sigCanvas = fresh;
+    _sigCtx    = _sigCanvas.getContext('2d');
+    _sigCtx.strokeStyle = '#1a1a2e';
+    _sigCtx.lineWidth   = 2.5;
+    _sigCtx.lineCap     = 'round';
+    _sigCtx.lineJoin    = 'round';
+
+    function _pos(e) {
+        const r = _sigCanvas.getBoundingClientRect();
+        const scaleX = _sigCanvas.width  / r.width;
+        const scaleY = _sigCanvas.height / r.height;
+        const src = e.touches ? e.touches[0] : e;
+        return { x: (src.clientX - r.left) * scaleX, y: (src.clientY - r.top) * scaleY };
+    }
+
+    function _start(e) {
+        e.preventDefault();
+        _sigDrawing = true;
+        _sigHasData = true;
+        const { x, y } = _pos(e);
+        _sigCtx.beginPath();
+        _sigCtx.moveTo(x, y);
+        // Masquer le placeholder dès le premier trait
+        const ph = document.getElementById('signature-placeholder');
+        if (ph) ph.style.display = 'none';
+    }
+    function _move(e) {
+        e.preventDefault();
+        if (!_sigDrawing) return;
+        const { x, y } = _pos(e);
+        _sigCtx.lineTo(x, y);
+        _sigCtx.stroke();
+    }
+    function _end(e) { e.preventDefault(); _sigDrawing = false; }
+
+    _sigCanvas.addEventListener('mousedown',  _start);
+    _sigCanvas.addEventListener('mousemove',  _move);
+    _sigCanvas.addEventListener('mouseup',    _end);
+    _sigCanvas.addEventListener('mouseleave', _end);
+    _sigCanvas.addEventListener('touchstart', _start, { passive: false });
+    _sigCanvas.addEventListener('touchmove',  _move,  { passive: false });
+    _sigCanvas.addEventListener('touchend',   _end,   { passive: false });
+}
+
+function clearSignaturePad() {
+    if (!_sigCanvas || !_sigCtx) return;
+    _sigCtx.clearRect(0, 0, _sigCanvas.width, _sigCanvas.height);
+    _sigHasData = false;
+    const ph = document.getElementById('signature-placeholder');
+    if (ph) ph.style.display = '';
+}
+
+// ── Open Signature Modal ──────────────────────────────────────
+function openSignatureModal(advanceId) {
+    const advance   = (appData.advances || []).find(a => a.id === advanceId);
+    if (!advance) { showToast('Avance introuvable', 'error'); return; }
+    const collector = (appData.collectors || []).find(c => c.id === advance.collectorId);
+
+    const infoEl = document.getElementById('signature-advance-info');
+    if (infoEl) {
+        infoEl.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;">
+                <div>📋 <strong>Réf.</strong> AVA-${String(advance.id).padStart(4,'0')}</div>
+                <div>📅 <strong>Date :</strong> ${formatDate(advance.date)}</div>
+                <div>👤 <strong>Collecteur :</strong> ${collector ? collector.name : '—'}</div>
+                <div>💰 <strong>Montant :</strong> ${Math.abs(advance.amount).toLocaleString('fr-MG')} Ar</div>
+            </div>`;
+    }
+
+    const hiddenId = document.getElementById('signature-advance-id');
+    if (hiddenId) hiddenId.value = advanceId;
+
+    openModal('signature-modal');
+
+    // Init pad après ouverture (le canvas doit être visible pour getBoundingClientRect)
+    setTimeout(_initSignaturePad, 80);
+}
+
+// ── Save Signature ────────────────────────────────────────────
+async function saveSignature() {
+    if (!_sigHasData) {
+        showToast('Veuillez apposer la signature avant de confirmer.', 'error'); return;
+    }
+
+    const advanceId = parseInt(document.getElementById('signature-advance-id')?.value);
+    const advance   = (appData.advances || []).find(a => a.id === advanceId);
+    if (!advance) { showToast('Avance introuvable', 'error'); return; }
+
+    // Extraire la signature en base64 (PNG transparent)
+    const signatureData = _sigCanvas.toDataURL('image/png');
+
+    // Construire l'objet avance mis à jour (put complet requis par IndexedDB)
+    const updated = Object.assign({}, advance, {
+        signature:   signatureData,
+        confirmedAt: new Date().toISOString()
+    });
+
+    await saveToDB('advances', updated);
+    closeModal('signature-modal');
+    showToast('✅ Signature enregistrée — réception confirmée !', 'success');
+}
+
+// ── Generate PDF Receipt ──────────────────────────────────────
+function generateAdvancePDF(advanceId) {
+    const advance   = (appData.advances || []).find(a => a.id === advanceId);
+    if (!advance) { showToast('Avance introuvable', 'error'); return; }
+    const collector = (appData.collectors || []).find(c => c.id === advance.collectorId);
+    const ref       = 'AVA-' + String(advance.id).padStart(4, '0');
+    const confirmed = advance.confirmedAt
+        ? new Date(advance.confirmedAt).toLocaleString('fr-FR')
+        : '—';
+
+    const sigHtml = advance.signature
+        ? `<div style="margin-top:8px;">
+               <div style="font-size:11px;color:#666;margin-bottom:4px;">Signature du collecteur :</div>
+               <img src="${advance.signature}" style="max-width:260px;max-height:110px;border:1px solid #ddd;border-radius:6px;padding:4px;background:#fff;">
+           </div>`
+        : `<div style="margin-top:12px;padding:10px 16px;border:1px solid #ccc;border-radius:6px;font-style:italic;color:#555;font-size:12px;">
+               ✔ Réception confirmée — signature non disponible
+           </div>`;
+
+    const html = `<!DOCTYPE html><html lang="fr"><head>
+        <meta charset="UTF-8">
+        <title>Reçu ${ref}</title>
+        <style>
+            *{box-sizing:border-box;margin:0;padding:0;}
+            body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;color:#1a1a2e;padding:32px;max-width:600px;margin:0 auto;}
+            .header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #6750a4;padding-bottom:16px;margin-bottom:24px;}
+            .header h1{font-size:20px;color:#6750a4;letter-spacing:.5px;}
+            .header .sub{font-size:11px;color:#888;margin-top:2px;}
+            .badge{background:#6750a4;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+            .section{background:#f5f0ff;border-radius:10px;padding:16px;margin-bottom:16px;}
+            .section h2{font-size:13px;color:#6750a4;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+            .row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e8e0f7;}
+            .row:last-child{border-bottom:none;}
+            .row .label{color:#555;}
+            .row .val{font-weight:600;}
+            .amount{font-size:22px;font-weight:800;color:#6750a4;text-align:center;padding:14px;background:#ede7ff;border-radius:10px;margin:16px 0;letter-spacing:.5px;}
+            .footer{margin-top:24px;border-top:1px solid #ddd;padding-top:12px;font-size:11px;color:#999;text-align:center;}
+            .motif{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px 14px;font-style:italic;font-size:12px;color:#444;margin-top:8px;}
+            @media print{body{padding:16px;}}
+        </style>
+    </head><body>
+        <div class="header">
+            <div>
+                <h1>🌿 RISEVANILLA</h1>
+                <div class="sub">Gestion de Collecte de Vanille</div>
+            </div>
+            <div>
+                <div class="badge">${ref}</div>
+                <div style="font-size:10px;color:#999;text-align:right;margin-top:4px;">REÇU D'AVANCE</div>
+            </div>
+        </div>
+
+        <div class="amount">${Math.abs(advance.amount).toLocaleString('fr-MG')} Ar</div>
+
+        <div class="section">
+            <h2>📋 Détails de la transaction</h2>
+            <div class="row"><span class="label">Collecteur</span><span class="val">${collector ? collector.name : '—'}</span></div>
+            <div class="row"><span class="label">Date de l'avance</span><span class="val">${formatDate(advance.date)}</span></div>
+            <div class="row"><span class="label">Référence</span><span class="val">${ref}</span></div>
+            <div class="row"><span class="label">Confirmation réception</span><span class="val">${confirmed}</span></div>
+        </div>
+
+        ${advance.motif ? `<div class="section"><h2>📝 Motif</h2><div class="motif">${advance.motif}</div></div>` : ''}
+
+        <div class="section">
+            <h2>✍️ Preuve de réception</h2>
+            ${sigHtml}
+        </div>
+
+        <div class="footer">
+            Document généré le ${new Date().toLocaleString('fr-FR')} — RISEVANILLA © ${new Date().getFullYear()}
+        </div>
+    </body></html>`;
+
+    const win = window.open('', '_blank', 'width=680,height=820');
+    if (!win) { showToast('Autorisez les popups pour générer le reçu.', 'error'); return; }
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 400);
+}
+
 // ── Helpers locaux ────────────────────────────────────────────
 
 /** Retourne la date du jour au format YYYY-MM-DD */
@@ -68,40 +278,6 @@ function _populateAdvanceFilterSelect() {
     select.value = current;
 }
 
-/** Affiche le solde du collecteur sélectionné dans le formulaire avance */
-function _updateAdvanceCollectorBalance() {
-    const collectorId = parseInt(document.getElementById('advance-collector')?.value);
-    const infoEl      = document.getElementById('advance-collector-balance-info');
-    const textEl      = document.getElementById('advance-balance-text');
-    const iconEl      = document.getElementById('advance-balance-icon');
-    if (!infoEl || !textEl || !iconEl) return;
-
-    if (!collectorId) {
-        infoEl.style.display = 'none';
-        return;
-    }
-
-    const balance = calculateCollectorBalance(collectorId);
-    const absVal  = Math.abs(balance).toLocaleString('fr-MG') + ' Ar';
-
-    if (balance < 0) {
-        // Le collecteur est débiteur : il doit de l'argent à RiseVanilla
-        infoEl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13px;background:rgba(var(--md-sys-color-error-rgb,176,0,32),0.12);color:var(--md-sys-color-error);border:1px solid rgba(var(--md-sys-color-error-rgb,176,0,32),0.25);';
-        iconEl.textContent = 'warning';
-        textEl.innerHTML   = `Doit encore <strong>${absVal}</strong> à RiseVanilla`;
-    } else if (balance > 0) {
-        // Le collecteur est créditeur : RiseVanilla lui doit de l'argent
-        infoEl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13px;background:rgba(46,125,50,0.10);color:#2e7d32;border:1px solid rgba(46,125,50,0.22);';
-        iconEl.textContent = 'check_circle';
-        textEl.innerHTML   = `Solde créditeur : <strong>${absVal}</strong> à percevoir`;
-    } else {
-        // Solde équilibré
-        infoEl.style.cssText = 'display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 14px;border-radius:10px;font-size:13px;background:rgba(103,80,164,0.08);color:var(--md-sys-color-on-surface-variant);border:1px solid var(--md-sys-color-outline-variant);';
-        iconEl.textContent = 'balance';
-        textEl.innerHTML   = 'Solde équilibré — aucune avance en cours';
-    }
-}
-
 // ── Table des avances ─────────────────────────────────────────
 
 function updateAdvancesTable() {
@@ -134,6 +310,19 @@ function updateAdvancesTable() {
             <td data-label="Montant">${formatCurrency(adv.amount)}</td>
             <td data-label="Motif">${RiseVanillaSearch.highlightText(adv.motif || '—', _q)}</td>
             <td class="actions-cell">
+                ${adv.signature
+                    ? `<button class="btn btn-icon" title="Réception confirmée ✓"
+                               style="color:#2e7d32;cursor:default;" disabled>
+                           <span class="material-icons">verified</span>
+                       </button>
+                       <button class="btn btn-icon btn-outline" onclick="generateAdvancePDF(${adv.id})" title="Générer le reçu PDF">
+                           <span class="material-icons">picture_as_pdf</span>
+                       </button>`
+                    : `<button class="btn btn-icon btn-outline" onclick="openSignatureModal(${adv.id})" title="Faire signer le collecteur"
+                               style="color:var(--md-sys-color-primary);border-color:var(--md-sys-color-primary);">
+                           <span class="material-icons">draw</span>
+                       </button>`
+                }
                 <button class="btn btn-icon btn-outline" onclick="openAdvanceModal(${adv.id})" title="Modifier">
                     <span class="material-icons">edit</span>
                 </button>
@@ -286,9 +475,6 @@ function openAdvanceModal(advanceId = null) {
             document.getElementById('advance-motif').value     = advance.motif || '';
         }
     }
-
-    // Afficher le solde du collecteur (mode édition : après peuplement ; mode création : réinitialise)
-    _updateAdvanceCollectorBalance();
 
     openModal('advance-modal');
     setTimeout(() => document.getElementById('advance-date')?.focus(), 200);
