@@ -3689,3 +3689,366 @@
         font-size: 0.68rem;
     }
 }
+
+
+/* ============================================================
+ * IMPROVED INSIGHT CARDS — GLASSMORPHISM
+ * Amélioration UI/UX de la carte "ANALYSE DES POIDS (VANILLE VERTE)"
+ * Ajout : 2026-04-30
+ * ============================================================ */
+
+/* ── SUMMARY INSIGHT CARD — Glassmorphism moderne ────────────── */
+.summary-insight-card {
+    /* Glassmorphism Foundation */
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    
+    /* Layout & Spacing */
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    
+    /* Elevation & Shadow */
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    
+    /* Transitions */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ── Pseudo-élément pour effet de gradient subtil ────────────── */
+.summary-insight-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+}
+
+/* ── Hover Effect — Élévation et intensification du glassmorphism ── */
+.summary-insight-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 
+        0 16px 48px rgba(0, 0, 0, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    transform: translateY(-4px);
+}
+
+/* ── Active/Focus State ────────────────────────────────────────── */
+.summary-insight-card:focus-within {
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.12),
+        inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+/* ── INSIGHT HEADER — Titre et icône ──────────────────────────── */
+.insight-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.insight-header .material-icons {
+    font-size: 24px;
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.summary-insight-card:hover .insight-header .material-icons {
+    transform: scale(1.1) rotate(2deg);
+}
+
+.insight-header span:last-child {
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    flex: 1;
+}
+
+/* ── INSIGHT DETAIL — Ligne de détail ─────────────────────────── */
+.insight-detail {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+    line-height: 1.5;
+    transition: all 0.2s ease;
+}
+
+.insight-detail .material-icons {
+    font-size: 18px;
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.insight-detail strong {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    transition: color 0.2s ease;
+}
+
+.summary-insight-card:hover .insight-detail {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.summary-insight-card:hover .insight-detail .material-icons {
+    opacity: 0.9;
+}
+
+.summary-insight-card:hover .insight-detail strong {
+    color: rgba(255, 255, 255, 1);
+}
+
+/* ── INSIGHT DETAIL — Variante pour les badges (qualités) ────── */
+.insight-detail[style*="font-size:11px"] {
+    padding: 14px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.insight-detail[style*="font-size:11px"] .material-icons {
+    margin-right: 4px;
+}
+
+.insight-detail[style*="font-size:11px"] .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11px !important;
+    font-weight: 500;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.2s ease;
+}
+
+.insight-detail[style*="font-size:11px"] .status-badge:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── EMPTY STATE — Amélioration visuelle ──────────────────────── */
+.insight-detail[style*="opacity:.6"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px 12px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+.insight-detail[style*="opacity:.6"] .material-icons {
+    font-size: 32px;
+    opacity: 0.5;
+}
+
+/* ── RESPONSIVE — Adaptation mobile ──────────────────────────── */
+@media (max-width: 768px) {
+    .summary-insight-card {
+        padding: 20px;
+        gap: 14px;
+        border-radius: 16px;
+    }
+    
+    .insight-header {
+        gap: 10px;
+        padding-bottom: 10px;
+    }
+    
+    .insight-header span:last-child {
+        font-size: 12px;
+    }
+    
+    .insight-detail {
+        padding: 10px 0;
+        font-size: 13px;
+    }
+    
+    .insight-detail .material-icons {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-insight-card {
+        padding: 16px;
+        gap: 12px;
+        border-radius: 14px;
+    }
+    
+    .insight-header {
+        gap: 8px;
+        padding-bottom: 8px;
+    }
+    
+    .insight-header .material-icons {
+        font-size: 20px;
+    }
+    
+    .insight-header span:last-child {
+        font-size: 11px;
+        letter-spacing: 0.4px;
+    }
+    
+    .insight-detail {
+        padding: 8px 0;
+        font-size: 12px;
+    }
+    
+    .insight-detail .material-icons {
+        font-size: 14px;
+    }
+    
+    .insight-detail[style*="font-size:11px"] {
+        padding: 10px 8px;
+        font-size: 10px !important;
+    }
+}
+
+/* ── DARK MODE SUPPORT — Amélioration du contraste ────────────── */
+@media (prefers-color-scheme: dark) {
+    .summary-insight-card {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+    
+    .summary-insight-card:hover {
+        background: rgba(255, 255, 255, 0.10);
+        border-color: rgba(255, 255, 255, 0.20);
+    }
+}
+
+/* ── ACCESSIBILITY — Focus visible pour la navigation au clavier ── */
+.summary-insight-card:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.4);
+    outline-offset: 2px;
+}
+
+/* ── ANIMATION — Entrée progressive des cartes ────────────────── */
+@keyframes cardEnter {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        backdrop-filter: blur(16px);
+    }
+}
+
+.summary-insight-card {
+    animation: cardEnter 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.summary-insight-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.summary-insight-card:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+/* ── GRID CONTAINER — Optimisation du layout ──────────────────── */
+.summary-insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .summary-insights-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-insights-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+/* ── COLOR VARIANTS — Personnalisation par type de vanille ────── */
+.summary-insight-card.card-verte {
+    border-left: 3px solid #4caf50;
+}
+
+.summary-insight-card.card-verte:hover {
+    border-left-color: #66bb6a;
+    box-shadow: 
+        0 16px 48px rgba(76, 175, 80, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.summary-insight-card.card-preparee {
+    border-left: 3px solid var(--md-sys-color-primary);
+}
+
+.summary-insight-card.card-preparee:hover {
+    box-shadow: 
+        0 16px 48px rgba(0, 97, 164, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.summary-insight-card.card-revient {
+    border-left: 3px solid var(--md-sys-color-tertiary);
+}
+
+.summary-insight-card.card-revient:hover {
+    box-shadow: 
+        0 16px 48px rgba(108, 91, 123, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* ── PRINT MEDIA — Optimisation pour l'impression ────────────── */
+@media print {
+    .summary-insight-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        page-break-inside: avoid;
+    }
+    
+    .summary-insight-card:hover {
+        background: white;
+        border-color: #e0e0e0;
+        transform: none;
+    }
+}
