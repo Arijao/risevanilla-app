@@ -1,7 +1,6 @@
 /* ============================================================
- * IMPROVED ANALYSIS.JS — Analysis table, Prix de Revient, filters
+ * ANALYSIS.JS — Analysis table, Prix de Revient, filters
  * RISEVANILLA - Gestion de Collecte de Vanille
- * Améliorations UI/UX : Glassmorphism moderne
  * ============================================================ */
 
 'use strict';
@@ -200,102 +199,106 @@ function updatePrixRevientAnalysis() {
         ? (valeurTotal + totalDepenses) / poidsTotal
         : 0;
 
-    // ── Rendu avec glassmorphism amélioré ────────────────────────────────
+    // ── Rendu ───────────────────────────────────────────────────────────
     container.innerHTML = `
-        <div class="summary-insights-grid">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
 
             <!-- Carte VANILLE VERTE — données strictement filtrées -->
-            <div class="summary-insight-card card-verte">
-                <div class="insight-header">
+            <div class="summary-insight-card" style="
+                border-left: 4px solid #4caf50;
+                background: var(--md-sys-color-surface);">
+                <div class="insight-header" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
                     <span class="material-icons" style="color:#4caf50;">grass</span>
-                    <span style="color:#4caf50;">
+                    <span style="font-weight:700;font-size:13px;letter-spacing:.5px;color:#4caf50;">
                         ANALYSE DES POIDS (VANILLE VERTE)
                     </span>
                 </div>
                 ${poidsVerte > 0 ? `
-                <div class="insight-detail">
-                    <span class="material-icons">scale</span>
-                    <span>Poids total reçu : <strong>${poidsVerte.toFixed(2)} kg</strong></span>
+                <div class="insight-detail" style="margin-bottom:6px;">
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">scale</span>
+                    Poids total reçu : <strong>${poidsVerte.toFixed(2)} kg</strong>
                 </div>
-                <div class="insight-detail">
-                    <span class="material-icons">payments</span>
-                    <span>Valeur totale : <strong>${formatCurrency(Math.round(valeurVerte))}</strong></span>
+                <div class="insight-detail" style="margin-bottom:6px;">
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">payments</span>
+                    Valeur totale : <strong>${formatCurrency(Math.round(valeurVerte))}</strong>
                 </div>
-                <div class="insight-detail">
-                    <span class="material-icons">trending_up</span>
-                    <span>Prix moyen d'achat : <strong>${formatCurrency(Math.round(prixMoyVerte))}/kg</strong></span>
+                <div class="insight-detail" style="margin-bottom:6px;">
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">trending_up</span>
+                    Prix moyen d'achat : <strong>${formatCurrency(Math.round(prixMoyVerte))}/kg</strong>
                 </div>
-                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:4px;">
-                    <span class="material-icons">info</span>
-                    <span>${recVerte.length} réception(s) — qualité(s) :
+                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:8px;">
+                    ${recVerte.length} réception(s) — qualité(s) :
                     ${[...new Set(recVerte.map(r => r.quality))].map(q =>
-                        `<span class="status-badge status-${q.toLowerCase()}">${q}</span>`
-                    ).join('')}</span>
+                        `<span class="status-badge status-${q.toLowerCase()}" style="font-size:10px;">${q}</span>`
+                    ).join(' ')}
                 </div>` : `
                 <div class="insight-detail" style="opacity:.6;">
-                    <span class="material-icons">inbox</span>
-                    <span>Aucune réception de vanille verte pour ${currentYear}.</span>
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">inbox</span>
+                    Aucune réception de vanille verte pour ${currentYear}.
                 </div>`}
             </div>
 
             <!-- Carte VANILLE PRÉPARÉE -->
-            <div class="summary-insight-card card-preparee">
-                <div class="insight-header">
+            <div class="summary-insight-card" style="
+                border-left: 4px solid var(--md-sys-color-primary);
+                background: var(--md-sys-color-surface);">
+                <div class="insight-header" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
                     <span class="material-icons" style="color:var(--md-sys-color-primary);">verified</span>
-                    <span style="color:var(--md-sys-color-primary);">
+                    <span style="font-weight:700;font-size:13px;letter-spacing:.5px;color:var(--md-sys-color-primary);">
                         ANALYSE DES POIDS (VANILLE PRÉPARÉE)
                     </span>
                 </div>
                 ${poidsPrep > 0 ? `
-                <div class="insight-detail">
-                    <span class="material-icons">scale</span>
-                    <span>Poids total reçu : <strong>${poidsPrep.toFixed(2)} kg</strong></span>
+                <div class="insight-detail" style="margin-bottom:6px;">
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">scale</span>
+                    Poids total reçu : <strong>${poidsPrep.toFixed(2)} kg</strong>
                 </div>
-                <div class="insight-detail">
-                    <span class="material-icons">payments</span>
-                    <span>Valeur totale : <strong>${formatCurrency(Math.round(valeurPrep))}</strong></span>
+                <div class="insight-detail" style="margin-bottom:6px;">
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">payments</span>
+                    Valeur totale : <strong>${formatCurrency(Math.round(valeurPrep))}</strong>
                 </div>
-                <div class="insight-detail">
-                    <span class="material-icons">trending_up</span>
-                    <span>Prix moyen d'achat : <strong>${formatCurrency(Math.round(prixMoyPrep))}/kg</strong></span>
+                <div class="insight-detail" style="margin-bottom:6px;">
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">trending_up</span>
+                    Prix moyen d'achat : <strong>${formatCurrency(Math.round(prixMoyPrep))}/kg</strong>
                 </div>
-                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:4px;">
-                    <span class="material-icons">info</span>
-                    <span>${recPreparee.length} réception(s) — qualité(s) :
+                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:8px;">
+                    ${recPreparee.length} réception(s) — qualité(s) :
                     ${[...new Set(recPreparee.map(r => r.quality))].map(q =>
-                        `<span class="status-badge status-${q.toLowerCase()}">${q}</span>`
-                    ).join('')}</span>
+                        `<span class="status-badge status-${q.toLowerCase()}" style="font-size:10px;">${q}</span>`
+                    ).join(' ')}
                 </div>` : `
                 <div class="insight-detail" style="opacity:.6;">
-                    <span class="material-icons">inbox</span>
-                    <span>Aucune réception de vanille préparée pour ${currentYear}.</span>
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">inbox</span>
+                    Aucune réception de vanille préparée pour ${currentYear}.
                 </div>`}
             </div>
 
             <!-- Carte PRIX DE REVIENT GLOBAL -->
-            <div class="summary-insight-card card-revient">
-                <div class="insight-header">
+            <div class="summary-insight-card" style="
+                border-left: 4px solid var(--md-sys-color-tertiary);
+                background: var(--md-sys-color-surface);">
+                <div class="insight-header" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
                     <span class="material-icons" style="color:var(--md-sys-color-tertiary);">calculate</span>
-                    <span style="color:var(--md-sys-color-tertiary);">
+                    <span style="font-weight:700;font-size:13px;letter-spacing:.5px;color:var(--md-sys-color-tertiary);">
                         PRIX DE REVIENT GLOBAL
                     </span>
                 </div>
-                <div class="insight-detail">
-                    <span class="material-icons">scale</span>
-                    <span>Poids total toutes qualités : <strong>${poidsTotal.toFixed(2)} kg</strong></span>
+                <div class="insight-detail" style="margin-bottom:6px;">
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">scale</span>
+                    Poids total toutes qualités : <strong>${poidsTotal.toFixed(2)} kg</strong>
                 </div>
-                <div class="insight-detail">
-                    <span class="material-icons">receipt_long</span>
-                    <span>Total dépenses : <strong>${formatCurrency(Math.round(totalDepenses))}</strong></span>
+                <div class="insight-detail" style="margin-bottom:6px;">
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">receipt_long</span>
+                    Total dépenses : <strong>${formatCurrency(Math.round(totalDepenses))}</strong>
                 </div>
-                <div class="insight-detail">
-                    <span class="material-icons">price_check</span>
-                    <span>Prix de revient/kg : <strong>${formatCurrency(Math.round(prixRevient))}</strong>
-                    <span style="font-size:11px;opacity:.65;"> (achats + charges)</span></span>
+                <div class="insight-detail" style="margin-bottom:6px;">
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">price_check</span>
+                    Prix de revient/kg : <strong>${formatCurrency(Math.round(prixRevient))}</strong>
+                    <span style="font-size:11px;opacity:.65;"> (achats + charges)</span>
                 </div>
-                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:4px;">
-                    <span class="material-icons">info</span>
-                    <span>(Valeur achats + Dépenses) ÷ Poids total</span>
+                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:8px;">
+                    <span class="material-icons" style="font-size:14px;vertical-align:middle;">info</span>
+                    (Valeur achats + Dépenses) ÷ Poids total
                 </div>
             </div>
 
