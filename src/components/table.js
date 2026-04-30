@@ -203,7 +203,7 @@ function updateReceptionTable() {
         const typeBadge = vType === 'verte'
             ? `<span style="display:inline-flex;align-items:center;gap:3px;
                             font-size:10px;padding:1px 6px;border-radius:20px;
-                            background:rgba(46,125,50,.12);color:#2e7d32;font-weight:600;
+                            background:rgba(76,175,80,.18);color:#4caf50;font-weight:600;
                             vertical-align:middle;margin-left:4px;">
                    <span class="material-icons" style="font-size:11px;">grass</span>Verte
                </span>`
@@ -305,7 +305,7 @@ function _updateReceptionSummaryBar(recs) {
 
     bar.innerHTML = `
         <div style="display:flex;flex-wrap:wrap;gap:10px;padding:14px 0 18px;align-items:stretch;">
-            ${pill('grass',    '#2e7d32',                     'rgba(46,125,50,.08)',
+            ${pill('grass',    '#4caf50',                     'rgba(76,175,80,.13)',
                    'Vanille Verte',    pVerte, valVerte)}
             ${pill('verified', 'var(--md-sys-color-primary)', 'rgba(103,80,164,.08)',
                    'Vanille Préparée', pPrep,  valPrep)}
