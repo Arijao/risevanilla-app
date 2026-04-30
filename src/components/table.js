@@ -178,6 +178,9 @@ function updateReceptionTable() {
 
     const recs = getReceptionsForCurrentYear();
 
+    // ── Barre de totaux segmentés par vanilleType ─────────────────────
+    _updateReceptionSummaryBar(recs);
+
     if (!recs.length) {
         tbody.innerHTML = `
             <tr><td colspan="8" class="empty-state">
@@ -188,12 +191,28 @@ function updateReceptionTable() {
     }
 
     getPaginatedData(recs, 'receptions').forEach(r => {
-        const collector  = appData.collectors.find(c => c.id === r.collectorId);
+        const collector   = appData.collectors.find(c => c.id === r.collectorId);
         const grossWeight = parseFloat((r.grossWeight || 0).toFixed(2));
         const netWeight   = parseFloat((r.netWeight   || 0).toFixed(2));
         const price       = parseFloat((r.price       || 0).toFixed(0));
         const totalValue  = parseFloat((r.totalValue  || 0).toFixed(0));
         const qualClass   = (r.quality || '').toLowerCase();
+
+        // ── Badge type verte/préparée ────────────────────────────────
+        const vType     = getVanilleType(r.quality);
+        const typeBadge = vType === 'verte'
+            ? `<span style="display:inline-flex;align-items:center;gap:3px;
+                            font-size:10px;padding:1px 6px;border-radius:20px;
+                            background:rgba(46,125,50,.12);color:#2e7d32;font-weight:600;
+                            vertical-align:middle;margin-left:4px;">
+                   <span class="material-icons" style="font-size:11px;">grass</span>Verte
+               </span>`
+            : `<span style="display:inline-flex;align-items:center;gap:3px;
+                            font-size:10px;padding:1px 6px;border-radius:20px;
+                            background:rgba(103,80,164,.10);color:var(--md-sys-color-primary);font-weight:600;
+                            vertical-align:middle;margin-left:4px;">
+                   <span class="material-icons" style="font-size:11px;">verified</span>Préparée
+               </span>`;
 
         const row = document.createElement('tr');
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
@@ -203,7 +222,10 @@ function updateReceptionTable() {
             <td data-label="Poids Brut">${grossWeight} kg</td>
             <td data-label="Poids Net">${netWeight} kg</td>
             <td data-label="Qualité">
-                <span class="status-badge status-${qualClass}">${RiseVanillaSearch.highlightText(r.quality || '—', _q)}</span>
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+                    <span class="status-badge status-${qualClass}">${RiseVanillaSearch.highlightText(r.quality || '—', _q)}</span>
+                    ${typeBadge}
+                </div>
             </td>
             <td data-label="Prix/kg">${formatCurrency(price)}/kg</td>
             <td data-label="Valeur">${formatCurrency(totalValue)}</td>
@@ -229,7 +251,7 @@ function updateReceptionTable() {
         const collTd = row.querySelector('td[data-label="Collecteur"]');
         if (collTd) {
             if (collector) {
-                collTd.dataset.noHighlight = '1'; // ← protège l'avatar du highlightTable
+                collTd.dataset.noHighlight = '1';
                 const avatarCell = renderCollectorAvatar(collector, false);
                 const nameSpan = document.createElement('span');
                 nameSpan.innerHTML = RiseVanillaSearch.highlightText(collector.name, _q);
@@ -244,6 +266,70 @@ function updateReceptionTable() {
 
     _setPagination(tableWrapper, 'receptions', recs.length);
     initTableSorting();
+}
+
+/** Barre de totaux segmentés verte / préparée — peuple #reception-summary-bar */
+function _updateReceptionSummaryBar(recs) {
+    const bar = document.getElementById('reception-summary-bar');
+    if (!bar) return;
+
+    if (!recs.length) { bar.style.display = 'none'; return; }
+
+    const verte    = recs.filter(r => getVanilleType(r.quality) === 'verte');
+    const preparee = recs.filter(r => getVanilleType(r.quality) === 'preparee');
+
+    const pVerte   = verte.reduce((s, r)    => s + (r.netWeight  || 0), 0);
+    const valVerte = verte.reduce((s, r)    => s + (r.totalValue || 0), 0);
+    const pPrep    = preparee.reduce((s, r) => s + (r.netWeight  || 0), 0);
+    const valPrep  = preparee.reduce((s, r) => s + (r.totalValue || 0), 0);
+    const pTotal   = pVerte + pPrep;
+    const valTotal = valVerte + valPrep;
+
+    function pill(icon, iconColor, bg, label, poids, valeur) {
+        return `
+        <div style="display:flex;align-items:center;gap:10px;
+                    padding:10px 16px;border-radius:12px;background:${bg};
+                    flex:1;min-width:180px;">
+            <span class="material-icons" style="font-size:20px;color:${iconColor};">${icon}</span>
+            <div>
+                <div style="font-size:11px;font-weight:700;color:${iconColor};
+                            text-transform:uppercase;letter-spacing:.4px;">${label}</div>
+                <div style="font-size:13px;font-weight:600;
+                            color:var(--md-sys-color-on-surface);margin-top:2px;">
+                    ${poids.toFixed(2)} kg</div>
+                <div style="font-size:11px;color:var(--md-sys-color-on-surface-variant);">
+                    ${formatCurrency(Math.round(valeur))}</div>
+            </div>
+        </div>`;
+    }
+
+    bar.innerHTML = `
+        <div style="display:flex;flex-wrap:wrap;gap:10px;padding:14px 0 18px;align-items:stretch;">
+            ${pill('grass',    '#2e7d32',                     'rgba(46,125,50,.08)',
+                   'Vanille Verte',    pVerte, valVerte)}
+            ${pill('verified', 'var(--md-sys-color-primary)', 'rgba(103,80,164,.08)',
+                   'Vanille Préparée', pPrep,  valPrep)}
+            <div style="display:flex;align-items:center;gap:10px;
+                        padding:10px 16px;border-radius:12px;
+                        background:var(--md-sys-color-surface-variant);
+                        flex:1;min-width:180px;
+                        border:1px solid var(--md-sys-color-outline-variant);">
+                <span class="material-icons"
+                      style="font-size:20px;color:var(--md-sys-color-on-surface-variant);">
+                    summarize</span>
+                <div>
+                    <div style="font-size:11px;font-weight:700;
+                                color:var(--md-sys-color-on-surface-variant);
+                                text-transform:uppercase;letter-spacing:.4px;">Total</div>
+                    <div style="font-size:13px;font-weight:600;
+                                color:var(--md-sys-color-on-surface);margin-top:2px;">
+                        ${pTotal.toFixed(2)} kg</div>
+                    <div style="font-size:11px;color:var(--md-sys-color-on-surface-variant);">
+                        ${formatCurrency(Math.round(valTotal))}</div>
+                </div>
+            </div>
+        </div>`;
+    bar.style.display = '';
 }
 
 // ── Qualities Table ───────────────────────────────────────────
