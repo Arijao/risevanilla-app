@@ -86,8 +86,8 @@ function showCollectorDetails(collectorId) {
                 <span class="material-icons" style="color:#4caf50;font-size:18px;">grass</span>
                 <div>
                     <div style="font-size:10px;font-weight:700;color:#4caf50;text-transform:uppercase;letter-spacing:.4px;">Vanille Verte</div>
-                    <div style="font-size:13px;font-weight:600;">\${poidsVerte.toFixed(2)} kg</div>
-                    <div style="font-size:11px;opacity:.7;">\${formatCurrency(Math.round(valVerte))}</div>
+                    <div style="font-size:13px;font-weight:600;">${poidsVerte.toFixed(2)} kg</div>
+                    <div style="font-size:11px;opacity:.7;">${formatCurrency(Math.round(valVerte))}</div>
                 </div>
             </div>
             <div style="flex:1;min-width:160px;display:flex;align-items:center;gap:10px;
@@ -95,8 +95,8 @@ function showCollectorDetails(collectorId) {
                 <span class="material-icons" style="color:var(--md-sys-color-primary);font-size:18px;">verified</span>
                 <div>
                     <div style="font-size:10px;font-weight:700;color:var(--md-sys-color-primary);text-transform:uppercase;letter-spacing:.4px;">Vanille Préparée</div>
-                    <div style="font-size:13px;font-weight:600;">\${poidsPrep.toFixed(2)} kg</div>
-                    <div style="font-size:11px;opacity:.7;">\${formatCurrency(Math.round(valPrep))}</div>
+                    <div style="font-size:13px;font-weight:600;">${poidsPrep.toFixed(2)} kg</div>
+                    <div style="font-size:11px;opacity:.7;">${formatCurrency(Math.round(valPrep))}</div>
                 </div>
             </div>
             <div style="flex:1;min-width:160px;display:flex;align-items:center;gap:10px;
@@ -106,8 +106,8 @@ function showCollectorDetails(collectorId) {
                 <span class="material-icons" style="color:var(--md-sys-color-on-surface-variant);font-size:18px;">summarize</span>
                 <div>
                     <div style="font-size:10px;font-weight:700;color:var(--md-sys-color-on-surface-variant);text-transform:uppercase;letter-spacing:.4px;">Total</div>
-                    <div style="font-size:13px;font-weight:600;">\${(poidsVerte+poidsPrep).toFixed(2)} kg</div>
-                    <div style="font-size:11px;opacity:.7;">\${formatCurrency(Math.round(valVerte+valPrep))}</div>
+                    <div style="font-size:13px;font-weight:600;">${(poidsVerte+poidsPrep).toFixed(2)} kg</div>
+                    <div style="font-size:11px;opacity:.7;">${formatCurrency(Math.round(valVerte+valPrep))}</div>
                 </div>
             </div>
         </div>`;
@@ -117,11 +117,11 @@ function showCollectorDetails(collectorId) {
         receptions.sort((a,b)=>new Date(a.date)-new Date(b.date)).map(r => {
             const vt = getVanilleType(r.quality);
             const badge = vt === 'verte'
-                ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(76,175,80,.18);color:#4caf50;font-weight:600;"><span class="material-icons" style="font-size:11px;">grass</span>Verte</span>`
-                : `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(103,80,164,.10);color:var(--md-sys-color-primary);font-weight:600;"><span class="material-icons" style="font-size:11px;">verified</span>Préparée</span>`;
+                ? '<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(76,175,80,.18);color:#4caf50;font-weight:600;"><span class="material-icons" style="font-size:11px;">grass</span>Verte</span>'
+                : '<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(103,80,164,.10);color:var(--md-sys-color-primary);font-weight:600;"><span class="material-icons" style="font-size:11px;">verified</span>Préparée</span>';
             return [formatDate(r.date), r.netWeight.toFixed(2)+' kg', r.quality, badge, formatCurrency(r.price), formatCurrency(r.totalValue)];
         }),
-        `<td colspan="5" style="\${tdStyle}">TOTAL</td><td style="\${tdStyle}text-align:right;">\${formatCurrency(totalDeliveries)}</td>`
+        `<td colspan="5" style="${tdStyle}">TOTAL</td><td style="${tdStyle}text-align:right;">${formatCurrency(totalDeliveries)}</td>`
     );
     const rembTable = makeTable(
         [{label:'Date'},{label:'Note'},{label:'Montant',right:true}],
@@ -312,34 +312,34 @@ function exportCollectorReport(collectorId) {
         <tr class="total"><td colspan="2">TOTAL</td><td>${formatCurrency(totalAdv)}</td></tr>
     </tbody></table>` : '<p>Aucune avance.</p>'}
     <h2>📦 Réceptions</h2>
-    \${receptions.length ? (() => {
+    ${receptions.length ? (() => {
         const rv = receptions.filter(r => getVanilleType(r.quality) === 'verte');
         const rp = receptions.filter(r => getVanilleType(r.quality) === 'preparee');
         const pv = rv.reduce((s,r)=>s+(r.netWeight||0),0);
         const vv = rv.reduce((s,r)=>s+(r.totalValue||0),0);
         const pp = rp.reduce((s,r)=>s+(r.netWeight||0),0);
         const vp = rp.reduce((s,r)=>s+(r.totalValue||0),0);
-        return `
-        <div style="display:flex;gap:12px;margin-bottom:12px;font-size:11px;">
-            <div style="flex:1;border:1px solid #a5d6a7;border-radius:6px;padding:8px 12px;background:#f1f8e9;">
-                <strong style="color:#2e7d32;">🌿 Vanille Verte</strong><br>
-                \${pv.toFixed(2)} kg — \${formatCurrency(Math.round(vv))}
-            </div>
-            <div style="flex:1;border:1px solid #ce93d8;border-radius:6px;padding:8px 12px;background:#f3e5f5;">
-                <strong style="color:#6750a4;">✅ Vanille Préparée</strong><br>
-                \${pp.toFixed(2)} kg — \${formatCurrency(Math.round(vp))}
-            </div>
-        </div>
-        <table><thead><tr><th>Date</th><th>Poids Net</th><th>Qualité</th><th>Type</th><th>Valeur</th></tr></thead><tbody>
-            \${receptions.map(r=>`<tr>
-                <td>\${formatDate(r.date)}</td>
-                <td>\${r.netWeight.toFixed(2)} kg</td>
-                <td>\${r.quality}</td>
-                <td>\${getVanilleType(r.quality) === 'verte' ? '🌿 Verte' : '✅ Préparée'}</td>
-                <td>\${formatCurrency(r.totalValue)}</td>
-            </tr>`).join('')}
-            <tr class="total"><td colspan="4">TOTAL</td><td>\${formatCurrency(totalRec)}</td></tr>
-        </tbody></table>\`;
+        return '<div style="display:flex;gap:12px;margin-bottom:12px;font-size:11px;">'
+            + '<div style="flex:1;border:1px solid #a5d6a7;border-radius:6px;padding:8px 12px;background:#f1f8e9;">'
+            + '<strong style="color:#2e7d32;">🌿 Vanille Verte</strong><br>'
+            + pv.toFixed(2) + ' kg — ' + formatCurrency(Math.round(vv))
+            + '</div>'
+            + '<div style="flex:1;border:1px solid #ce93d8;border-radius:6px;padding:8px 12px;background:#f3e5f5;">'
+            + '<strong style="color:#6750a4;">✅ Vanille Préparée</strong><br>'
+            + pp.toFixed(2) + ' kg — ' + formatCurrency(Math.round(vp))
+            + '</div></div>'
+            + '<table><thead><tr><th>Date</th><th>Poids Net</th><th>Qualité</th><th>Type</th><th>Valeur</th></tr></thead><tbody>'
+            + receptions.map(r =>
+                '<tr>'
+                + '<td>' + formatDate(r.date) + '</td>'
+                + '<td>' + r.netWeight.toFixed(2) + ' kg</td>'
+                + '<td>' + r.quality + '</td>'
+                + '<td>' + (getVanilleType(r.quality) === 'verte' ? '🌿 Verte' : '✅ Préparée') + '</td>'
+                + '<td>' + formatCurrency(r.totalValue) + '</td>'
+                + '</tr>'
+            ).join('')
+            + '<tr class="total"><td colspan="4">TOTAL</td><td>' + formatCurrency(totalRec) + '</td></tr>'
+            + '</tbody></table>';
     })() : '<p>Aucune réception.</p>'}
     <h2>💵 Remboursements</h2>
     ${remboursements.length ? `<table><thead><tr><th>Date</th><th>Note</th><th>Montant</th></tr></thead><tbody>
