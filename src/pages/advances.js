@@ -361,7 +361,16 @@ function updateAdvancesTable() {
             <td data-label="Date">${formatDate(adv.date)}</td>
             <td data-label="Collecteur"></td>
             <td data-label="Montant">${formatCurrency(adv.amount)}</td>
-            <td data-label="Motif">${RiseVanillaSearch.highlightText(adv.motif || '—', _q)}</td>
+            <td data-label="Motif">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                    ${adv.vanilleType === 'verte'
+                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(46,125,50,.12);color:#2e7d32;font-weight:600;"><span class="material-icons" style="font-size:11px;">grass</span>Verte</span>`
+                        : adv.vanilleType === 'preparee'
+                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(103,80,164,.10);color:var(--md-sys-color-primary);font-weight:600;"><span class="material-icons" style="font-size:11px;">verified</span>Préparée</span>`
+                        : ''}
+                    <span>${RiseVanillaSearch.highlightText(adv.motif || '—', _q)}</span>
+                </div>
+            </td>
             <td class="actions-cell">
                 ${adv.signature
                     ? `<button class="btn btn-icon" title="Réception confirmée ✓"
@@ -526,6 +535,9 @@ function openAdvanceModal(advanceId = null) {
             const amtEl = document.getElementById('advance-amount');
             if (amtEl) amtEl.value = advance.amount.toLocaleString('fr-MG');
             document.getElementById('advance-motif').value     = advance.motif || '';
+            // Restituer vanilleType
+            const typeEl = document.getElementById('advance-vanille-type');
+            if (typeEl) typeEl.value = advance.vanilleType || '';
         }
     }
 
@@ -550,7 +562,8 @@ function saveAdvance(event) {
         return;
     }
 
-    const data = { date, collectorId, amount, motif, createdAt: new Date().toISOString() };
+    const vanilleType = document.getElementById('advance-vanille-type')?.value || '';
+    const data = { date, collectorId, amount, motif, vanilleType, createdAt: new Date().toISOString() };
     if (editId) data.id = parseInt(editId);
 
     saveToDB('advances', data, () => {
