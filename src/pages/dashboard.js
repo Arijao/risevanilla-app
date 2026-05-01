@@ -80,7 +80,8 @@ function updateGlobalBalanceCard(b) {
 }
 
 function updateInsights(b) {
-    const totalMoneyOut      = b.totalAdvances + b.totalExpenses;
+    // Utilise totalMoneyOut depuis balanceInfo (inclut advances + expenses + paiements)
+    const totalMoneyOut      = b.totalMoneyOut;
     const recoveryRateValue  = totalMoneyOut > 0 ? (b.totalVanillaValue / totalMoneyOut * 100) : 0;
     const avanceBalance      = b.totalVanillaValue - b.totalAdvances;
 
@@ -122,7 +123,8 @@ function calculateDebtorsCount() {
 }
 
 function updateProgressBars(b, totalWeight) {
-    const totalOut = b.totalAdvances + b.totalExpenses;
+    // Utilise totalMoneyOut depuis balanceInfo (inclut advances + expenses + paiements)
+    const totalOut = b.totalMoneyOut;
     _setWidth('advances-progress', 100);
     _setWidth('expenses-progress', 100);
     _setWidth('vanilla-progress',  totalWeight > 0 ? 100 : 0);
