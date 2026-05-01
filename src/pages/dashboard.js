@@ -23,12 +23,14 @@ function updateEnhancedDashboard() {
                getPaiementsForCurrentYear().some(p => p.collectorId === collector.id);
     });
 
-    const totalAdvances      = advancesData.reduce((s, a) => s + a.amount, 0);
-    const totalExpenses      = expensesData.reduce((s, e) => s + e.amount, 0);
-    const totalPaiements     = getPaiementsForCurrentYear().reduce((s, p) => s + p.amount, 0);
-    const totalMoneyOut      = totalAdvances + totalExpenses + totalPaiements;
-    const totalVanillaValue  = receptionsData.reduce((s, r) => s + r.totalValue, 0);
-    const totalVanillaWeight  = receptionsData.reduce((s, r) => s + r.netWeight, 0);
+    const totalAdvances        = advancesData.reduce((s, a) => s + a.amount, 0);
+    const totalExpenses        = expensesData.reduce((s, e) => s + e.amount, 0);
+    const totalPaiements       = getPaiementsForCurrentYear().reduce((s, p) => s + p.amount, 0);
+    const totalRemboursements  = getRemboursementsForCurrentYear().reduce((s, r) => s + r.amount, 0);
+    const totalVanillaValue    = receptionsData.reduce((s, r) => s + r.totalValue, 0);
+    const totalVanillaWeight   = receptionsData.reduce((s, r) => s + r.netWeight, 0);
+    const totalMoneyOut        = totalAdvances + totalExpenses + totalPaiements;
+    const totalMoneyIn         = totalVanillaValue + totalRemboursements;
 
     // ── Segmentation poids par vanilleType ────────────────────────────
     const weightVerte    = receptionsData.filter(r => getVanilleType(r.quality) === 'verte')
@@ -42,17 +44,18 @@ function updateEnhancedDashboard() {
         return bal < 0 ? sum + Math.abs(bal) : sum;
     }, 0);
 
-    // ── Carte 2 : Solde financier global (Vanille − Avances − Dépenses − Paiements) ──
-    const soldeFinancierGlobal = totalVanillaValue - totalMoneyOut;
+    // ── Carte 2 : Solde financier global (Vanille + Remboursements − Avances − Dépenses − Paiements) ──
+    const soldeFinancierGlobal = totalMoneyIn - totalMoneyOut;
 
-    const recoveryRate = totalMoneyOut > 0 ? (totalVanillaValue / totalMoneyOut) * 100 : 0;
+    const recoveryRate = totalMoneyOut > 0 ? (totalMoneyIn / totalMoneyOut) * 100 : 0;
 
     const balanceInfo = {
         balance:    soldeFinancierGlobal,
         isPositive: soldeFinancierGlobal >= 0,
         deficit:    Math.abs(soldeFinancierGlobal),
         totalDettes,
-        totalAdvances, totalExpenses, totalPaiements, totalMoneyOut, totalVanillaValue,
+        totalAdvances, totalExpenses, totalPaiements, totalRemboursements,
+        totalMoneyOut, totalMoneyIn, totalVanillaValue,
         recoveryRate: recoveryRate.toFixed(1)
     };
 
@@ -124,7 +127,7 @@ function updateSoldeFinancierCard(b) {
 
 function updateInsights(b) {
     const totalMoneyOut      = b.totalMoneyOut;
-    const recoveryRateValue  = totalMoneyOut > 0 ? (b.totalVanillaValue / totalMoneyOut * 100) : 0;
+    const recoveryRateValue  = b.totalMoneyOut > 0 ? (b.totalMoneyIn / b.totalMoneyOut * 100) : 0;
     const avanceBalance      = b.totalVanillaValue - b.totalAdvances;
 
     const icon1   = document.getElementById('insight-icon-1');
