@@ -36,8 +36,11 @@ function updateEnhancedDashboard() {
     const weightPreparee = receptionsData.filter(r => getVanilleType(r.quality) === 'preparee')
                                          .reduce((s, r) => s + (r.netWeight || 0), 0);
 
-    // ── Carte 1 : Avances non récupérées (Avances − Valeur vanille) ──────
-    const avancesNonRecuperees = totalAdvances - totalVanillaValue;
+    // ── Carte 1 : Total des dettes collecteurs (somme des soldes négatifs) ──────
+    const totalDettes = (appData.collectors || []).reduce((sum, c) => {
+        const bal = calculateCollectorBalance(c.id);
+        return bal < 0 ? sum + Math.abs(bal) : sum;
+    }, 0);
 
     // ── Carte 2 : Solde financier global (Vanille − Avances − Dépenses − Paiements) ──
     const soldeFinancierGlobal = totalVanillaValue - totalMoneyOut;
@@ -48,7 +51,7 @@ function updateEnhancedDashboard() {
         balance:    soldeFinancierGlobal,
         isPositive: soldeFinancierGlobal >= 0,
         deficit:    Math.abs(soldeFinancierGlobal),
-        avancesNonRecuperees,
+        totalDettes,
         totalAdvances, totalExpenses, totalPaiements, totalMoneyOut, totalVanillaValue,
         recoveryRate: recoveryRate.toFixed(1)
     };
@@ -73,7 +76,7 @@ function updateEnhancedDashboard() {
     updateProgressBars(balanceInfo, totalVanillaWeight);
 }
 
-// ── Carte 1 : Avances non récupérées (Avances − Valeur vanille) ─────────────
+// ── Carte 1 : Total des dettes collecteurs (somme des soldes négatifs) ──────
 function updateAvancesNonRecupereesCard(b) {
     const card   = document.getElementById('avances-non-recuperees-card');
     const value  = document.getElementById('avances-non-recuperees-value');
@@ -81,21 +84,17 @@ function updateAvancesNonRecupereesCard(b) {
     const trendT = document.getElementById('avances-non-recuperees-trend-text');
     if (!card) return;
 
-    const montant  = b.avancesNonRecuperees;
-    const isDeficit = montant > 0; // Avances > Vanille → dette non couverte
+    const dettes = b.totalDettes; // Somme des soldes négatifs des collecteurs débiteurs
 
-    if (value) value.textContent = (isDeficit ? '-' : '+') + formatCurrency(Math.abs(montant));
-    card.className = `stat-card ${isDeficit ? 'debiteur' : montant === 0 ? 'equilibre' : 'crediteur'}`;
+    if (value) value.textContent = formatCurrency(dettes);
+    card.className = `stat-card ${dettes > 0 ? 'debiteur' : 'equilibre'}`;
 
-    if (isDeficit) {
+    if (dettes > 0) {
         if (trendI) trendI.textContent = 'trending_down';
-        if (trendT) trendT.textContent = 'Avances non couvertes par la vanille';
-    } else if (montant === 0) {
-        if (trendI) trendI.textContent = 'trending_flat';
-        if (trendT) trendT.textContent = 'Avances entièrement couvertes';
+        if (trendT) trendT.textContent = 'Total des dettes collecteurs';
     } else {
-        if (trendI) trendI.textContent = 'trending_up';
-        if (trendT) trendT.textContent = 'Valeur vanille dépasse les avances';
+        if (trendI) trendI.textContent = 'trending_flat';
+        if (trendT) trendT.textContent = 'Aucune dette collecteur en cours';
     }
 }
 
