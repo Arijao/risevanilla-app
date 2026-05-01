@@ -1253,7 +1253,21 @@
                 <div class="form-group"><label class="form-label">Collecteur</label><input type="text" class="form-input" id="remboursement-collector-name" readonly></div>
                 <div class="form-group"><label class="form-label">Montant du remboursement (Ar)</label><input type="text" inputmode="numeric" class="form-input" id="remboursement-amount" required placeholder="0"></div>
                 <div class="form-group"><label class="form-label">Date du remboursement</label><input type="date" class="form-input" id="remboursement-date" required></div>
-                <div class="form-group"><label class="form-label">Note (optionnel)</label><input type="text" class="form-input" id="remboursement-note" placeholder="Ex: Reliquat du 15/08/2024"></div>
+                <div class="form-group">
+                    <label class="form-label">Note (optionnel)</label>
+                    <input type="text" class="form-input" id="remboursement-note"
+                           placeholder="Ex: Reliquat du 15/08/2024"
+                           list="remboursement-note-suggestions"
+                           autocomplete="off">
+                    <datalist id="remboursement-note-suggestions">
+                        <option value="Acompte sur remboursement"></option>
+                        <option value="Remboursement partiel"></option>
+                        <option value="Remboursement total du solde"></option>
+                        <option value="Transfert du solde Vanille Verte vers compte Vanille Préparée"></option>
+                        <option value="Régularisation de fin de campagne"></option>
+                        <option value="Retenue sur livraison"></option>
+                    </datalist>
+                </div>
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline" onclick="closeModal('remboursement-modal')">Annuler</button>
                     <button type="submit" class="btn btn-primary">Enregistrer</button>
@@ -1281,7 +1295,21 @@
                     </div>
                 </div>
                 <div class="form-group"><label class="form-label">Date du paiement</label><input type="date" class="form-input" id="credit-payment-date" required></div>
-                <div class="form-group"><label class="form-label">Note (optionnel)</label><input type="text" class="form-input" id="credit-payment-note" placeholder="Ex: Par chèque N°123..."></div>
+                <div class="form-group">
+                    <label class="form-label">Note (optionnel)</label>
+                    <input type="text" class="form-input" id="credit-payment-note"
+                           placeholder="Ex: Par chèque N°123..."
+                           list="credit-payment-note-suggestions"
+                           autocomplete="off">
+                    <datalist id="credit-payment-note-suggestions">
+                        <option value="Paiement du solde créditeur"></option>
+                        <option value="Acompte à payer"></option>
+                        <option value="Paiement par chèque N° :"></option>
+                        <option value="Paiement par virement bancaire"></option>
+                        <option value="Paiement en espèces"></option>
+                        <option value="Solde de fin de campagne"></option>
+                    </datalist>
+                </div>
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline" onclick="closeModal('credit-payment-modal')">Annuler</button>
                     <button type="submit" class="btn btn-primary">Valider le paiement</button>
