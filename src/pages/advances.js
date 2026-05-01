@@ -604,6 +604,17 @@ function openRemboursementModal(collectorId, remboursementId = null) {
     if (nameEl) nameEl.value = collector ? collector.name : '';
     if (dateEl) dateEl.value = _todayISO();
 
+    // Pré-remplir le montant avec le solde dû du collecteur (nouveau remboursement uniquement)
+    if (!remboursementId) {
+        const balance = typeof calculateCollectorBalance === 'function'
+            ? calculateCollectorBalance(collectorId)
+            : 0;
+        // Solde débiteur = balance négative (le collecteur doit de l'argent)
+        const due = balance < 0 ? Math.abs(balance) : 0;
+        const amtEl = document.getElementById('remboursement-amount');
+        if (amtEl) amtEl.value = due > 0 ? due.toLocaleString('fr-MG') : '';
+    }
+
     if (remboursementId) {
         const remb = (appData.remboursements || []).find(r => r.id === remboursementId);
         if (remb) {
