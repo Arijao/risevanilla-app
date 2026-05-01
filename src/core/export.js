@@ -71,34 +71,76 @@ function exportAnalysis() {
 // ── Poids Analysis PDF ────────────────────────────────────────
 function exportPoidsAnalysis() {
     const receptionsYear = getReceptionsForCurrentYear();
-    const qualities = [...new Set(receptionsYear.map(r => r.quality))].sort();
-    const today = formatDate(new Date().toISOString().split('T')[0]);
+    const today          = formatDate(new Date().toISOString().split('T')[0]);
+
+    // ── Segmentation par vanilleType ─────────────────────────────────────
+    const qualitesVertes   = [...new Set(receptionsYear.filter(r => getVanilleType(r.quality) === 'verte')   .map(r => r.quality))].sort();
+    const qualitesPrep     = [...new Set(receptionsYear.filter(r => getVanilleType(r.quality) === 'preparee').map(r => r.quality))].sort();
 
     const totals = {};
-    qualities.forEach(q => totals[q] = 0);
-    let grandTotal = 0;
+    [...qualitesVertes, ...qualitesPrep].forEach(q => totals[q] = 0);
+    let grandTotalVerte = 0, grandTotalPrep = 0;
 
     let rows = '';
     appData.collectors.filter(isCollectorAvailableInCurrentYear).forEach(c => {
-        let colTotal = 0;
-        let cells = qualities.map(q => {
-            const w = receptionsYear.filter(r=>r.collectorId===c.id&&r.quality===q).reduce((s,r)=>s+r.netWeight,0);
-            totals[q] += w;
-            colTotal  += w;
-            return `<td class="right">${w > 0 ? formatNumber(w) : '—'}</td>`;
+        let colTotalVerte = 0, colTotalPrep = 0;
+
+        const cellsVerte = qualitesVertes.map(q => {
+            const w = receptionsYear.filter(r => r.collectorId === c.id && r.quality === q).reduce((s, r) => s + r.netWeight, 0);
+            totals[q]      += w;
+            colTotalVerte  += w;
+            return '<td class="right">' + (w > 0 ? formatNumber(w) : '—') + '</td>';
         }).join('');
-        grandTotal += colTotal;
-        rows += `<tr><td>${c.name}</td>${cells}<td class="right total">${formatNumber(colTotal)}</td></tr>`;
+
+        const cellsPrep = qualitesPrep.map(q => {
+            const w = receptionsYear.filter(r => r.collectorId === c.id && r.quality === q).reduce((s, r) => s + r.netWeight, 0);
+            totals[q]     += w;
+            colTotalPrep  += w;
+            return '<td class="right">' + (w > 0 ? formatNumber(w) : '—') + '</td>';
+        }).join('');
+
+        grandTotalVerte += colTotalVerte;
+        grandTotalPrep  += colTotalPrep;
+
+        rows += '<tr>'
+            + '<td>' + c.name + '</td>'
+            + cellsVerte
+            + '<td class="right subtotal">' + (colTotalVerte > 0 ? formatNumber(colTotalVerte) : '—') + '</td>'
+            + cellsPrep
+            + '<td class="right subtotal">' + (colTotalPrep > 0 ? formatNumber(colTotalPrep) : '—') + '</td>'
+            + '<td class="right total">' + formatNumber(colTotalVerte + colTotalPrep) + '</td>'
+            + '</tr>';
     });
 
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Poids — RISEVANILLA</title>
-    <style>${_PDF_BASE_STYLE} td.right{text-align:right;} th{text-align:center;}</style></head><body>
-    <h1>RISEVANILLA</h1><p>Analyse des Poids Livrés — ${today}</p>
-    <table>
-        <thead><tr><th>Collecteur</th>${qualities.map(q=>`<th>${q} (kg)</th>`).join('')}<th>TOTAL (kg)</th></tr></thead>
-        <tbody>${rows}</tbody>
-        <tfoot><tr class="total"><th>TOTAL GÉNÉRAL</th>${qualities.map(q=>`<td class="right">${formatNumber(totals[q])}</td>`).join('')}<td class="right">${formatNumber(grandTotal)}</td></tr></tfoot>
-    </table></body></html>`;
+    const thVerte = qualitesVertes.map(q => '<th>' + q + ' (kg)</th>').join('');
+    const thPrep  = qualitesPrep.map(q => '<th>' + q + ' (kg)</th>').join('');
+    const tfVerte = qualitesVertes.map(q => '<td class="right">' + formatNumber(totals[q]) + '</td>').join('');
+    const tfPrep  = qualitesPrep.map(q => '<td class="right">' + formatNumber(totals[q]) + '</td>').join('');
+    const grandTotal = grandTotalVerte + grandTotalPrep;
+
+    const groupHeaderVerte = qualitesVertes.length
+        ? '<th colspan="' + (qualitesVertes.length + 1) + '" style="background:#e8f5e9;color:#2e7d32;border-bottom:2px solid #4caf50;">🌿 Vanille Verte</th>'
+        : '';
+    const groupHeaderPrep = qualitesPrep.length
+        ? '<th colspan="' + (qualitesPrep.length + 1) + '" style="background:#ede7f6;color:#4527a0;border-bottom:2px solid #6750a4;">✅ Vanille Préparée</th>'
+        : '';
+
+    const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Poids — RISEVANILLA</title>'
+        + '<style>' + _PDF_BASE_STYLE + ' td.right{text-align:right;} th{text-align:center;}'
+        + 'td.subtotal{background:rgba(0,0,0,.04);font-weight:600;}</style></head><body>'
+        + '<h1>RISEVANILLA</h1><p>Analyse des Poids — Segmentation Verte / Préparée — ' + today + '</p>'
+        + '<table>'
+        + '<thead>'
+        + '<tr><th rowspan="2">Collecteur</th>' + groupHeaderVerte + groupHeaderPrep + '<th rowspan="2">TOTAL (kg)</th></tr>'
+        + '<tr>' + thVerte + '<th>S/Total Verte</th>' + thPrep + '<th>S/Total Préparée</th></tr>'
+        + '</thead>'
+        + '<tbody>' + rows + '</tbody>'
+        + '<tfoot><tr class="total"><th>TOTAL GÉNÉRAL</th>'
+        + tfVerte + '<td class="right">' + formatNumber(grandTotalVerte) + '</td>'
+        + tfPrep  + '<td class="right">' + formatNumber(grandTotalPrep)  + '</td>'
+        + '<td class="right">' + formatNumber(grandTotal) + '</td>'
+        + '</tr></tfoot>'
+        + '</table></body></html>';
     _printWindow(html);
 }
 
@@ -159,17 +201,38 @@ function exportCollectorDetailsToExcel(collectorId) {
     ws0['!cols'] = [{wch:28},{wch:25}];
     XLSX.utils.book_append_sheet(wb, ws0, 'Résumé');
 
-    // Avances
+    // Avances — avec colonne Type vanille
     if (advances.length) {
-        const ws1 = XLSX.utils.json_to_sheet(advances.map(a=>({ Date:formatDate(a.date), Motif:a.motif||'', Montant:a.amount })));
-        ws1['!cols'] = [{wch:12},{wch:30},{wch:15}];
+        const ws1 = XLSX.utils.json_to_sheet(advances.map(a => ({
+            Date:          formatDate(a.date),
+            'Type Vanille': a.vanilleType === 'verte' ? 'Verte' : a.vanilleType === 'preparee' ? 'Préparée' : '—',
+            Motif:         a.motif || '',
+            Montant:       a.amount
+        })));
+        ws1['!cols'] = [{wch:12},{wch:14},{wch:30},{wch:15}];
         XLSX.utils.book_append_sheet(wb, ws1, 'Avances');
     }
 
-    // Réceptions
+    // Réceptions — avec colonne Type vanille + sous-totaux par type
     if (receptions.length) {
-        const ws2 = XLSX.utils.json_to_sheet(receptions.map(r=>({ Date:formatDate(r.date), 'Poids Net (kg)':r.netWeight, Qualité:r.quality, 'Prix/kg':r.price, Valeur:r.totalValue })));
-        ws2['!cols'] = [{wch:12},{wch:14},{wch:12},{wch:12},{wch:14}];
+        const recVerte   = receptions.filter(r => getVanilleType(r.quality) === 'verte');
+        const recPrep    = receptions.filter(r => getVanilleType(r.quality) === 'preparee');
+        const rows       = receptions.map(r => ({
+            Date:            formatDate(r.date),
+            'Type Vanille':  getVanilleType(r.quality) === 'verte' ? 'Verte' : 'Préparée',
+            Qualité:         r.quality,
+            'Poids Net (kg)': r.netWeight,
+            'Prix/kg':        r.price,
+            Valeur:           r.totalValue
+        }));
+        // Lignes de sous-total
+        rows.push({});
+        rows.push({ Date: '── SOUS-TOTAUX ──', 'Type Vanille': '', Qualité: '', 'Poids Net (kg)': '', 'Prix/kg': '', Valeur: '' });
+        rows.push({ Date: '🌿 Vanille Verte',   'Type Vanille': '', Qualité: recVerte.length + ' réc.', 'Poids Net (kg)': recVerte.reduce((s,r)=>s+r.netWeight,0), 'Prix/kg': '', Valeur: recVerte.reduce((s,r)=>s+r.totalValue,0) });
+        rows.push({ Date: '✅ Vanille Préparée','Type Vanille': '', Qualité: recPrep.length  + ' réc.', 'Poids Net (kg)': recPrep.reduce((s,r)=>s+r.netWeight,0),  'Prix/kg': '', Valeur: recPrep.reduce((s,r)=>s+r.totalValue,0)  });
+        rows.push({ Date: 'TOTAL',             'Type Vanille': '', Qualité: receptions.length + ' réc.', 'Poids Net (kg)': receptions.reduce((s,r)=>s+r.netWeight,0), 'Prix/kg': '', Valeur: receptions.reduce((s,r)=>s+r.totalValue,0) });
+        const ws2 = XLSX.utils.json_to_sheet(rows);
+        ws2['!cols'] = [{wch:12},{wch:14},{wch:12},{wch:14},{wch:12},{wch:14}];
         XLSX.utils.book_append_sheet(wb, ws2, 'Réceptions');
     }
 
