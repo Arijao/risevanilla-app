@@ -36,12 +36,20 @@ function updateEnhancedDashboard() {
     const weightPreparee = receptionsData.filter(r => getVanilleType(r.quality) === 'preparee')
                                          .reduce((s, r) => s + (r.netWeight || 0), 0);
 
-    const balance             = totalVanillaValue - totalMoneyOut;
-    const recoveryRate        = totalMoneyOut > 0 ? (totalVanillaValue / totalMoneyOut) * 100 : 0;
+    // ── Carte 1 : Avances non récupérées (Avances − Valeur vanille) ──────
+    const avancesNonRecuperees = totalAdvances - totalVanillaValue;
+
+    // ── Carte 2 : Solde financier global (Vanille − Avances − Dépenses − Paiements) ──
+    const soldeFinancierGlobal = totalVanillaValue - totalMoneyOut;
+
+    const recoveryRate = totalMoneyOut > 0 ? (totalVanillaValue / totalMoneyOut) * 100 : 0;
 
     const balanceInfo = {
-        balance, isPositive: balance >= 0, deficit: Math.abs(balance),
-        totalAdvances, totalExpenses, totalMoneyOut, totalVanillaValue,
+        balance:    soldeFinancierGlobal,
+        isPositive: soldeFinancierGlobal >= 0,
+        deficit:    Math.abs(soldeFinancierGlobal),
+        avancesNonRecuperees,
+        totalAdvances, totalExpenses, totalPaiements, totalMoneyOut, totalVanillaValue,
         recoveryRate: recoveryRate.toFixed(1)
     };
 
@@ -57,30 +65,65 @@ function updateEnhancedDashboard() {
     _setEl('overview-transactions', totalTransactions);
     _setEl('overview-month',        `Année ${currentYear}`);
 
-    updateGlobalBalanceCard(balanceInfo);
+    updateAvancesNonRecupereesCard(balanceInfo);
+    updatePaiementsCard(totalPaiements);
+    updateSoldeFinancierCard(balanceInfo);
     updateInsights(balanceInfo);
     updateRentabiliteInsights();
     updateProgressBars(balanceInfo, totalVanillaWeight);
 }
 
-function updateGlobalBalanceCard(b) {
-    const card     = document.getElementById('solde-global-card');
-    const value    = document.getElementById('solde-global');
-    const icon     = document.getElementById('solde-icon');
-    const trendI   = document.getElementById('solde-trend-icon');
-    const trendT   = document.getElementById('solde-trend-text');
+// ── Carte 1 : Avances non récupérées (Avances − Valeur vanille) ─────────────
+function updateAvancesNonRecupereesCard(b) {
+    const card   = document.getElementById('avances-non-recuperees-card');
+    const value  = document.getElementById('avances-non-recuperees-value');
+    const trendI = document.getElementById('avances-non-recuperees-trend-icon');
+    const trendT = document.getElementById('avances-non-recuperees-trend-text');
     if (!card) return;
 
-    if (value)  value.textContent = (b.isPositive ? '+' : '-') + formatCurrency(b.deficit);
-    if (card)   card.className = `stat-card solde-global-card ${b.balance > 0 ? 'crediteur' : b.balance === 0 ? 'equilibre' : 'debiteur'}`;
+    const montant  = b.avancesNonRecuperees;
+    const isDeficit = montant > 0; // Avances > Vanille → dette non couverte
 
-    if (b.balance > 0)       { if(icon) icon.textContent='account_balance_wallet'; if(trendI) trendI.textContent='trending_up';   if(trendT) trendT.textContent='Excédent disponible'; }
-    else if (b.balance === 0){ if(icon) icon.textContent='balance';                 if(trendI) trendI.textContent='trending_flat'; if(trendT) trendT.textContent='Parfaitement équilibré'; }
-    else                     { if(icon) icon.textContent='account_balance';         if(trendI) trendI.textContent='trending_down';  if(trendT) trendT.textContent='Argent non récupéré'; }
+    if (value) value.textContent = (isDeficit ? '-' : '+') + formatCurrency(Math.abs(montant));
+    card.className = `stat-card ${isDeficit ? 'debiteur' : montant === 0 ? 'equilibre' : 'crediteur'}`;
+
+    if (isDeficit) {
+        if (trendI) trendI.textContent = 'trending_down';
+        if (trendT) trendT.textContent = 'Avances non couvertes par la vanille';
+    } else if (montant === 0) {
+        if (trendI) trendI.textContent = 'trending_flat';
+        if (trendT) trendT.textContent = 'Avances entièrement couvertes';
+    } else {
+        if (trendI) trendI.textContent = 'trending_up';
+        if (trendT) trendT.textContent = 'Valeur vanille dépasse les avances';
+    }
+}
+
+// ── Carte 4 : Paiements effectués ────────────────────────────────────────────
+function updatePaiementsCard(totalPaiements) {
+    const card  = document.getElementById('total-paiements-card');
+    const value = document.getElementById('total-paiements-value');
+    if (!card) return;
+    if (value) value.textContent = formatCurrency(totalPaiements);
+}
+
+// ── Carte 2 : Solde financier global ─────────────────────────────────────────
+function updateSoldeFinancierCard(b) {
+    const card   = document.getElementById('solde-financier-card');
+    const value  = document.getElementById('solde-financier-value');
+    const trendI = document.getElementById('solde-financier-trend-icon');
+    const trendT = document.getElementById('solde-financier-trend-text');
+    if (!card) return;
+
+    if (value) value.textContent = (b.isPositive ? '+' : '-') + formatCurrency(b.deficit);
+    card.className = `stat-card solde-global-card ${b.balance > 0 ? 'crediteur' : b.balance === 0 ? 'equilibre' : 'debiteur'}`;
+
+    if (b.balance > 0)        { if(trendI) trendI.textContent='trending_up';   if(trendT) trendT.textContent='Excédent financier global'; }
+    else if (b.balance === 0) { if(trendI) trendI.textContent='trending_flat'; if(trendT) trendT.textContent='Parfaitement équilibré'; }
+    else                      { if(trendI) trendI.textContent='trending_down';  if(trendT) trendT.textContent='Déficit financier global'; }
 }
 
 function updateInsights(b) {
-    // Utilise totalMoneyOut depuis balanceInfo (inclut advances + expenses + paiements)
     const totalMoneyOut      = b.totalMoneyOut;
     const recoveryRateValue  = totalMoneyOut > 0 ? (b.totalVanillaValue / totalMoneyOut * 100) : 0;
     const avanceBalance      = b.totalVanillaValue - b.totalAdvances;
@@ -123,8 +166,7 @@ function calculateDebtorsCount() {
 }
 
 function updateProgressBars(b, totalWeight) {
-    // Utilise totalMoneyOut depuis balanceInfo (inclut advances + expenses + paiements)
-    const totalOut = b.totalMoneyOut;
+    const totalOut = b.totalAdvances + b.totalExpenses;
     _setWidth('advances-progress', 100);
     _setWidth('expenses-progress', 100);
     _setWidth('vanilla-progress',  totalWeight > 0 ? 100 : 0);
