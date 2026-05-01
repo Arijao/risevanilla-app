@@ -738,7 +738,43 @@
                     <div class="form-group">
                         <label class="form-label" for="rendement-rate">
                             Taux de Rendement (Vanille Verte → Noire)
-                            <span class="material-icons" title="Pourcentage du poids final après séchage." style="font-size: 16px; vertical-align: middle; cursor: help;">help_outline</span>
+                            <span class="help-tooltip-trigger" aria-label="Aide taux de rendement" tabindex="0" style="
+                                display: inline-flex; align-items: center; justify-content: center;
+                                width: 18px; height: 18px; border-radius: 50%;
+                                background: var(--md-sys-color-primary);
+                                color: var(--md-sys-color-on-primary);
+                                font-size: 12px; font-weight: 700; cursor: pointer;
+                                vertical-align: middle; margin-left: 4px;
+                                position: relative; user-select: none;">
+                                ?
+                                <span class="help-tooltip-bubble" role="tooltip" style="
+                                    display: none;
+                                    position: absolute;
+                                    bottom: calc(100% + 10px);
+                                    left: 50%; transform: translateX(-50%);
+                                    background: var(--md-sys-color-inverse-surface, #2d2d2d);
+                                    color: var(--md-sys-color-inverse-on-surface, #f5f5f5);
+                                    font-size: 12px; font-weight: 400;
+                                    line-height: 1.5;
+                                    padding: 10px 14px;
+                                    border-radius: 8px;
+                                    width: 260px;
+                                    white-space: normal;
+                                    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+                                    z-index: 9999;
+                                    pointer-events: none;">
+                                    <strong>Taux de rendement</strong><br>
+                                    Représente le pourcentage de poids conservé après séchage complet de la vanille verte.<br><br>
+                                    <em>Exemple :</em> avec 30 %, 100 kg de vanille verte donnent <strong>30 kg</strong> de vanille noire sèche.
+                                    <span style="
+                                        position: absolute;
+                                        top: 100%; left: 50%; transform: translateX(-50%);
+                                        border: 6px solid transparent;
+                                        border-top-color: var(--md-sys-color-inverse-surface, #2d2d2d);
+                                        display: block; width: 0; height: 0;">
+                                    </span>
+                                </span>
+                            </span>
                         </label>
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <input type="number" class="form-input" id="rendement-rate" value="25" style="flex-grow: 1;">
@@ -1474,6 +1510,55 @@
                     console.warn('[PWA] Échec enregistrement SW :', err);
                 });
         });
+    })();
+    </script>
+
+    <!-- Tooltip aide taux de rendement — survol + clic/touch -->
+    <script>
+    (function () {
+        function initHelpTooltips() {
+            document.querySelectorAll('.help-tooltip-trigger').forEach(function (trigger) {
+                var bubble = trigger.querySelector('.help-tooltip-bubble');
+                if (!bubble) return;
+
+                function show() { bubble.style.display = 'block'; }
+                function hide() { bubble.style.display = 'none'; }
+
+                // Desktop : survol
+                trigger.addEventListener('mouseenter', show);
+                trigger.addEventListener('mouseleave', hide);
+
+                // Mobile / ChromeOS : clic / touch
+                trigger.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var visible = bubble.style.display === 'block';
+                    bubble.style.display = visible ? 'none' : 'block';
+                });
+
+                // Accessibilité clavier
+                trigger.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        var visible = bubble.style.display === 'block';
+                        bubble.style.display = visible ? 'none' : 'block';
+                    }
+                    if (e.key === 'Escape') hide();
+                });
+            });
+
+            // Fermer au clic en dehors
+            document.addEventListener('click', function () {
+                document.querySelectorAll('.help-tooltip-bubble').forEach(function (b) {
+                    b.style.display = 'none';
+                });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initHelpTooltips);
+        } else {
+            initHelpTooltips();
+        }
     })();
     </script>
 </body>
