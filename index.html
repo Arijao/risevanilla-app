@@ -317,18 +317,59 @@
                             <div class="progress-fill" id="value-progress" style="width: 0%;"></div>
                         </div>
                     </div>
-                    <div class="stat-card solde-global-card equilibre" id="solde-global-card">
+                    <!-- CARTE 1 : Avances non récupérées (Avances − Valeur vanille) -->
+                    <div class="stat-card debiteur" id="avances-non-recuperees-card">
                         <div class="stat-header">
                             <div>
-                                <div class="stat-value" id="solde-global">0 Ar</div>
-                                <div class="stat-label">Solde Global</div>
-                                <div class="stat-trend" id="solde-trend">
-                                    <span class="material-icons" id="solde-trend-icon">trending_flat</span>
-                                    <span id="solde-trend-text">État équilibré</span>
+                                <div class="stat-value" id="avances-non-recuperees-value">0 Ar</div>
+                                <div class="stat-label">Avances Non Récupérées</div>
+                                <div class="stat-trend" id="avances-non-recuperees-trend">
+                                    <span class="material-icons" id="avances-non-recuperees-trend-icon">trending_down</span>
+                                    <span id="avances-non-recuperees-trend-text">Avances non couvertes par la vanille</span>
                                 </div>
                             </div>
-                            <div class="stat-icon">
-                                <span class="material-icons" id="solde-icon">account_balance</span>
+                            <div class="stat-icon" style="background-color: #c62828;">
+                                <span class="material-icons">money_off</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="avances-non-recuperees-progress" style="width: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- CARTE 4 : Paiements effectués -->
+                    <div class="stat-card" id="total-paiements-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="total-paiements-value">0 Ar</div>
+                                <div class="stat-label">Paiements Effectués</div>
+                                <div class="stat-trend negative">
+                                    <span class="material-icons">trending_down</span>
+                                    Argent sorti en espèces
+                                </div>
+                            </div>
+                            <div class="stat-icon" style="background-color: #6a1b9a;">
+                                <span class="material-icons">payments</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="paiements-progress" style="width: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- CARTE 2 : Solde financier global (Vanille − Avances − Dépenses − Paiements) -->
+                    <div class="stat-card solde-global-card equilibre" id="solde-financier-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-value" id="solde-financier-value">0 Ar</div>
+                                <div class="stat-label">Solde Financier Global</div>
+                                <div class="stat-trend" id="solde-financier-trend">
+                                    <span class="material-icons" id="solde-financier-trend-icon">trending_flat</span>
+                                    <span id="solde-financier-trend-text">État équilibré</span>
+                                </div>
+                            </div>
+                            <div class="stat-icon" style="background-color: #283593;">
+                                <span class="material-icons">account_balance</span>
                             </div>
                         </div>
                         <div class="progress-bar">
