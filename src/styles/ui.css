@@ -3689,3 +3689,279 @@
         font-size: 0.68rem;
     }
 }
+
+/* ============================================================
+ * PATCH — summary-insight-card v2 — Glassmorphism redesign
+ * À ajouter à la fin de src/styles/ui.css
+ * Ne touche pas aux autres composants.
+ * ============================================================ */
+
+/* ── Base card ── */
+.summary-insight-card {
+    position: relative;
+    border-radius: 20px !important;
+    padding: 20px 22px 18px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.11) !important;
+    border-left: none !important; /* remplacé par la barre top */
+    overflow: hidden;
+    transition:
+        transform 0.28s cubic-bezier(0.34, 1.38, 0.64, 1),
+        box-shadow 0.28s ease,
+        border-color 0.22s ease;
+    box-shadow:
+        0 1px 1px rgba(0, 0, 0, 0.3),
+        0 4px 20px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* ── Specular top highlight ── */
+.summary-insight-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50%;
+    border-radius: 20px 20px 60% 60% / 20px 20px 36px 36px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.065) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+/* ── Ambient glow (revealed on hover) ── */
+.summary-insight-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.summary-insight-card:hover {
+    transform: translateY(-4px) scale(1.012);
+    border-color: rgba(255, 255, 255, 0.18) !important;
+}
+.summary-insight-card:hover::before { opacity: 1; }
+
+/* ── Top accent bar ── */
+.summary-insight-card .card-accent-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 20px 20px 0 0;
+}
+
+/* ─── VARIANT: Vanille Verte ─── */
+.summary-insight-card--verte::before {
+    background: radial-gradient(ellipse 130% 80% at 50% 110%,
+        rgba(76, 175, 80, 0.22) 0%, transparent 70%);
+}
+.summary-insight-card--verte:hover {
+    box-shadow:
+        0 2px 2px rgba(0, 0, 0, 0.2),
+        0 10px 36px rgba(76, 175, 80, 0.16),
+        0 0 0 1px rgba(76, 175, 80, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+.summary-insight-card--verte .card-accent-bar {
+    background: linear-gradient(90deg, #4caf50 0%, #81c784 60%, transparent 100%);
+}
+
+/* ─── VARIANT: Vanille Préparée ─── */
+.summary-insight-card--preparee::before {
+    background: radial-gradient(ellipse 130% 80% at 50% 110%,
+        rgba(0, 97, 164, 0.22) 0%, transparent 70%);
+}
+.summary-insight-card--preparee:hover {
+    box-shadow:
+        0 2px 2px rgba(0, 0, 0, 0.2),
+        0 10px 36px rgba(0, 97, 164, 0.16),
+        0 0 0 1px rgba(0, 97, 164, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+.summary-insight-card--preparee .card-accent-bar {
+    background: linear-gradient(90deg, var(--md-sys-color-primary) 0%, #6aabdc 60%, transparent 100%);
+}
+
+/* ─── VARIANT: Global ─── */
+.summary-insight-card--global::before {
+    background: radial-gradient(ellipse 130% 80% at 50% 110%,
+        rgba(245, 158, 11, 0.18) 0%, transparent 70%);
+}
+.summary-insight-card--global:hover {
+    box-shadow:
+        0 2px 2px rgba(0, 0, 0, 0.2),
+        0 10px 36px rgba(245, 158, 11, 0.13),
+        0 0 0 1px rgba(245, 158, 11, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+.summary-insight-card--global .card-accent-bar {
+    background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 60%, transparent 100%);
+}
+
+/* ── Header ── */
+.insight-header-v2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 1;
+}
+
+.insight-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.summary-insight-card:hover .insight-icon-wrap {
+    transform: scale(1.12) rotate(-5deg);
+}
+
+.summary-insight-card--verte   .insight-icon-wrap { background: rgba(76, 175, 80, 0.14); border: 1px solid rgba(76, 175, 80, 0.28); }
+.summary-insight-card--preparee .insight-icon-wrap { background: rgba(0, 97, 164, 0.14);  border: 1px solid rgba(0, 97, 164, 0.28); }
+.summary-insight-card--global  .insight-icon-wrap { background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.28); }
+
+.insight-icon-wrap .material-icons { font-size: 20px; }
+.summary-insight-card--verte   .insight-icon-wrap .material-icons { color: #81c784; }
+.summary-insight-card--preparee .insight-icon-wrap .material-icons { color: #5b9fd4; }
+.summary-insight-card--global  .insight-icon-wrap .material-icons { color: #fbbf24; }
+
+.insight-title-text {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+.insight-title-sub {
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+    text-transform: none;
+    opacity: 0.55;
+    margin-top: 2px;
+}
+
+.summary-insight-card--verte    .insight-title-text { color: #81c784; }
+.summary-insight-card--preparee  .insight-title-text { color: #5b9fd4; }
+.summary-insight-card--global   .insight-title-text { color: #fbbf24; }
+
+/* ── Metric rows ── */
+.insight-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.insight-metric-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: background 0.18s ease;
+}
+.insight-metric-row:hover { background: rgba(255, 255, 255, 0.07); }
+
+.insight-metric-left {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+.insight-metric-left .material-icons {
+    font-size: 15px;
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.55;
+    flex-shrink: 0;
+}
+.insight-metric-label {
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.75;
+    white-space: nowrap;
+}
+.insight-metric-value {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: var(--md-sys-color-on-surface);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Highlighted row — prix moyen */
+.insight-metric-row--highlight {
+    background: rgba(255, 255, 255, 0.065);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+.summary-insight-card--verte    .insight-metric-row--highlight .insight-metric-value { color: #81c784; }
+.summary-insight-card--preparee  .insight-metric-row--highlight .insight-metric-value { color: #5b9fd4; }
+.summary-insight-card--global   .insight-metric-row--highlight .insight-metric-value { color: #fbbf24; }
+.summary-insight-card--global   .insight-metric-row--highlight {
+    border-color: rgba(245, 158, 11, 0.15);
+    background: rgba(245, 158, 11, 0.06);
+}
+
+/* ── Footer qualités ── */
+.insight-footer-v2 {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+}
+.insight-footer-label {
+    font-size: 10px;
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.45;
+    letter-spacing: 0.3px;
+}
+.insight-rec-count {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.75;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    margin-right: 2px;
+}
+
+/* ── Info note (global card) ── */
+.insight-info-note {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    color: var(--md-sys-color-on-surface-variant);
+    opacity: 0.65;
+    margin-top: 12px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(245, 158, 11, 0.05);
+    border: 1px solid rgba(245, 158, 11, 0.1);
+    position: relative;
+    z-index: 1;
+}
+.insight-info-note .material-icons {
+    font-size: 13px;
+    color: rgba(245, 158, 11, 0.5);
+}

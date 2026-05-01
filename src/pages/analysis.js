@@ -200,104 +200,158 @@ function updatePrixRevientAnalysis() {
         : 0;
 
     // ── Rendu ───────────────────────────────────────────────────────────
+
     container.innerHTML = `
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
 
-            <!-- Carte VANILLE VERTE — données strictement filtrées -->
-            <div class="summary-insight-card" style="
-                border-left: 4px solid #4caf50;
-                background: var(--md-sys-color-surface);">
-                <div class="insight-header" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-                    <span class="material-icons" style="color:#4caf50;">grass</span>
-                    <span style="font-weight:700;font-size:13px;letter-spacing:.5px;color:#4caf50;">
-                        ANALYSE DES POIDS (VANILLE VERTE)
-                    </span>
+            <!-- ── CARTE VANILLE VERTE ── -->
+            <div class="summary-insight-card summary-insight-card--verte">
+                <div class="card-accent-bar"></div>
+
+                <div class="insight-header-v2">
+                    <div class="insight-icon-wrap">
+                        <span class="material-icons">grass</span>
+                    </div>
+                    <div>
+                        <div class="insight-title-text">Analyse des Poids</div>
+                        <div class="insight-title-sub">Vanille Verte</div>
+                    </div>
                 </div>
+
                 ${poidsVerte > 0 ? `
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">scale</span>
-                    Poids total reçu : <strong>${poidsVerte.toFixed(2)} kg</strong>
+                <div class="insight-metrics">
+                    <div class="insight-metric-row">
+                        <div class="insight-metric-left">
+                            <span class="material-icons">scale</span>
+                            <span class="insight-metric-label">Poids total reçu</span>
+                        </div>
+                        <span class="insight-metric-value">${poidsVerte.toFixed(2)} kg</span>
+                    </div>
+                    <div class="insight-metric-row">
+                        <div class="insight-metric-left">
+                            <span class="material-icons">payments</span>
+                            <span class="insight-metric-label">Valeur totale</span>
+                        </div>
+                        <span class="insight-metric-value">${formatCurrency(Math.round(valeurVerte))}</span>
+                    </div>
+                    <div class="insight-metric-row insight-metric-row--highlight">
+                        <div class="insight-metric-left">
+                            <span class="material-icons">trending_up</span>
+                            <span class="insight-metric-label">Prix moyen d'achat</span>
+                        </div>
+                        <span class="insight-metric-value">${formatCurrency(Math.round(prixMoyVerte))}/kg</span>
+                    </div>
                 </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">payments</span>
-                    Valeur totale : <strong>${formatCurrency(Math.round(valeurVerte))}</strong>
-                </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">trending_up</span>
-                    Prix moyen d'achat : <strong>${formatCurrency(Math.round(prixMoyVerte))}/kg</strong>
-                </div>
-                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:8px;">
-                    ${recVerte.length} réception(s) — qualité(s) :
+
+                <div class="insight-footer-v2">
+                    <span class="insight-rec-count">${recVerte.length} réception${recVerte.length > 1 ? 's' : ''}</span>
+                    <span class="insight-footer-label">Qualités :</span>
                     ${[...new Set(recVerte.map(r => r.quality))].map(q =>
                         `<span class="status-badge status-${q.toLowerCase()}" style="font-size:10px;">${q}</span>`
-                    ).join(' ')}
+                    ).join('')}
                 </div>` : `
-                <div class="insight-detail" style="opacity:.6;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">inbox</span>
-                    Aucune réception de vanille verte pour ${currentYear}.
+                <div class="insight-metric-row" style="opacity:.6;">
+                    <div class="insight-metric-left">
+                        <span class="material-icons">inbox</span>
+                        <span class="insight-metric-label">Aucune réception pour ${currentYear}.</span>
+                    </div>
                 </div>`}
             </div>
 
-            <!-- Carte VANILLE PRÉPARÉE -->
-            <div class="summary-insight-card" style="
-                border-left: 4px solid var(--md-sys-color-primary);
-                background: var(--md-sys-color-surface);">
-                <div class="insight-header" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-                    <span class="material-icons" style="color:var(--md-sys-color-primary);">verified</span>
-                    <span style="font-weight:700;font-size:13px;letter-spacing:.5px;color:var(--md-sys-color-primary);">
-                        ANALYSE DES POIDS (VANILLE PRÉPARÉE)
-                    </span>
+            <!-- ── CARTE VANILLE PRÉPARÉE ── -->
+            <div class="summary-insight-card summary-insight-card--preparee">
+                <div class="card-accent-bar"></div>
+
+                <div class="insight-header-v2">
+                    <div class="insight-icon-wrap">
+                        <span class="material-icons">verified</span>
+                    </div>
+                    <div>
+                        <div class="insight-title-text">Analyse des Poids</div>
+                        <div class="insight-title-sub">Vanille Préparée</div>
+                    </div>
                 </div>
+
                 ${poidsPrep > 0 ? `
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">scale</span>
-                    Poids total reçu : <strong>${poidsPrep.toFixed(2)} kg</strong>
+                <div class="insight-metrics">
+                    <div class="insight-metric-row">
+                        <div class="insight-metric-left">
+                            <span class="material-icons">scale</span>
+                            <span class="insight-metric-label">Poids total reçu</span>
+                        </div>
+                        <span class="insight-metric-value">${poidsPrep.toFixed(2)} kg</span>
+                    </div>
+                    <div class="insight-metric-row">
+                        <div class="insight-metric-left">
+                            <span class="material-icons">payments</span>
+                            <span class="insight-metric-label">Valeur totale</span>
+                        </div>
+                        <span class="insight-metric-value">${formatCurrency(Math.round(valeurPrep))}</span>
+                    </div>
+                    <div class="insight-metric-row insight-metric-row--highlight">
+                        <div class="insight-metric-left">
+                            <span class="material-icons">trending_up</span>
+                            <span class="insight-metric-label">Prix moyen d'achat</span>
+                        </div>
+                        <span class="insight-metric-value">${formatCurrency(Math.round(prixMoyPrep))}/kg</span>
+                    </div>
                 </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">payments</span>
-                    Valeur totale : <strong>${formatCurrency(Math.round(valeurPrep))}</strong>
-                </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">trending_up</span>
-                    Prix moyen d'achat : <strong>${formatCurrency(Math.round(prixMoyPrep))}/kg</strong>
-                </div>
-                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:8px;">
-                    ${recPreparee.length} réception(s) — qualité(s) :
+
+                <div class="insight-footer-v2">
+                    <span class="insight-rec-count">${recPreparee.length} réception${recPreparee.length > 1 ? 's' : ''}</span>
+                    <span class="insight-footer-label">Qualités :</span>
                     ${[...new Set(recPreparee.map(r => r.quality))].map(q =>
                         `<span class="status-badge status-${q.toLowerCase()}" style="font-size:10px;">${q}</span>`
-                    ).join(' ')}
+                    ).join('')}
                 </div>` : `
-                <div class="insight-detail" style="opacity:.6;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">inbox</span>
-                    Aucune réception de vanille préparée pour ${currentYear}.
+                <div class="insight-metric-row" style="opacity:.6;">
+                    <div class="insight-metric-left">
+                        <span class="material-icons">inbox</span>
+                        <span class="insight-metric-label">Aucune réception pour ${currentYear}.</span>
+                    </div>
                 </div>`}
             </div>
 
-            <!-- Carte PRIX DE REVIENT GLOBAL -->
-            <div class="summary-insight-card" style="
-                border-left: 4px solid var(--md-sys-color-tertiary);
-                background: var(--md-sys-color-surface);">
-                <div class="insight-header" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-                    <span class="material-icons" style="color:var(--md-sys-color-tertiary);">calculate</span>
-                    <span style="font-weight:700;font-size:13px;letter-spacing:.5px;color:var(--md-sys-color-tertiary);">
-                        PRIX DE REVIENT GLOBAL
-                    </span>
+            <!-- ── CARTE PRIX DE REVIENT GLOBAL ── -->
+            <div class="summary-insight-card summary-insight-card--global">
+                <div class="card-accent-bar"></div>
+
+                <div class="insight-header-v2">
+                    <div class="insight-icon-wrap">
+                        <span class="material-icons">calculate</span>
+                    </div>
+                    <div>
+                        <div class="insight-title-text">Prix de Revient Global</div>
+                        <div class="insight-title-sub">Toutes qualités</div>
+                    </div>
                 </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">scale</span>
-                    Poids total toutes qualités : <strong>${poidsTotal.toFixed(2)} kg</strong>
+
+                <div class="insight-metrics">
+                    <div class="insight-metric-row">
+                        <div class="insight-metric-left">
+                            <span class="material-icons">scale</span>
+                            <span class="insight-metric-label">Poids total</span>
+                        </div>
+                        <span class="insight-metric-value">${poidsTotal.toFixed(2)} kg</span>
+                    </div>
+                    <div class="insight-metric-row">
+                        <div class="insight-metric-left">
+                            <span class="material-icons">receipt_long</span>
+                            <span class="insight-metric-label">Total dépenses</span>
+                        </div>
+                        <span class="insight-metric-value">${formatCurrency(Math.round(totalDepenses))}</span>
+                    </div>
+                    <div class="insight-metric-row insight-metric-row--highlight">
+                        <div class="insight-metric-left">
+                            <span class="material-icons">price_check</span>
+                            <span class="insight-metric-label">Prix de revient/kg</span>
+                        </div>
+                        <span class="insight-metric-value">${formatCurrency(Math.round(prixRevient))}/kg</span>
+                    </div>
                 </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">receipt_long</span>
-                    Total dépenses : <strong>${formatCurrency(Math.round(totalDepenses))}</strong>
-                </div>
-                <div class="insight-detail" style="margin-bottom:6px;">
-                    <span class="material-icons" style="font-size:16px;vertical-align:middle;">price_check</span>
-                    Prix de revient/kg : <strong>${formatCurrency(Math.round(prixRevient))}</strong>
-                    <span style="font-size:11px;opacity:.65;"> (achats + charges)</span>
-                </div>
-                <div class="insight-detail" style="font-size:11px;opacity:.7;margin-top:8px;">
-                    <span class="material-icons" style="font-size:14px;vertical-align:middle;">info</span>
+
+                <div class="insight-info-note">
+                    <span class="material-icons">info</span>
                     (Valeur achats + Dépenses) ÷ Poids total
                 </div>
             </div>
