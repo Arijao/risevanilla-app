@@ -25,9 +25,9 @@ function updateEnhancedDashboard() {
 
     const totalAdvances      = advancesData.reduce((s, a) => s + a.amount, 0);
     const totalExpenses      = expensesData.reduce((s, e) => s + e.amount, 0);
-    const totalMoneyOut      = totalAdvances + totalExpenses;
+    const totalPaiements     = getPaiementsForCurrentYear().reduce((s, p) => s + p.amount, 0);
+    const totalMoneyOut      = totalAdvances + totalExpenses + totalPaiements;
     const totalVanillaValue  = receptionsData.reduce((s, r) => s + r.totalValue, 0);
-    const totalRemboursements = getRemboursementsForCurrentYear().reduce((s, r) => s + r.amount, 0);
     const totalVanillaWeight  = receptionsData.reduce((s, r) => s + r.netWeight, 0);
 
     // ── Segmentation poids par vanilleType ────────────────────────────
@@ -36,7 +36,7 @@ function updateEnhancedDashboard() {
     const weightPreparee = receptionsData.filter(r => getVanilleType(r.quality) === 'preparee')
                                          .reduce((s, r) => s + (r.netWeight || 0), 0);
 
-    const balance             = (totalVanillaValue + totalRemboursements) - totalMoneyOut;
+    const balance             = totalVanillaValue - totalMoneyOut;
     const recoveryRate        = totalMoneyOut > 0 ? (totalVanillaValue / totalMoneyOut) * 100 : 0;
 
     const balanceInfo = {
