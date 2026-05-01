@@ -3691,124 +3691,177 @@
 }
 
 /* ============================================================
- * PATCH — summary-insight-card v2 — Glassmorphism redesign
- * À ajouter à la fin de src/styles/ui.css
- * Ne touche pas aux autres composants.
+ * PATCH v2 — summary-insight-card — Glassmorphism corrigé
+ * Aligné sur le pattern collector-stat-card existant
+ * À coller à la fin de src/styles/ui.css
  * ============================================================ */
 
-/* ── Base card ── */
+/* ── Variables RGB des cartes analyse (même pattern que collector-stat-card) ── */
+:root {
+    --sic-verte-rgb:    76, 175,  80;   /* Vert herbe     */
+    --sic-preparee-rgb:  0,  97, 164;   /* Bleu primaire  */
+    --sic-global-rgb:  245, 158,  11;   /* Ambre          */
+
+    /* Couleurs des badges qualité — à ajouter une fois pour toutes */
+    --quality-lava-rgb:    239,  83,  80;
+    --quality-fohy-rgb:    171,  71, 188;
+    --quality-verte-rgb:    76, 175,  80;
+    --quality-fendue-rgb:  255, 152,   0;
+    --quality-preparee-rgb:  0,  97, 164;
+    --quality-seche-rgb:   121,  85,  72;
+    --quality-default-rgb: 120, 120, 120;
+}
+
+/* ══════════════════════════════════════════════════════
+ * BADGES QUALITÉ (manquants dans le CSS actuel)
+ * ══════════════════════════════════════════════════════ */
+.status-lava {
+    background: rgba(var(--quality-lava-rgb), 0.16);
+    color: rgb(var(--quality-lava-rgb));
+    border: 1px solid rgba(var(--quality-lava-rgb), 0.30);
+}
+.status-fohy {
+    background: rgba(var(--quality-fohy-rgb), 0.16);
+    color: rgb(var(--quality-fohy-rgb));
+    border: 1px solid rgba(var(--quality-fohy-rgb), 0.30);
+}
+.status-verte {
+    background: rgba(var(--quality-verte-rgb), 0.16);
+    color: rgb(var(--quality-verte-rgb));
+    border: 1px solid rgba(var(--quality-verte-rgb), 0.30);
+}
+.status-fendue {
+    background: rgba(var(--quality-fendue-rgb), 0.16);
+    color: rgb(var(--quality-fendue-rgb));
+    border: 1px solid rgba(var(--quality-fendue-rgb), 0.30);
+}
+.status-preparee {
+    background: rgba(var(--quality-preparee-rgb), 0.16);
+    color: rgb(var(--quality-preparee-rgb));
+    border: 1px solid rgba(var(--quality-preparee-rgb), 0.30);
+}
+.status-seche {
+    background: rgba(var(--quality-seche-rgb), 0.16);
+    color: rgb(var(--quality-seche-rgb));
+    border: 1px solid rgba(var(--quality-seche-rgb), 0.30);
+}
+
+/* Thème clair — assombrir le texte pour le contraste */
+[data-theme="light"] .status-lava     { color: #c62828; }
+[data-theme="light"] .status-fohy     { color: #7b1fa2; }
+[data-theme="light"] .status-verte    { color: #2e7d32; }
+[data-theme="light"] .status-fendue   { color: #e65100; }
+[data-theme="light"] .status-preparee { color: #01579b; }
+[data-theme="light"] .status-seche    { color: #4e342e; }
+
+/* ══════════════════════════════════════════════════════
+ * SUMMARY INSIGHT CARD — Base (même mécanique que
+ * collector-stat-card, avec --sic-rgb comme pivot)
+ * ══════════════════════════════════════════════════════ */
 .summary-insight-card {
+    --sic-rgb: var(--quality-default-rgb);  /* override par variante */
+
     position: relative;
-    border-radius: 20px !important;
-    padding: 20px 22px 18px !important;
-    background: rgba(255, 255, 255, 0.06) !important;
+    padding: 18px 20px 16px;
+    border-radius: 18px;
+    overflow: hidden;
+    isolation: isolate;
+
+    /* Glass */
     backdrop-filter: blur(18px) saturate(1.4);
     -webkit-backdrop-filter: blur(18px) saturate(1.4);
-    border: 1px solid rgba(255, 255, 255, 0.11) !important;
+
+    /* Fond teinté — identique à collector-stat-card */
+    background: rgba(var(--sic-rgb), 0.09) !important;
+    border: 1px solid rgba(var(--sic-rgb), 0.20) !important;
     border-left: none !important; /* remplacé par la barre top */
-    overflow: hidden;
-    transition:
-        transform 0.28s cubic-bezier(0.34, 1.38, 0.64, 1),
-        box-shadow 0.28s ease,
-        border-color 0.22s ease;
+
     box-shadow:
-        0 1px 1px rgba(0, 0, 0, 0.3),
-        0 4px 20px rgba(0, 0, 0, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+        0 2px 14px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+    color: var(--csc-text-primary, #f1f5f9);
+
+    transition:
+        transform  0.26s cubic-bezier(0.34, 1.38, 0.64, 1),
+        box-shadow 0.26s ease,
+        filter     0.24s ease;
 }
 
-/* ── Specular top highlight ── */
-.summary-insight-card::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 50%;
-    border-radius: 20px 20px 60% 60% / 20px 20px 36px 36px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.065) 0%, transparent 100%);
-    pointer-events: none;
-}
-
-/* ── Ambient glow (revealed on hover) ── */
+/* Barre accent top */
 .summary-insight-card::before {
     content: '';
     position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
-
-.summary-insight-card:hover {
-    transform: translateY(-4px) scale(1.012);
-    border-color: rgba(255, 255, 255, 0.18) !important;
-}
-.summary-insight-card:hover::before { opacity: 1; }
-
-/* ── Top accent bar ── */
-.summary-insight-card .card-accent-bar {
-    position: absolute;
     top: 0; left: 0; right: 0;
     height: 3px;
-    border-radius: 20px 20px 0 0;
+    border-radius: 18px 18px 0 0;
+    background: linear-gradient(
+        90deg,
+        rgba(var(--sic-rgb), 0.9) 0%,
+        rgba(var(--sic-rgb), 0.45) 65%,
+        transparent 100%
+    );
+    pointer-events: none;
 }
 
-/* ─── VARIANT: Vanille Verte ─── */
-.summary-insight-card--verte::before {
-    background: radial-gradient(ellipse 130% 80% at 50% 110%,
-        rgba(76, 175, 80, 0.22) 0%, transparent 70%);
+/* Halo bas — profondeur */
+.summary-insight-card::after {
+    content: '';
+    position: absolute;
+    bottom: -35%;
+    left: -5%;
+    width: 60%;
+    height: 75%;
+    border-radius: 50%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(var(--sic-rgb), 0.10) 0%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
 }
-.summary-insight-card--verte:hover {
+
+.summary-insight-card > * { position: relative; z-index: 1; }
+
+/* Hover */
+.summary-insight-card:hover {
+    transform: translateY(-4px) scale(1.012);
+    filter: brightness(1.06);
     box-shadow:
-        0 2px 2px rgba(0, 0, 0, 0.2),
-        0 10px 36px rgba(76, 175, 80, 0.16),
-        0 0 0 1px rgba(76, 175, 80, 0.18),
+        0 10px 32px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(var(--sic-rgb), 0.28),
         inset 0 1px 0 rgba(255, 255, 255, 0.09);
 }
-.summary-insight-card--verte .card-accent-bar {
-    background: linear-gradient(90deg, #4caf50 0%, #81c784 60%, transparent 100%);
-}
 
-/* ─── VARIANT: Vanille Préparée ─── */
-.summary-insight-card--preparee::before {
-    background: radial-gradient(ellipse 130% 80% at 50% 110%,
-        rgba(0, 97, 164, 0.22) 0%, transparent 70%);
-}
-.summary-insight-card--preparee:hover {
+/* ── Variantes chromatiques ── */
+.summary-insight-card--verte    { --sic-rgb: var(--sic-verte-rgb); }
+.summary-insight-card--preparee { --sic-rgb: var(--sic-preparee-rgb); }
+.summary-insight-card--global   { --sic-rgb: var(--sic-global-rgb); }
+
+/* Thème clair */
+[data-theme="light"] .summary-insight-card {
+    background: rgba(var(--sic-rgb), 0.07) !important;
+    border-color: rgba(var(--sic-rgb), 0.22) !important;
+    color: #1a1f2e;
     box-shadow:
-        0 2px 2px rgba(0, 0, 0, 0.2),
-        0 10px 36px rgba(0, 97, 164, 0.16),
-        0 0 0 1px rgba(0, 97, 164, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.09);
+        0 2px 10px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.70);
 }
-.summary-insight-card--preparee .card-accent-bar {
-    background: linear-gradient(90deg, var(--md-sys-color-primary) 0%, #6aabdc 60%, transparent 100%);
-}
-
-/* ─── VARIANT: Global ─── */
-.summary-insight-card--global::before {
-    background: radial-gradient(ellipse 130% 80% at 50% 110%,
-        rgba(245, 158, 11, 0.18) 0%, transparent 70%);
-}
-.summary-insight-card--global:hover {
+[data-theme="light"] .summary-insight-card:hover {
     box-shadow:
-        0 2px 2px rgba(0, 0, 0, 0.2),
-        0 10px 36px rgba(245, 158, 11, 0.13),
-        0 0 0 1px rgba(245, 158, 11, 0.16),
-        inset 0 1px 0 rgba(255, 255, 255, 0.09);
-}
-.summary-insight-card--global .card-accent-bar {
-    background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 60%, transparent 100%);
+        0 8px 24px rgba(0, 0, 0, 0.12),
+        0 0 0 1px rgba(var(--sic-rgb), 0.30);
 }
 
-/* ── Header ── */
+/* ══════════════════════════════════════════════════════
+ * HEADER — icône + titre
+ * ══════════════════════════════════════════════════════ */
 .insight-header-v2 {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 18px;
-    position: relative;
-    z-index: 1;
+    margin-bottom: 16px;
 }
 
 .insight-icon-wrap {
@@ -3819,48 +3872,49 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    background: rgba(var(--sic-rgb), 0.16);
+    border: 1px solid rgba(var(--sic-rgb), 0.30);
     transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .summary-insight-card:hover .insight-icon-wrap {
     transform: scale(1.12) rotate(-5deg);
 }
-
-.summary-insight-card--verte   .insight-icon-wrap { background: rgba(76, 175, 80, 0.14); border: 1px solid rgba(76, 175, 80, 0.28); }
-.summary-insight-card--preparee .insight-icon-wrap { background: rgba(0, 97, 164, 0.14);  border: 1px solid rgba(0, 97, 164, 0.28); }
-.summary-insight-card--global  .insight-icon-wrap { background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.28); }
-
-.insight-icon-wrap .material-icons { font-size: 20px; }
-.summary-insight-card--verte   .insight-icon-wrap .material-icons { color: #81c784; }
-.summary-insight-card--preparee .insight-icon-wrap .material-icons { color: #5b9fd4; }
-.summary-insight-card--global  .insight-icon-wrap .material-icons { color: #fbbf24; }
+.insight-icon-wrap .material-icons {
+    font-size: 19px;
+    color: rgba(var(--sic-rgb), 1);
+    filter: brightness(1.3);
+}
 
 .insight-title-text {
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.9px;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
     line-height: 1.2;
+    color: rgba(var(--sic-rgb), 1);
+    filter: brightness(1.25);
 }
 .insight-title-sub {
     font-size: 10px;
     font-weight: 400;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.2px;
     text-transform: none;
-    opacity: 0.55;
+    opacity: 0.50;
     margin-top: 2px;
+    color: inherit;
 }
 
-.summary-insight-card--verte    .insight-title-text { color: #81c784; }
-.summary-insight-card--preparee  .insight-title-text { color: #5b9fd4; }
-.summary-insight-card--global   .insight-title-text { color: #fbbf24; }
+/* Thème clair — couleurs des titres */
+[data-theme="light"] .insight-title-text { filter: brightness(0.8); }
+[data-theme="light"] .insight-icon-wrap .material-icons { filter: brightness(0.8); }
 
-/* ── Metric rows ── */
+/* ══════════════════════════════════════════════════════
+ * METRIC ROWS
+ * ══════════════════════════════════════════════════════ */
 .insight-metrics {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    position: relative;
-    z-index: 1;
+    gap: 7px;
 }
 
 .insight-metric-row {
@@ -3868,13 +3922,37 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 8px 12px;
+    padding: 7px 11px;
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
     transition: background 0.18s ease;
 }
-.insight-metric-row:hover { background: rgba(255, 255, 255, 0.07); }
+.insight-metric-row:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Row highlightée — prix moyen */
+.insight-metric-row--highlight {
+    background: rgba(var(--sic-rgb), 0.10);
+    border-color: rgba(var(--sic-rgb), 0.20);
+}
+.insight-metric-row--highlight .insight-metric-value {
+    color: rgba(var(--sic-rgb), 1);
+    filter: brightness(1.3);
+}
+
+[data-theme="light"] .insight-metric-row {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+[data-theme="light"] .insight-metric-row--highlight {
+    background: rgba(var(--sic-rgb), 0.08);
+    border-color: rgba(var(--sic-rgb), 0.18);
+}
+[data-theme="light"] .insight-metric-row--highlight .insight-metric-value {
+    filter: brightness(0.8);
+}
 
 .insight-metric-left {
     display: flex;
@@ -3884,84 +3962,82 @@
 }
 .insight-metric-left .material-icons {
     font-size: 15px;
-    color: var(--md-sys-color-on-surface-variant);
-    opacity: 0.55;
+    opacity: 0.45;
     flex-shrink: 0;
+    color: inherit;
 }
 .insight-metric-label {
     font-size: 12px;
-    color: var(--md-sys-color-on-surface-variant);
-    opacity: 0.75;
+    opacity: 0.65;
     white-space: nowrap;
+    color: inherit;
 }
 .insight-metric-value {
     font-size: 13px;
     font-weight: 700;
     letter-spacing: -0.2px;
-    color: var(--md-sys-color-on-surface);
     white-space: nowrap;
     flex-shrink: 0;
+    color: inherit;
 }
 
-/* Highlighted row — prix moyen */
-.insight-metric-row--highlight {
-    background: rgba(255, 255, 255, 0.065);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-.summary-insight-card--verte    .insight-metric-row--highlight .insight-metric-value { color: #81c784; }
-.summary-insight-card--preparee  .insight-metric-row--highlight .insight-metric-value { color: #5b9fd4; }
-.summary-insight-card--global   .insight-metric-row--highlight .insight-metric-value { color: #fbbf24; }
-.summary-insight-card--global   .insight-metric-row--highlight {
-    border-color: rgba(245, 158, 11, 0.15);
-    background: rgba(245, 158, 11, 0.06);
-}
-
-/* ── Footer qualités ── */
+/* ══════════════════════════════════════════════════════
+ * FOOTER — compteur réceptions + badges qualité
+ * ══════════════════════════════════════════════════════ */
 .insight-footer-v2 {
-    margin-top: 14px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    margin-top: 13px;
+    padding-top: 11px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     flex-wrap: wrap;
-    position: relative;
-    z-index: 1;
-}
-.insight-footer-label {
-    font-size: 10px;
-    color: var(--md-sys-color-on-surface-variant);
-    opacity: 0.45;
-    letter-spacing: 0.3px;
-}
-.insight-rec-count {
-    font-size: 10px;
-    padding: 2px 7px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.07);
-    color: var(--md-sys-color-on-surface-variant);
-    opacity: 0.75;
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    margin-right: 2px;
 }
 
-/* ── Info note (global card) ── */
+[data-theme="light"] .insight-footer-v2 {
+    border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+.insight-footer-label {
+    font-size: 10px;
+    opacity: 0.40;
+    letter-spacing: 0.3px;
+    color: inherit;
+}
+
+.insight-rec-count {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    opacity: 0.75;
+    margin-right: 3px;
+    color: inherit;
+}
+[data-theme="light"] .insight-rec-count {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.10);
+}
+
+/* ══════════════════════════════════════════════════════
+ * NOTE INFO (carte global)
+ * ══════════════════════════════════════════════════════ */
 .insight-info-note {
     display: flex;
     align-items: center;
     gap: 5px;
     font-size: 10.5px;
-    color: var(--md-sys-color-on-surface-variant);
-    opacity: 0.65;
-    margin-top: 12px;
+    opacity: 0.55;
+    margin-top: 11px;
     padding: 6px 10px;
     border-radius: 8px;
-    background: rgba(245, 158, 11, 0.05);
-    border: 1px solid rgba(245, 158, 11, 0.1);
-    position: relative;
-    z-index: 1;
+    background: rgba(var(--sic-rgb), 0.07);
+    border: 1px solid rgba(var(--sic-rgb), 0.14);
+    color: inherit;
 }
 .insight-info-note .material-icons {
     font-size: 13px;
-    color: rgba(245, 158, 11, 0.5);
+    opacity: 0.6;
+    color: rgba(var(--sic-rgb), 1);
 }
