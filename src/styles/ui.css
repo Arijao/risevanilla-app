@@ -1531,43 +1531,25 @@
 /* ============================================================
  * GLASSMORPHISM UI COMPONENTS (from css1)
  * ============================================================ */
-            .year-slider-track {
-                width: 3px;
-                height: 40px;
-            }
-            
-            .year-slider-track:hover {
-                width: 5px;
-            }
-            
             .year-slider-thumb {
-                width: 36px;
-                height: 36px;
+                width: 34px;
+                height: 34px;
             }
-            
+
             .year-display-compact {
-                font-size: 12px;
+                font-size: 11px;
             }
         }
 
         /* iPhone SE Paysage */
         @media (max-width: 667px) and (max-height: 375px) and (orientation: landscape) {
-            .year-slider-track {
-                width: 3px;
-                height: 36px;
-            }
-            
-            .year-slider-track:hover {
-                width: 4px;
-            }
-            
             .year-slider-thumb {
-                width: 32px;
-                height: 32px;
+                width: 30px;
+                height: 30px;
             }
-            
+
             .year-display-compact {
-                font-size: 11px;
+                font-size: 10px;
             }
         }
 
@@ -2512,14 +2494,14 @@
             }
 
             .year-mobile-badge {
-                min-width: 54px !important;
+                min-width: 46px !important;
                 font-size: 13px !important;
-                padding: 3px 6px !important;
+                padding: 3px 7px !important;
             }
 
             .year-mobile-btn {
-                width: 26px !important;
-                height: 26px !important;
+                min-width: 36px !important;
+                min-height: 36px !important;
             }
         }
 
