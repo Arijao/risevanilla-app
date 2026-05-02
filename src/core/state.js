@@ -214,26 +214,82 @@ function initYearDisplay() {
 }
 
 function initYearSlider() {
-    const track      = document.getElementById('yearSliderTrack');
-    const thumb      = document.getElementById('yearSliderThumb');
-    const mobileRange = document.getElementById('yearMobileRange');
+    const track         = document.getElementById('yearSliderTrack');
+    const thumb         = document.getElementById('yearSliderThumb');
+    const mobileRange   = document.getElementById('yearMobileRange');
+    const mobileBtn     = document.getElementById('yearMobileBtn');
+    const mobilePopover = document.getElementById('yearMobilePopover');
     if (!track || !thumb) return;
 
     const { minYear, maxYear } = getYearBounds();
+
+    // ── Bornes du range + labels ───────────────────────────────
     if (mobileRange) {
         mobileRange.min   = minYear;
         mobileRange.max   = maxYear;
         mobileRange.value = currentYear;
+    }
+    const minLabel = document.getElementById('yearMobileMin');
+    const maxLabel = document.getElementById('yearMobileMax');
+    if (minLabel) minLabel.textContent = minYear;
+    if (maxLabel) maxLabel.textContent = maxYear;
+
+    // ── Range input (dans le popover) ──────────────────────────
+    if (mobileRange) {
         mobileRange.addEventListener('input', e => {
             const yr = parseInt(e.target.value, 10);
-            if (yr !== currentYear) { currentYear = yr; localStorage.setItem(ACTIVE_YEAR_STORAGE_KEY, yr); updateSliderPosition(true); refreshAllData(); }
+            if (yr !== currentYear) {
+                currentYear = yr;
+                localStorage.setItem(ACTIVE_YEAR_STORAGE_KEY, yr);
+                updateSliderPosition(true);
+                refreshAllData();
+            }
         });
         mobileRange.addEventListener('change', e => {
             const yr = parseInt(e.target.value, 10);
-            if (yr !== currentYear) { currentYear = yr; localStorage.setItem(ACTIVE_YEAR_STORAGE_KEY, yr); updateSliderPosition(true); refreshAllData(); }
+            if (yr !== currentYear) {
+                currentYear = yr;
+                localStorage.setItem(ACTIVE_YEAR_STORAGE_KEY, yr);
+                updateSliderPosition(true);
+                refreshAllData();
+            }
         });
     }
 
+    // ── Bouton icône : ouvre / ferme le popover ────────────────
+    if (mobileBtn && mobilePopover) {
+        mobileBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            const isOpen = mobilePopover.classList.toggle('open');
+            mobileBtn.classList.toggle('active', isOpen);
+            mobileBtn.setAttribute('aria-expanded', String(isOpen));
+        });
+
+        // Fermer en cliquant en dehors
+        document.addEventListener('click', e => {
+            if (
+                mobilePopover.classList.contains('open') &&
+                !mobilePopover.contains(e.target) &&
+                !mobileBtn.contains(e.target)
+            ) {
+                mobilePopover.classList.remove('open');
+                mobileBtn.classList.remove('active');
+                mobileBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Fermer sur Échap
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && mobilePopover.classList.contains('open')) {
+                mobilePopover.classList.remove('open');
+                mobileBtn.classList.remove('active');
+                mobileBtn.setAttribute('aria-expanded', 'false');
+                mobileBtn.focus();
+            }
+        });
+    }
+
+    // ── Track desktop : clic ───────────────────────────────────
     track.addEventListener('click', e => {
         if (e.target === thumb || thumb.contains(e.target)) return;
         const rect       = track.getBoundingClientRect();
@@ -242,46 +298,61 @@ function initYearSlider() {
         const range      = maxYear - minYear;
         const newYear    = Math.round(minYear + (percentage * range));
         const clamped    = Math.max(minYear, Math.min(maxYear, newYear));
-        if (clamped !== currentYear) { currentYear = clamped; localStorage.setItem(ACTIVE_YEAR_STORAGE_KEY, clamped); updateSliderPosition(true); refreshAllData(); }
+        if (clamped !== currentYear) {
+            currentYear = clamped;
+            localStorage.setItem(ACTIVE_YEAR_STORAGE_KEY, clamped);
+            updateSliderPosition(true);
+            refreshAllData();
+        }
     });
 
+    // ── Track desktop : molette ────────────────────────────────
     track.addEventListener('wheel', e => {
         e.preventDefault();
-        const dir     = e.deltaY > 0 ? -1 : 1;
+        const dir = e.deltaY > 0 ? -1 : 1;
         changeYearBy(dir);
     }, { passive: false });
 
+    // ── Thumb desktop : drag ───────────────────────────────────
     function startDrag(e) {
-        isDragging     = true;
-        startY         = e.clientY;
-        startYearDrag  = currentYear;
+        isDragging    = true;
+        startY        = e.clientY;
+        startYearDrag = currentYear;
         thumb.classList.add('dragging');
         track.classList.add('dragging');
     }
     function startDragTouch(e) {
-        isDragging     = true;
-        startY         = e.touches[0].clientY;
-        startYearDrag  = currentYear;
+        isDragging    = true;
+        startY        = e.touches[0].clientY;
+        startYearDrag = currentYear;
         thumb.classList.add('dragging');
         track.classList.add('dragging');
     }
     function drag(e) {
         if (!isDragging) return;
-        const rect         = track.getBoundingClientRect();
-        const deltaY       = startY - e.clientY;
-        const pixPerYear   = rect.height / (maxYear - minYear);
-        const yearDelta    = Math.round(deltaY / pixPerYear);
-        const newYear      = Math.max(minYear, Math.min(maxYear, startYearDrag + yearDelta));
-        if (newYear !== currentYear) { currentYear = newYear; localStorage.setItem(ACTIVE_YEAR_STORAGE_KEY, newYear); updateSliderPosition(false); }
+        const rect       = track.getBoundingClientRect();
+        const deltaY     = startY - e.clientY;
+        const pixPerYear = rect.height / (maxYear - minYear);
+        const yearDelta  = Math.round(deltaY / pixPerYear);
+        const newYear    = Math.max(minYear, Math.min(maxYear, startYearDrag + yearDelta));
+        if (newYear !== currentYear) {
+            currentYear = newYear;
+            localStorage.setItem(ACTIVE_YEAR_STORAGE_KEY, newYear);
+            updateSliderPosition(false);
+        }
     }
     function dragTouch(e) {
         if (!isDragging) return;
-        const rect         = track.getBoundingClientRect();
-        const deltaY       = startY - e.touches[0].clientY;
-        const pixPerYear   = rect.height / (maxYear - minYear);
-        const yearDelta    = Math.round(deltaY / pixPerYear);
-        const newYear      = Math.max(minYear, Math.min(maxYear, startYearDrag + yearDelta));
-        if (newYear !== currentYear) { currentYear = newYear; localStorage.setItem(ACTIVE_YEAR_STORAGE_KEY, newYear); updateSliderPosition(false); }
+        const rect       = track.getBoundingClientRect();
+        const deltaY     = startY - e.touches[0].clientY;
+        const pixPerYear = rect.height / (maxYear - minYear);
+        const yearDelta  = Math.round(deltaY / pixPerYear);
+        const newYear    = Math.max(minYear, Math.min(maxYear, startYearDrag + yearDelta));
+        if (newYear !== currentYear) {
+            currentYear = newYear;
+            localStorage.setItem(ACTIVE_YEAR_STORAGE_KEY, newYear);
+            updateSliderPosition(false);
+        }
     }
     function stopDrag() {
         if (!isDragging) return;
@@ -293,21 +364,22 @@ function initYearSlider() {
 
     thumb.addEventListener('mousedown',  startDrag);
     thumb.addEventListener('touchstart', startDragTouch, { passive: true });
-    document.addEventListener('mousemove',  drag);
-    document.addEventListener('touchmove',  dragTouch, { passive: true });
-    document.addEventListener('mouseup',    stopDrag);
-    document.addEventListener('touchend',   stopDrag);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('touchmove', dragTouch, { passive: true });
+    document.addEventListener('mouseup',   stopDrag);
+    document.addEventListener('touchend',  stopDrag);
 
     updateSliderPosition(false);
 }
 
 function updateSliderPosition(animate = true) {
-    const thumb        = document.getElementById('yearSliderThumb');
-    const fill         = document.getElementById('yearSliderFill');
-    const display      = document.getElementById('yearDisplay');
+    const thumb         = document.getElementById('yearSliderThumb');
+    const fill          = document.getElementById('yearSliderFill');
+    const display       = document.getElementById('yearDisplay');
     const displayMobile = document.getElementById('yearDisplayMobile');
-    const mobileRange  = document.getElementById('yearMobileRange');
-    const track        = document.getElementById('yearSliderTrack');
+    const popoverYear   = document.getElementById('yearMobilePopoverYear');
+    const mobileRange   = document.getElementById('yearMobileRange');
+    const track         = document.getElementById('yearSliderTrack');
     if (!thumb || !track) return;
 
     const { minYear, maxYear } = getYearBounds();
@@ -328,7 +400,8 @@ function updateSliderPosition(animate = true) {
         setTimeout(() => display.classList.remove('changing'), 400);
     }
     if (displayMobile) displayMobile.textContent = currentYear;
-    if (mobileRange)   mobileRange.value = currentYear;
+    if (popoverYear)   popoverYear.textContent   = currentYear;
+    if (mobileRange)   mobileRange.value         = currentYear;
 
     thumb.classList.add('changing');
     setTimeout(() => thumb.classList.remove('changing'), 600);

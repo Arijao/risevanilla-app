@@ -190,16 +190,28 @@
                             <span class="year-display-compact" id="yearDisplay">2026</span>
                         </div>
                     </div>
-                    <div class="year-mobile-controls">
-                        <button class="year-mobile-btn" type="button" onclick="changeYearBy(-1)" aria-label="Année précédente">
-                            <span class="material-icons">chevron_left</span>
+                    <div class="year-mobile-controls" id="yearMobileControls">
+                        <button class="year-mobile-btn" id="yearMobileBtn" type="button"
+                                aria-label="Filtrer par année" aria-expanded="false"
+                                aria-controls="yearMobilePopover">
+                            <span class="year-mobile-badge" id="yearDisplayMobile">2026</span>
+                            <span class="year-mobile-dot" aria-hidden="true"></span>
                         </button>
-                        <div class="year-mobile-badge" id="yearDisplayMobile">2026</div>
-                        <button class="year-mobile-btn" type="button" onclick="changeYearBy(1)" aria-label="Année suivante">
-                            <span class="material-icons">chevron_right</span>
-                        </button>
+                        <div class="year-mobile-popover" id="yearMobilePopover" role="dialog"
+                             aria-label="Sélectionner l'année">
+                            <div class="year-mobile-popover-header">
+                                <span class="year-mobile-popover-label">Année</span>
+                                <span class="year-mobile-popover-year" id="yearMobilePopoverYear">2026</span>
+                            </div>
+                            <input id="yearMobileRange" class="year-mobile-range" type="range"
+                                   min="2023" max="2030" step="1" value="2026"
+                                   aria-label="Sélectionner l'année">
+                            <div class="year-mobile-popover-bounds">
+                                <span id="yearMobileMin">2023</span>
+                                <span id="yearMobileMax">2030</span>
+                            </div>
+                        </div>
                     </div>
-                    <input id="yearMobileRange" class="year-mobile-range" type="range" min="2023" max="2030" step="1" value="2026" aria-label="Sélectionner l'année">
                 </div>
                 <div class="header-actions">
                     <button class="theme-toggle" id="theme-toggle" aria-label="Manova ny lohahevitra (maizina/mazava)">

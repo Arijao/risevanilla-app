@@ -1531,25 +1531,43 @@
 /* ============================================================
  * GLASSMORPHISM UI COMPONENTS (from css1)
  * ============================================================ */
-            .year-slider-thumb {
-                width: 34px;
-                height: 34px;
+            .year-slider-track {
+                width: 3px;
+                height: 40px;
             }
-
+            
+            .year-slider-track:hover {
+                width: 5px;
+            }
+            
+            .year-slider-thumb {
+                width: 36px;
+                height: 36px;
+            }
+            
             .year-display-compact {
-                font-size: 11px;
+                font-size: 12px;
             }
         }
 
         /* iPhone SE Paysage */
         @media (max-width: 667px) and (max-height: 375px) and (orientation: landscape) {
-            .year-slider-thumb {
-                width: 30px;
-                height: 30px;
+            .year-slider-track {
+                width: 3px;
+                height: 36px;
             }
-
+            
+            .year-slider-track:hover {
+                width: 4px;
+            }
+            
+            .year-slider-thumb {
+                width: 32px;
+                height: 32px;
+            }
+            
             .year-display-compact {
-                font-size: 10px;
+                font-size: 11px;
             }
         }
 
@@ -2411,7 +2429,7 @@
 
             .header {
                 display: grid !important;
-                grid-template-columns: 36px minmax(0, 1fr) auto 36px !important;
+                grid-template-columns: 36px minmax(0, 1fr) 36px 36px !important;
                 align-items: center !important;
                 column-gap: 8px !important;
                 padding: 0 10px !important;
@@ -2443,19 +2461,13 @@
             .year-slider-container {
                 grid-column: 3 !important;
                 margin: 0 !important;
-                gap: 6px !important;
                 flex-shrink: 0 !important;
                 align-items: center !important;
             }
 
-            .year-mobile-controls {
-                padding: 3px 5px !important;
-                gap: 6px !important;
-            }
-
-            .year-mobile-range {
-                width: 90px !important;
-                margin-left: 4px !important;
+            .year-mobile-btn {
+                width: 36px !important;
+                height: 36px !important;
             }
 
             .header-actions {
@@ -2473,7 +2485,7 @@
 
         @media (max-width: 768px) {
             .header {
-                grid-template-columns: 34px minmax(0, 1fr) auto 34px !important;
+                grid-template-columns: 34px minmax(0, 1fr) 36px 34px !important;
                 column-gap: 6px !important;
                 padding: 0 8px !important;
             }
@@ -2482,26 +2494,12 @@
                 height: 38px !important;
                 border-radius: 12px !important;
             }
-
-            .year-mobile-range {
-                width: 72px !important;
-            }
         }
 
         @media (max-width: 560px) {
-            .year-mobile-range {
-                display: none !important;
-            }
-
-            .year-mobile-badge {
-                min-width: 46px !important;
-                font-size: 13px !important;
-                padding: 3px 7px !important;
-            }
-
-            .year-mobile-btn {
-                min-width: 36px !important;
-                min-height: 36px !important;
+            .header {
+                column-gap: 5px !important;
+                padding: 0 6px !important;
             }
         }
 
