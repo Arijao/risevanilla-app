@@ -143,6 +143,9 @@ async function saveToDB(storeName, data, onSuccess) {
 
         await new Promise(resolve => { loadData(); setTimeout(resolve, 300); });
 
+        // ── Backup: notifier le système de sauvegarde ─────────
+        if (typeof onDataModified === 'function') onDataModified();
+
         if (onSuccess) onSuccess();
     } catch (error) {
         console.error(`saveToDB error (${storeName}):`, error);
@@ -184,6 +187,8 @@ async function deleteFromDB(storeName, id, onSuccessCallback) {
 
         invalidateCache();
         updateAllTables();
+        // ── Backup: notifier le système de sauvegarde ─────────
+        if (typeof onDataModified === 'function') onDataModified();
         if (onSuccessCallback) onSuccessCallback();
     } catch (error) {
         console.error(`deleteFromDB error (${storeName}):`, error);

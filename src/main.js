@@ -13,6 +13,11 @@ document.addEventListener('DOMContentLoaded', function() {
     initYearDisplay();
     loadThemePreference();
 
+    // ── Système de sauvegarde automatique ─────────────────────
+    // (délai 1500 ms géré en interne pour attendre loadData)
+    initBackupSystem();
+    renderBackupPanel();
+
     // ── Palette de couleurs ───────────────────────────────────
     loadPalettePreference();   // applique la palette sauvegardée
     renderPaletteSelector();   // génère le sélecteur dans #settings
