@@ -92,7 +92,7 @@ function exportAnalysis() {
 
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Analyse — RISEVANILLA</title>
     <style>${_PDF_BASE_STYLE}</style></head><body>
-    \${_logoHeader('RAPPORT ANALYSE DES COMPTES')}<p style="margin-bottom:16px;color:#555;font-size:12px;">Généré le ${today}</p>
+    ${_logoHeader('RAPPORT ANALYSE DES COMPTES')}<p style="margin-bottom:16px;color:#555;font-size:12px;">Généré le ${today}</p>
     <table>
         <thead><tr><th>Collecteur</th><th>Téléphone</th><th class="right">Total Débits</th><th class="right">Total Crédits</th><th class="right">Solde</th><th>Statut</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -812,7 +812,7 @@ function generateDeliveryPDF(deliveryId, type = 'BL') {
         .sig-line{border-top:1px solid #333;padding-top:8px;text-align:center;font-size:11px;color:#666;}
     </style>
     </head><body>
-    \${_logoHeader(title, number||'—')}
+    ${_logoHeader(title, number||'—')}
     <div class="info-grid">
         <div class="info-box"><div class="info-label">Date</div><div class="info-value">${formatDate(delivery.date)}</div></div>
         <div class="info-box"><div class="info-label">Exportateur</div><div class="info-value">${delivery.exporter||'N/A'}</div></div>
@@ -856,7 +856,7 @@ function exportInvoice() {
 
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Facture — RISEVANILLA</title>
     <style>${_PDF_BASE_STYLE}</style></head><body>
-    \${_logoHeader('FACTURE DES RÉCEPTIONS — ' + currentYear)}
+    ${_logoHeader('FACTURE DES RÉCEPTIONS — ' + currentYear)}
     ${body}
     <script>window.onload=()=>window.print();</script>
     </body></html>`;
