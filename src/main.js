@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', function() {
     validateCollectorNameLive();
     validateCollectorCINLive();
 
+    // ── Pavé numérique virtuel ────────────────────────────────
+    initNumpad();
+
     // ── Advance amount live-format ────────────────────────────
     const amountInput = document.getElementById('advance-amount');
     if (amountInput) {

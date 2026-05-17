@@ -830,7 +830,7 @@
                             </span>
                         </label>
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <input type="tel" inputmode="numeric" pattern="[0-9]*" class="form-input" id="rendement-rate" value="25" autocomplete="off" style="flex-grow: 1;">
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" data-numpad="numeric" class="form-input" id="rendement-rate" value="25" autocomplete="off" style="flex-grow: 1;">
                             <span style="font-size: 20px; font-weight: 500;">%</span>
                             <button class="btn btn-secondary" onclick="saveSettings()">Enregistrer</button>
                         </div>
@@ -959,7 +959,7 @@
                             </div>
                             <div class="form-group" style="margin-bottom:0;">
                                 <label for="collector-phone" class="form-label">Téléphone</label>
-                                <input type="tel" class="form-input" id="collector-phone" placeholder="032 12 345 67" oninput="formatPhoneNumber(event)">
+                                <input type="tel" inputmode="numeric" pattern="[0-9]*" class="form-input" id="collector-phone" placeholder="032 12 345 67" autocomplete="tel" oninput="formatPhoneNumber(event)">
                             </div>
                         </div>
                     </div>
@@ -969,7 +969,7 @@
                             <label class="form-label" style="display:flex;align-items:center;gap:6px;">
                                 <span class="material-icons" style="font-size:18px;">badge</span> CIN
                             </label>
-                            <input type="text" class="form-input" id="collector-cin" placeholder="000 000 000 000" maxlength="17" oninput="formatCIN(this)">
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" data-numpad="numeric" class="form-input" id="collector-cin" placeholder="000 000 000 000" maxlength="15" autocomplete="off" oninput="formatCIN(this)">
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
                             <label class="form-label" for="collector-cin-date">Date de délivrance CIN</label>
@@ -1102,8 +1102,8 @@
                         </label>
                         <div style="display: flex; gap: 10px; margin-top: 12px; align-items: stretch;">
                             <div style="flex: 1; display: flex; gap: 8px;">
-                                <input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" class="form-input" id="quick-weight-input" placeholder="Poids (kg)" autocomplete="off" style="flex: 1;" onkeypress="if(event.key === 'Enter') { event.preventDefault(); addQuickWeight(); }">
-                                <input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" class="form-input" id="quick-tare-input" placeholder="Tare" value="0.2" autocomplete="off" style="width: 70px; background: var(--md-sys-color-surface-variant); border: 1px solid var(--md-sys-color-outline);" oninput="updateReceptionFromQuickWeights()">
+                                <input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" data-numpad="decimal" class="form-input" id="quick-weight-input" placeholder="Poids (kg)" autocomplete="off" style="flex: 1;" onkeypress="if(event.key === 'Enter') { event.preventDefault(); addQuickWeight(); }">
+                                <input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" data-numpad="decimal" class="form-input" id="quick-tare-input" placeholder="Tare" value="0.2" autocomplete="off" style="width: 70px; background: var(--md-sys-color-surface-variant); border: 1px solid var(--md-sys-color-outline);" oninput="updateReceptionFromQuickWeights()">
                                 <button type="button" class="btn btn-primary btn-add-weight" onclick="addQuickWeight()" style="padding: 0 20px; white-space: nowrap">
                                     <span class="material-icons" style="font-size: 18px">add</span>
                                     <span class="btn-text">Ajouter</span>
@@ -1131,16 +1131,16 @@
                             <strong>Fomba fampiasana:</strong> Ampidiro ny lanjan'ny gony tsirairay, dia tsindrio "Ajouter" na "Enter". Ny total dia hiampy ho azy.
                         </div>
                     </div>
-                    <div class="form-group"><label class="form-label">Poids Brut (kg)</label><input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" step="0.01" class="form-input" id="reception-gross-weight" autocomplete="off"></div>
-                    <div class="form-group"><label class="form-label">Nombre de Sacs</label><input type="tel" inputmode="numeric" pattern="[0-9]*" class="form-input" id="reception-bag-count" value="1" autocomplete="off"></div>
-                    <div class="form-group"><label class="form-label">Tare</label><input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" step="0.01" class="form-input" id="reception-bag-weight" value="0.2" autocomplete="off"></div>
+                    <div class="form-group"><label class="form-label">Poids Brut (kg)</label><input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" data-numpad="decimal" class="form-input" id="reception-gross-weight" autocomplete="off"></div>
+                    <div class="form-group"><label class="form-label">Nombre de Sacs</label><input type="tel" inputmode="numeric" pattern="[0-9]*" data-numpad="numeric" class="form-input" id="reception-bag-count" value="1" autocomplete="off"></div>
+                    <div class="form-group"><label class="form-label">Tare</label><input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" data-numpad="decimal" class="form-input" id="reception-bag-weight" value="0.2" autocomplete="off"></div>
                     <div class="form-group"><label class="form-label">Poids Net (kg)</label><input type="tel" inputmode="decimal" class="form-input" id="reception-net-weight" readonly tabindex="-1"></div>
                     <div class="form-group">
                         <label class="form-label">Qualité</label>
                         <input type="text" class="form-input" id="reception-quality" list="quality-list" required placeholder="Sélectionner ou saisir la qualité">
                         <datalist id="quality-list"></datalist>
                     </div>
-                    <div class="form-group"><label class="form-label">Prix par kg (Ar)</label><input type="tel" inputmode="numeric" pattern="[0-9]*" class="form-input" id="reception-price" autocomplete="off"></div>
+                    <div class="form-group"><label class="form-label">Prix par kg (Ar)</label><input type="tel" inputmode="numeric" pattern="[0-9]*" data-numpad="numeric" class="form-input" id="reception-price" autocomplete="off"></div>
                     <div class="form-group"><label class="form-label">Valeur Totale (Ar)</label><input type="tel" inputmode="numeric" class="form-input" id="reception-total-value" readonly tabindex="-1"></div>
                 </div>
                 <div class="btn-group">
@@ -1252,8 +1252,8 @@
                     </label>
                     <div style="display: flex; gap: 10px; margin-top: 12px; align-items: stretch;">
                         <div style="flex: 1; display: flex; gap: 8px;">
-                            <input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" class="form-input" id="delivery-quick-weight-input" placeholder="Lanja (kg)" autocomplete="off" style="flex: 1;" onkeypress="if(event.key === 'Enter') { event.preventDefault(); addDeliveryQuickWeight(); }">
-                            <input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" class="form-input" id="delivery-quick-tare-input" placeholder="Tare" autocomplete="off" style="width: 70px; background: var(--md-sys-color-surface-variant); border: 1px solid var(--md-sys-color-outline); font-weight: bold; color: var(--md-sys-color-primary);" oninput="updateDeliveryFromQuickWeights()">
+                            <input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" data-numpad="decimal" class="form-input" id="delivery-quick-weight-input" placeholder="Lanja (kg)" autocomplete="off" style="flex: 1;" onkeypress="if(event.key === 'Enter') { event.preventDefault(); addDeliveryQuickWeight(); }">
+                            <input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" data-numpad="decimal" class="form-input" id="delivery-quick-tare-input" placeholder="Tare" autocomplete="off" style="width: 70px; background: var(--md-sys-color-surface-variant); border: 1px solid var(--md-sys-color-outline); font-weight: bold; color: var(--md-sys-color-primary);" oninput="updateDeliveryFromQuickWeights()">
                             <button type="button" class="btn btn-primary btn-add-weight" onclick="addDeliveryQuickWeight()" style="padding: 0 20px; white-space: nowrap">
                                 <span class="material-icons" style="font-size: 18px">add</span>
                                 <span class="btn-text">Ajouter</span>
@@ -1279,7 +1279,7 @@
                 </div>
                 <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group"><label class="form-label">Poids Brut (kg)</label><input type="text" class="form-input" id="delivery-gross-weight" oninput="calculateDeliveryValues()"></div>
-                    <div class="form-group"><label class="form-label">Nombre de Sacs</label><input type="tel" inputmode="numeric" pattern="[0-9]*" class="form-input" id="delivery-bag-count" value="1" autocomplete="off" oninput="calculateDeliveryValues()"></div>
+                    <div class="form-group"><label class="form-label">Nombre de Sacs</label><input type="tel" inputmode="numeric" pattern="[0-9]*" data-numpad="numeric" class="form-input" id="delivery-bag-count" value="1" autocomplete="off" oninput="calculateDeliveryValues()"></div>
                 </div>
                 <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group"><label class="form-label">Tare (kg)</label><input type="text" class="form-input" id="delivery-bag-weight" value="" oninput="calculateDeliveryValues()"></div>
@@ -1468,6 +1468,7 @@
     <script src="src/core/router.js"></script>
     <script src="src/components/toast.js"></script>
     <script src="src/components/modal.js"></script>
+    <script src="src/components/numpad.js"></script>
     <script src="src/components/form.js"></script>
     <script src="src/components/table.js"></script>
     <script src="src/pages/dashboard.js"></script>
