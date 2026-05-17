@@ -77,6 +77,13 @@ function formatPhoneForInput(phoneString) {
     return phoneString;
 }
 
+// Utilisé en mode édition : reformate un CIN stocké au format "000 000 000 000"
+function formatCINForInput(cinString) {
+    if (!cinString) return '';
+    const digits = cinString.replace(/\D/g, '').slice(0, 12);
+    return digits.replace(/(\d{3})(?=\d)/g, '$1 ');
+}
+
 function capitalizeWords(str) {
     return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 }
@@ -90,10 +97,21 @@ function capitalizeLive(input) {
 }
 
 function formatCIN(input) {
-    let v = input.value.replace(/\D/g, '');
-    if (v.length > 12) v = v.slice(0, 12);
-    v = v.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
-    input.value = v;
+    const cursor  = input.selectionStart;
+    const prevLen = input.value.length;
+
+    // 1. Extraire uniquement les chiffres, tronquer à 12
+    let digits = input.value.replace(/\D/g, '').slice(0, 12);
+
+    // 2. Appliquer le masque "000 000 000 000"
+    const formatted = digits.replace(/(\d{3})(?=\d)/g, '$1 ');
+
+    input.value = formatted;
+
+    // 3. Repositionner le curseur intelligemment après reformatage
+    const added = formatted.length - prevLen;
+    const newPos = Math.max(0, cursor + added);
+    try { input.setSelectionRange(newPos, newPos); } catch (_) {}
 }
 
 // ── Collector Media State ─────────────────────────────────────
@@ -690,13 +708,19 @@ function validateCollectorNameLive() {
 function validateCollectorCINLive() {
     const cinInput = document.getElementById('collector-cin');
     if (!cinInput) return;
+
+    // ── Masque dynamique + validation doublons ────────────────
     cinInput.addEventListener('input', function () {
+        // Appliquer le masque "000 000 000 000" en temps réel
+        formatCIN(this);
+
         const cin    = this.value.trim();
         const editId = document.getElementById('collector-form').dataset.editId;
-        if (!cin) return;
+        if (!cin) { this.style.borderColor = ''; return; }
+
         const exists = appData.collectors.some(c => {
             if (editId && c.id == editId) return false;
-            return c.cin && c.cin.toLowerCase() === cin.toLowerCase();
+            return c.cin && c.cin.replace(/\s/g, '') === cin.replace(/\s/g, '');
         });
         let errEl = this.parentElement.querySelector('.error-message');
         if (exists) {
@@ -713,5 +737,26 @@ function validateCollectorCINLive() {
             if (errEl) errEl.remove();
             this.style.borderColor = '';
         }
+    });
+
+    // ── Bloquer les touches non numériques ────────────────────
+    cinInput.addEventListener('keydown', function (e) {
+        const allowedKeys = [
+            'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
+            'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'
+        ];
+        if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) return;
+        if (!/^\d$/.test(e.key)) e.preventDefault();
+    });
+
+    // ── Bloquer collage de caractères non numériques ──────────
+    cinInput.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const raw       = (e.clipboardData || window.clipboardData).getData('text');
+        const digits    = raw.replace(/\D/g, '').slice(0, 12);
+        const formatted = digits.replace(/(\d{3})(?=\d)/g, '$1 ');
+        this.value = formatted;
+        // Déclencher la validation doublons après collage
+        this.dispatchEvent(new Event('input', { bubbles: true }));
     });
 }

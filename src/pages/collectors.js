@@ -21,7 +21,7 @@ function openCollectorModal(collectorId) {
         if (titleEl) titleEl.textContent = 'Modifier Collecteur';
         document.getElementById('collector-name').value    = c.name    || '';
         document.getElementById('collector-phone').value   = formatPhoneForInput(c.phone);
-        document.getElementById('collector-cin').value     = c.cin     || '';
+        document.getElementById('collector-cin').value     = formatCINForInput(c.cin);
         document.getElementById('collector-cin-date').value = c.cinDate || '';
         document.getElementById('collector-address').value = c.address  || '';
         // Charger les médias existants dans les buffers
