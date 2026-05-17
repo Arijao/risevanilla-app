@@ -959,7 +959,7 @@
                             </div>
                             <div class="form-group" style="margin-bottom:0;">
                                 <label for="collector-phone" class="form-label">Téléphone</label>
-                                <input type="tel" class="form-input" id="collector-phone" placeholder="032 12 345 67" oninput="formatPhoneNumber(event)">
+                                <input type="tel" inputmode="numeric" pattern="[0-9]*" class="form-input" id="collector-phone" placeholder="032 12 345 67" autocomplete="tel" oninput="formatPhoneNumber(event)">
                             </div>
                         </div>
                     </div>
@@ -969,7 +969,7 @@
                             <label class="form-label" style="display:flex;align-items:center;gap:6px;">
                                 <span class="material-icons" style="font-size:18px;">badge</span> CIN
                             </label>
-                            <input type="text" class="form-input" id="collector-cin" placeholder="000 000 000 000" maxlength="17" oninput="formatCIN(this)">
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" class="form-input" id="collector-cin" placeholder="000 000 000 000" maxlength="15" autocomplete="off" oninput="formatCIN(this)">
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
                             <label class="form-label" for="collector-cin-date">Date de délivrance CIN</label>
