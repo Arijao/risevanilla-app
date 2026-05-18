@@ -116,6 +116,21 @@ function loadData() {
                 appData[result.value.storeName] = result.value.data;
             }
         });
+
+        // ── Migration : vanilleType par défaut = 'verte' ──────
+        // S'exécute ici car appData est garanti peuplé.
+        // Idempotent : ne touche que les qualités sans vanilleType.
+        (appData.qualities || []).forEach(q => {
+            if (!q.vanilleType) {
+                q.vanilleType = 'verte';
+                // Persister silencieusement en base via transaction directe
+                try {
+                    const tx = db.transaction('qualities', 'readwrite');
+                    tx.objectStore('qualities').put(q);
+                } catch (_) {}
+            }
+        });
+
         buildCache();
         updateAllTables();
     });
