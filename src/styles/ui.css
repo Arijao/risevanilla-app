@@ -483,6 +483,36 @@
             opacity: 0.8;
         }
 
+        /* ── Card Dettes Collecteurs : état dynamique ── */
+        .stat-card.debiteur {
+            background: linear-gradient(135deg,
+                var(--md-sys-color-error-container, #ffdad6),
+                color-mix(in srgb, var(--md-sys-color-error, #ba1a1a) 25%, var(--md-sys-color-surface, #fff))) !important;
+            border-color: var(--md-sys-color-error, #ba1a1a) !important;
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--md-sys-color-error, #ba1a1a) 30%, transparent) !important;
+        }
+        .stat-card.debiteur::before {
+            background: linear-gradient(90deg,
+                var(--md-sys-color-error, #ba1a1a),
+                var(--md-sys-color-error-container, #ffdad6)) !important;
+            opacity: 1;
+        }
+        .stat-card.debiteur .stat-value {
+            color: var(--md-sys-color-error, #ba1a1a) !important;
+            font-weight: 800;
+        }
+        .stat-card.debiteur .stat-icon {
+            color: var(--md-sys-color-error, #ba1a1a) !important;
+            background: color-mix(in srgb, var(--md-sys-color-error, #ba1a1a) 15%, transparent) !important;
+        }
+
+        .stat-card.equilibre {
+            border-color: var(--md-sys-color-outline-variant) !important;
+        }
+        .stat-card.equilibre .stat-value {
+            color: var(--md-sys-color-on-surface) !important;
+        }
+
         .stat-header {
             display: flex;
             justify-content: space-between;
@@ -2285,6 +2315,29 @@
         /* =====================================================
         CORRECTION DE VISIBILITÉ - CARTE SOLDE GLOBAL
         ===================================================== */
+
+        /* Carte Dettes - Alerte rouge même sous thème Vanilla */
+        .stat-card.debiteur {
+            background: linear-gradient(135deg,
+                rgba(186, 26, 26, 0.45),
+                rgba(255, 100, 80, 0.25)) !important;
+            border: 1px solid rgba(255, 80, 60, 0.55) !important;
+            box-shadow: 0 4px 20px rgba(186, 26, 26, 0.35) !important;
+        }
+        .stat-card.debiteur::before {
+            background: linear-gradient(90deg,
+                rgba(186, 26, 26, 0.9),
+                rgba(255, 100, 80, 0.7)) !important;
+            opacity: 1 !important;
+        }
+        .stat-card.debiteur .stat-value {
+            color: #ffb4ab !important;
+            font-weight: 800;
+        }
+        .stat-card.debiteur .stat-icon {
+            color: #ffb4ab !important;
+            background: rgba(186, 26, 26, 0.25) !important;
+        }
 
         /* Carte Solde Global - Fond uniforme identique aux autres cartes */
         .solde-global-card,

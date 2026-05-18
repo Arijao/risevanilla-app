@@ -90,13 +90,16 @@ function updateAvancesNonRecupereesCard(b) {
     const dettes = b.totalDettes; // Somme des soldes négatifs des collecteurs débiteurs
 
     if (value) value.textContent = formatCurrency(dettes);
+
+    // Transition douce entre les états
+    card.style.transition = 'background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease';
     card.className = `stat-card ${dettes > 0 ? 'debiteur' : 'equilibre'}`;
 
     if (dettes > 0) {
-        if (trendI) trendI.textContent = 'trending_down';
+        if (trendI) trendI.textContent = 'warning';
         if (trendT) trendT.textContent = 'Total des dettes collecteurs';
     } else {
-        if (trendI) trendI.textContent = 'trending_flat';
+        if (trendI) trendI.textContent = 'check_circle';
         if (trendT) trendT.textContent = 'Aucune dette collecteur en cours';
     }
 }
