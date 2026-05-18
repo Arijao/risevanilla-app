@@ -51,13 +51,36 @@ async function openAdjustModal(receptionId) {
     if (container) container.innerHTML = '';
     addAdjustmentRow();
 
-    document.getElementById('adjust-modal').classList.add('active');
+    const modal = document.getElementById('adjust-modal');
+    modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+
+    // Fermeture uniquement via bouton "X" ou "Annuler" —
+    // le backdrop click est volontairement désactivé sur ce modal.
+    // On neutralise tout handler résiduel qui aurait pu être attaché.
+    if (modal._outsideHandler) {
+        modal.removeEventListener('click', modal._outsideHandler);
+        delete modal._outsideHandler;
+    }
+    // Guard : intercepter tout clic sur le backdrop en phase de capture
+    // pour court-circuiter n'importe quel listener de fermeture éventuel.
+    modal._backdropGuard = function(e) {
+        if (e.target === modal) e.stopImmediatePropagation();
+    };
+    modal.addEventListener('click', modal._backdropGuard, true);
 }
 
 function closeAdjustModal() {
-    document.getElementById('adjust-modal').classList.remove('active');
+    const modal = document.getElementById('adjust-modal');
+    modal.classList.remove('active');
     document.body.style.overflow = '';
+
+    // Nettoyage du guard backdrop (capture phase)
+    if (modal._backdropGuard) {
+        modal.removeEventListener('click', modal._backdropGuard, true);
+        delete modal._backdropGuard;
+    }
+
     const container = document.getElementById('adjustments-container');
     if (container) container.innerHTML = '';
     adjustmentCounter = 0;

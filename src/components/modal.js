@@ -7,7 +7,13 @@
 'use strict';
 
 // ── Core Modal Functions ──────────────────────────────────────
-function openModal(modalId) {
+/**
+ * openModal(modalId, options)
+ * options.noBackdropClose {boolean} — si true, désactive la fermeture au clic
+ *   sur le backdrop. À utiliser pour les modaux de saisie critique.
+ *   Défaut : false (comportement standard inchangé pour tous les autres modaux).
+ */
+function openModal(modalId, { noBackdropClose = false } = {}) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
     modal.classList.add('active');
@@ -21,9 +27,11 @@ function openModal(modalId) {
     modal._escHandler = e => { if (e.key === 'Escape') closeModal(modalId); };
     document.addEventListener('keydown', modal._escHandler);
 
-    // Click hors du contenu → fermeture
-    modal._outsideHandler = e => { if (e.target === modal) closeModal(modalId); };
-    modal.addEventListener('click', modal._outsideHandler);
+    // Click hors du contenu → fermeture (désactivé si noBackdropClose)
+    if (!noBackdropClose) {
+        modal._outsideHandler = e => { if (e.target === modal) closeModal(modalId); };
+        modal.addEventListener('click', modal._outsideHandler);
+    }
 }
 
 function closeModal(modalId) {
