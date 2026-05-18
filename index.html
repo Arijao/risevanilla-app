@@ -1073,7 +1073,7 @@
     </div>
 
     <!-- Reception Modal -->
-    <div class="modal" id="reception-modal">
+    <div class="modal" id="reception-modal" data-no-backdrop-close="true">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Nouvelle Réception</h3>
@@ -1613,6 +1613,25 @@
         } else {
             initHelpTooltips();
         }
+    })();
+    </script>
+
+    <!-- ── Backdrop-click protection (reception-modal uniquement) ─────
+         Intercepte en phase de capture les clics sur les modals marqués
+         data-no-backdrop-close="true", avant le listener global de modal.js.
+         Aucun autre modal n'est affecté.
+         ──────────────────────────────────────────────────────────────── -->
+    <script>
+    (function () {
+        document.addEventListener('click', function (e) {
+            // Le backdrop est le .modal lui-même (fond semi-transparent).
+            // Un clic sur le contenu intérieur ne remonte pas jusqu'au .modal
+            // avec e.target === le .modal, donc pas de faux positif.
+            if (!e.target.classList.contains('modal')) return;
+            if (e.target.dataset.noBackdropClose === 'true') {
+                e.stopImmediatePropagation();
+            }
+        }, true /* capture : s'exécute avant le listener de modal.js */);
     })();
     </script>
 </body>
