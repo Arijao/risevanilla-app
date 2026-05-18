@@ -14,7 +14,7 @@ const VANILLE_TYPES = {
 /** Retourne le vanilleType d'une qualité par son nom — 'verte' ou 'preparee' */
 function getVanilleType(qualityName) {
     const q = (appData.qualities || []).find(q => q.name === qualityName);
-    return q?.vanilleType || 'preparee'; // par défaut préparée (sécuritaire pour livraison)
+    return q?.vanilleType || 'verte'; // par défaut verte (non préparée)
 }
 
 /** Retourne true si la qualité est livrable (préparée) */
@@ -34,12 +34,12 @@ function openQualityModal(id = null) {
             document.getElementById('quality-name').value        = quality.name;
             document.getElementById('quality-description').value = quality.description || '';
             const typeEl = document.getElementById('quality-vanille-type');
-            if (typeEl) typeEl.value = quality.vanilleType || 'preparee';
+            if (typeEl) typeEl.value = quality.vanilleType || 'verte';
         }
     } else {
-        // Valeur par défaut : préparée
+        // Valeur par défaut : verte (non préparée)
         const typeEl = document.getElementById('quality-vanille-type');
-        if (typeEl) typeEl.value = 'preparee';
+        if (typeEl) typeEl.value = 'verte';
     }
     openModal('quality-modal');
 }
@@ -47,7 +47,7 @@ function openQualityModal(id = null) {
 function saveQuality(event) {
     event.preventDefault();
     const id         = document.getElementById('quality-id').value;
-    const vanilleType = document.getElementById('quality-vanille-type')?.value || 'preparee';
+    const vanilleType = document.getElementById('quality-vanille-type')?.value || 'verte';
     const data = {
         name:        document.getElementById('quality-name').value.trim(),
         description: document.getElementById('quality-description').value.trim(),

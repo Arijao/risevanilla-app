@@ -13,6 +13,21 @@ document.addEventListener('DOMContentLoaded', function() {
     initYearDisplay();
     loadThemePreference();
 
+    // ── Migration : vanilleType par défaut = 'verte' ──────────
+    // Corrige les qualités existantes sans vanilleType défini.
+    // S'exécute après initDB (données chargées dans appData).
+    // Idempotent : sans effet si déjà migré.
+    (function migrateQualitiesVanilleType() {
+        if (!Array.isArray(appData?.qualities)) return;
+        appData.qualities.forEach(function (q) {
+            if (!q.vanilleType) {
+                q.vanilleType = 'verte';
+                saveToDB('qualities', q); // saveToDB attend un objet unique
+                console.log(`[Migration] "${q.name}" → vanilleType = 'verte'`);
+            }
+        });
+    })();
+
     // ── Système de sauvegarde automatique ─────────────────────
     // (délai 1500 ms géré en interne pour attendre loadData)
     initBackupSystem();
@@ -36,9 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ── Validation ────────────────────────────────────────────
     validateCollectorNameLive();
     validateCollectorCINLive();
-
-    // ── Pavé numérique virtuel ────────────────────────────────
-    initNumpad();
 
     // ── Advance amount live-format ────────────────────────────
     const amountInput = document.getElementById('advance-amount');
