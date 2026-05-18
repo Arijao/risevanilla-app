@@ -125,9 +125,10 @@ function saveCollector() {
     const form    = document.getElementById('collector-form');
     const name    = capitalizeWords(document.getElementById('collector-name').value.trim());
     const phone   = document.getElementById('collector-phone').value.replace(/\s/g, '');
-    const cin     = document.getElementById('collector-cin').value.trim();
-    const cinDate = document.getElementById('collector-cin-date').value;
-    const address = document.getElementById('collector-address').value;
+    const cin      = document.getElementById('collector-cin').value.trim();
+    const cinDate  = document.getElementById('collector-cin-date').value;
+    const cinPlace = document.getElementById('collector-cin-place')?.value.trim() || '';
+    const address  = document.getElementById('collector-address').value;
     const editId  = form.dataset.editId;
 
     if (phone && (phone.length !== 10 || !phone.startsWith('0'))) {
@@ -147,9 +148,10 @@ function saveCollector() {
     const collector = {
         name,
         phone:     phone   || '',
-        cin:       cin     || '',
-        cinDate:   cinDate || '',
-        address:   address || '',
+        cin:       cin      || '',
+        cinDate:   cinDate  || '',
+        cinPlace:  cinPlace || '',
+        address:   address  || '',
         createdAt: existing.createdAt || new Date().toISOString(),
         // Médias : utiliser le buffer courant (modifié) ou conserver l'existant
         photo:     _collectorPhotoData !== undefined ? _collectorPhotoData : (existing.photo || null),

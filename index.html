@@ -964,21 +964,38 @@
                         </div>
                     </div>
 
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+
+                    <div class="form-group" style="margin-top:14px;margin-bottom:0;">
+                        <label class="form-label">Adresse</label>
+                        <input type="text" class="form-input" id="collector-address" placeholder="Adresse du collecteur">
+                    </div>
+                </div>
+
+                <!-- ── Informations CIN ── -->
+                <div class="cform-section">
+                    <div class="cform-section__title">
+                        <span class="material-icons">badge</span> Informations CIN
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
                         <div class="form-group" style="margin-bottom:0;">
-                            <label class="form-label" style="display:flex;align-items:center;gap:6px;">
-                                <span class="material-icons" style="font-size:18px;">badge</span> CIN
-                            </label>
-                            <input type="text" class="form-input" id="collector-cin" placeholder="000 000 000 000" maxlength="17" oninput="formatCIN(this)">
+                            <label class="form-label" for="collector-cin">Numéro CIN</label>
+                            <input type="text" class="form-input" id="collector-cin"
+                                   placeholder="000 000 000 000" maxlength="17"
+                                   oninput="formatCIN(this)">
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
-                            <label class="form-label" for="collector-cin-date">Date de délivrance CIN</label>
+                            <label class="form-label" for="collector-cin-date">Date de délivrance</label>
                             <input type="date" class="form-input" id="collector-cin-date">
                         </div>
                     </div>
                     <div class="form-group" style="margin-top:14px;margin-bottom:0;">
-                        <label class="form-label">Adresse</label>
-                        <input type="text" class="form-input" id="collector-address" placeholder="Adresse du collecteur">
+                        <label class="form-label" for="collector-cin-place">
+                            <span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:4px;">location_on</span>
+                            Lieu de délivrance
+                        </label>
+                        <input type="text" class="form-input" id="collector-cin-place"
+                               placeholder="Ex : Fokontany Ambohimanga, Commune Antananarivo"
+                               oninput="capitalizeLive(this)">
                     </div>
                 </div>
 
@@ -1073,7 +1090,7 @@
     </div>
 
     <!-- Reception Modal -->
-    <div class="modal" id="reception-modal" data-no-backdrop-close="true">
+    <div class="modal" id="reception-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Nouvelle Réception</h3>
@@ -1613,25 +1630,6 @@
         } else {
             initHelpTooltips();
         }
-    })();
-    </script>
-
-    <!-- ── Backdrop-click protection (reception-modal uniquement) ─────
-         Intercepte en phase de capture les clics sur les modals marqués
-         data-no-backdrop-close="true", avant le listener global de modal.js.
-         Aucun autre modal n'est affecté.
-         ──────────────────────────────────────────────────────────────── -->
-    <script>
-    (function () {
-        document.addEventListener('click', function (e) {
-            // Le backdrop est le .modal lui-même (fond semi-transparent).
-            // Un clic sur le contenu intérieur ne remonte pas jusqu'au .modal
-            // avec e.target === le .modal, donc pas de faux positif.
-            if (!e.target.classList.contains('modal')) return;
-            if (e.target.dataset.noBackdropClose === 'true') {
-                e.stopImmediatePropagation();
-            }
-        }, true /* capture : s'exécute avant le listener de modal.js */);
     })();
     </script>
 </body>

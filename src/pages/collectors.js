@@ -21,9 +21,11 @@ function openCollectorModal(collectorId) {
         if (titleEl) titleEl.textContent = 'Modifier Collecteur';
         document.getElementById('collector-name').value    = c.name    || '';
         document.getElementById('collector-phone').value   = formatPhoneForInput(c.phone);
-        document.getElementById('collector-cin').value     = formatCINForInput(c.cin);
-        document.getElementById('collector-cin-date').value = c.cinDate || '';
-        document.getElementById('collector-address').value = c.address  || '';
+        document.getElementById('collector-cin').value      = formatCINForInput(c.cin);
+        document.getElementById('collector-cin-date').value  = c.cinDate  || '';
+        const cinPlaceEl = document.getElementById('collector-cin-place');
+        if (cinPlaceEl) cinPlaceEl.value = c.cinPlace || '';
+        document.getElementById('collector-address').value   = c.address  || '';
         // Charger les médias existants dans les buffers
         resetCollectorMediaBuffers(c);
     } else {
@@ -157,7 +159,7 @@ function showCollectorDetails(collectorId) {
                         <h4 style="margin-bottom:16px;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="material-icons">account_circle</span> Informations</h4>
                         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
                             <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">phone</span> Téléphone</div><div style="font-weight:600;">${formatPhoneNumberForDisplay(collector.phone)}</div></div>
-                            <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">fingerprint</span> CIN</div><div style="font-weight:600;">${collector.cin||'—'} ${collector.cinDate?`<small>(${formatDate(collector.cinDate)})</small>`:''}</div></div>
+                            <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">fingerprint</span> CIN</div><div style="font-weight:600;">${collector.cin||'—'} ${collector.cinDate?`<small>(${formatDate(collector.cinDate)})</small>`:''}</div>${collector.cinPlace?`<div style="font-size:12px;opacity:.75;margin-top:3px;"><span class="material-icons" style="font-size:13px;vertical-align:middle;">location_on</span> ${collector.cinPlace}</div>`:''}</div>
                             <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">location_on</span> Adresse</div><div style="font-weight:600;">${collector.address||'—'}</div></div>
                             <div><div style="font-size:12px;opacity:.8;margin-bottom:4px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;">calendar_today</span> Inscription</div><div style="font-weight:600;">${formatDate(collector.createdAt)}</div></div>
                         </div>
