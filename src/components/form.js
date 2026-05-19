@@ -553,7 +553,7 @@ async function openReceptionModal(receptionId = null) {
             updateCollectorBalanceDisplay();
         }
     }
-    openModal('reception-modal');
+    openModal('reception-modal', { noBackdropClose: true });
 
     // Focus automatique sur le champ Collecteur à l'ouverture
     setTimeout(() => {
