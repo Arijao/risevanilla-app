@@ -20,7 +20,19 @@ function openCollectorModal(collectorId) {
         form.dataset.editId = collectorId;
         if (titleEl) titleEl.textContent = 'Modifier Collecteur';
         document.getElementById('collector-name').value    = c.name    || '';
-        document.getElementById('collector-phone').value   = formatPhoneForInput(c.phone);
+        
+        // Gérer les téléphones multiples
+        const phoneContainer = document.getElementById('collector-phone-container');
+        if (phoneContainer) {
+            phoneContainer.innerHTML = '';
+            const phones = Array.isArray(c.phone) ? c.phone : (c.phone ? [c.phone] : []);
+            if (phones.length > 0) {
+                phones.forEach(p => addCollectorPhoneField(p));
+            } else {
+                addCollectorPhoneField('');
+            }
+        }
+
         document.getElementById('collector-cin').value      = formatCINForInput(c.cin);
         document.getElementById('collector-cin-date').value  = c.cinDate  || '';
         const cinPlaceEl = document.getElementById('collector-cin-place');
@@ -31,6 +43,13 @@ function openCollectorModal(collectorId) {
     } else {
         if (titleEl) titleEl.textContent = 'Ajouter Collecteur';
         resetCollectorMediaBuffers(null);
+        
+        // Initialiser avec un champ de téléphone vide
+        const phoneContainer = document.getElementById('collector-phone-container');
+        if (phoneContainer) {
+            phoneContainer.innerHTML = '';
+            addCollectorPhoneField('');
+        }
     }
     openModal('collector-modal');
 }

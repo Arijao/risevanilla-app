@@ -69,10 +69,27 @@ function openCollectorModal(collectorId = null) {
         if (collector) {
             form.dataset.editId = collectorId;
             document.getElementById('collector-name').value     = collector.name    || '';
-            document.getElementById('collector-phone').value    = formatPhoneForInput(collector.phone || '');
+            
+            const phoneContainer = document.getElementById('collector-phone-container');
+            if (phoneContainer) {
+                phoneContainer.innerHTML = '';
+                const phones = Array.isArray(collector.phone) ? collector.phone : (collector.phone ? [collector.phone] : []);
+                if (phones.length > 0) {
+                    phones.forEach(p => addCollectorPhoneField(p));
+                } else {
+                    addCollectorPhoneField('');
+                }
+            }
+
             document.getElementById('collector-cin').value      = collector.cin     || '';
             document.getElementById('collector-cin-date').value = collector.cinDate || '';
             document.getElementById('collector-address').value  = collector.address || '';
+        }
+    } else {
+        const phoneContainer = document.getElementById('collector-phone-container');
+        if (phoneContainer) {
+            phoneContainer.innerHTML = '';
+            addCollectorPhoneField('');
         }
     }
     openModal('collector-modal');

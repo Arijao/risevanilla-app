@@ -224,7 +224,7 @@ function exportCollectorDetailsToExcel(collectorId) {
     // Summary sheet
     const summaryData = [
         ['Rapport Détaillé du Collecteur'], [],
-        ['Nom:', collector.name], ['Téléphone:', collector.phone||'N/A'],
+        ['Nom:', collector.name], ['Téléphone:', formatPhoneNumberForDisplay(collector.phone)],
         ['CIN:', collector.cin||'N/A'], ['Adresse:', collector.address||'N/A'], [],
         [`RÉSUMÉ FINANCIER (Année ${currentYear})`],
         ['Total Avances:', advances.reduce((s,a)=>s+a.amount,0)],

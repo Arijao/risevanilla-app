@@ -60,12 +60,19 @@ function formatPhoneNumber(e) {
     input.setSelectionRange(Math.max(0, cursor + added), Math.max(0, cursor + added));
 }
 
-function formatPhoneNumberForDisplay(phoneString) {
-    if (!phoneString) return '—';
-    const c = phoneString.replace(/\s/g, '');
+function formatPhoneNumberForDisplay(phone) {
+    if (!phone) return '—';
+    
+    // Si c'est un tableau, on formate chaque numéro et on les joint
+    if (Array.isArray(phone)) {
+        if (phone.length === 0) return '—';
+        return phone.map(p => formatPhoneNumberForDisplay(p)).join(' / ');
+    }
+
+    const c = phone.replace(/\s/g, '');
     if (c.length === 10 && /^\d+$/.test(c))
         return `${c.substring(0,3)} ${c.substring(3,5)} ${c.substring(5,8)} ${c.substring(8,10)}`;
-    return phoneString;
+    return phone;
 }
 
 // Utilisé dans les formulaires : formate sans insérer 'N/A' si vide
@@ -120,21 +127,58 @@ function formatCIN(input) {
 let _collectorPhotoData = null;    // base64 string ou null
 let _collectorDocs      = [];      // [{ id, name, type, size, data, addedAt }]
 
+
+// ── Dynamic Phone Fields ──────────────────────────────────────
+function addCollectorPhoneField(value = '') {
+    const container = document.getElementById('collector-phone-container');
+    if (!container) return;
+
+    const div = document.createElement('div');
+    div.className = 'cform-phone-item';
+    div.style.display = 'flex';
+    div.style.gap = '8px';
+    div.style.alignItems = 'center';
+    
+    // On n'ajoute le bouton supprimer que s'il y a déjà des champs ou si on en ajoute un nouveau
+    const hasFields = container.querySelectorAll('.cform-phone-item').length > 0;
+    
+    div.innerHTML = `
+        <input type="tel" class="form-input collector-phone-input" 
+               placeholder="032 12 345 67" value="${formatPhoneForInput(value)}" 
+               oninput="formatPhoneNumber(event)">
+        ${hasFields ? `
+        <button type="button" class="btn-icon btn-danger" style="width:32px; height:32px;" 
+                onclick="this.parentElement.remove()" title="Supprimer">
+            <span class="material-icons" style="font-size:16px;">remove</span>
+        </button>` : ''}
+    `;
+    container.appendChild(div);
+}
+
 // ── Collector Save ────────────────────────────────────────────
 function saveCollector() {
     const form    = document.getElementById('collector-form');
     const name    = capitalizeWords(document.getElementById('collector-name').value.trim());
-    const phone   = document.getElementById('collector-phone').value.replace(/\s/g, '');
+    
+    // Récupérer tous les numéros de téléphone
+    const phoneInputs = document.querySelectorAll('.collector-phone-input');
+    const phones = Array.from(phoneInputs)
+        .map(input => input.value.replace(/\s/g, ''))
+        .filter(val => val.length > 0);
+
     const cin      = document.getElementById('collector-cin').value.trim();
     const cinDate  = document.getElementById('collector-cin-date').value;
     const cinPlace = document.getElementById('collector-cin-place')?.value.trim() || '';
     const address  = document.getElementById('collector-address').value;
     const editId  = form.dataset.editId;
 
-    if (phone && (phone.length !== 10 || !phone.startsWith('0'))) {
-        showToast('Le numéro de téléphone doit contenir 10 chiffres et commencer par 0.', 'error');
-        return;
+    for (const phone of phones) {
+        if (phone && (phone.length !== 10 || !phone.startsWith('0'))) {
+            showToast('Chaque numéro de téléphone doit contenir 10 chiffres et commencer par 0.', 'error');
+            return;
+        }
     }
+
     if (appData.collectors.some(c => (editId ? c.id != editId : true) && c.name.toLowerCase() === name.toLowerCase())) {
         showToast('❌ Un collecteur avec ce nom existe déjà!', 'error'); return;
     }
@@ -147,7 +191,7 @@ function saveCollector() {
 
     const collector = {
         name,
-        phone:     phone   || '',
+        phone:     phones, // Stocké sous forme de tableau
         cin:       cin      || '',
         cinDate:   cinDate  || '',
         cinPlace:  cinPlace || '',

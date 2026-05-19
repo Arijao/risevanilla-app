@@ -958,8 +958,18 @@
                                 <input type="text" id="collector-name" class="form-input" required aria-required="true" oninput="capitalizeLive(this)">
                             </div>
                             <div class="form-group" style="margin-bottom:0;">
-                                <label for="collector-phone" class="form-label">Téléphone</label>
-                                <input type="tel" class="form-input" id="collector-phone" placeholder="032 12 345 67" oninput="formatPhoneNumber(event)">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                    <label class="form-label" style="margin-bottom:0;">Téléphone</label>
+                                    <button type="button" class="btn-icon btn-outline" style="width:24px; height:24px;" 
+                                            onclick="addCollectorPhoneField()" title="Ajouter un numéro">
+                                        <span class="material-icons" style="font-size:16px;">add</span>
+                                    </button>
+                                </div>
+                                <div id="collector-phone-container" style="display:flex; flex-direction:column; gap:8px;">
+                                    <div class="cform-phone-item" style="display:flex; gap:8px; align-items:center;">
+                                        <input type="tel" class="form-input collector-phone-input" placeholder="032 12 345 67" oninput="formatPhoneNumber(event)">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
