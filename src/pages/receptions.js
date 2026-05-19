@@ -205,7 +205,7 @@ async function saveAllAdjustments() {
         if (net <= 0) { showToast(`Ajustement #${idx+1}: Poids net > 0 requis`,     'error'); hasError = true; return; }
 
         totalAdjW += net;
-        adjustments.push({ quality, grossWeight: gross > 0 ? gross : parseFloat((net + tare).toFixed(2)), tare, netWeight: net, price, note });
+        adjustments.push({ quality, grossWeight: gross||net, tare, netWeight: net, price, note });
     });
 
     if (hasError) { isSaving = false; return; }
@@ -252,15 +252,36 @@ async function saveAllAdjustments() {
             await saveToDB('receptions', newRec);
         }
 
-        const oldNet     = originalReception.netWeight  || 0;
-        const oldGross   = originalReception.grossWeight || 0;
-        const newNet     = parseFloat((oldNet - totalAdjW).toFixed(2));
-        // Tare résiduelle : proportion du brut-net d'origine conservée après redistribution
-        // Si tout est redistribué (newNet=0), la tare résiduelle est aussi 0.
-        const origTotalTare = parseFloat((oldGross - oldNet).toFixed(2));
-        const residualTare  = oldNet > 0
-            ? parseFloat((origTotalTare * (Math.max(0, newNet) / oldNet)).toFixed(2))
-            : 0;
+        const oldNet   = originalReception.netWeight  || 0;
+        const oldGross = originalReception.grossWeight || 0;
+        const newNet   = parseFloat((oldNet - totalAdjW).toFixed(2));
+
+        // Tare totale réelle de la réception d'origine.
+        // Priorité : champ tare dédié (stocké par form.js depuis les tares individuelles).
+        // Fallback 1 : bagCount × bagWeight (tare uniforme).
+        // Fallback 2 : oldGross - oldNet (anciennes données sans tare stockée).
+        const origTotalTare = (() => {
+            if (originalReception.tare !== undefined && originalReception.tare !== null
+                && originalReception.tare > 0) {
+                return parseFloat(originalReception.tare);
+            }
+            const bc = originalReception.bagCount  || 0;
+            const bw = originalReception.bagWeight || 0;
+            if (bc > 0 && bw > 0) return parseFloat((bc * bw).toFixed(3));
+            return parseFloat((oldGross - oldNet).toFixed(2));
+        })();
+
+        // Tare totale consommée par les ajustements (somme des tares saisies)
+        const totalAdjTare = parseFloat(
+            adjustments.reduce((s, a) => s + (a.tare || 0), 0).toFixed(3)
+        );
+
+        // Tare résiduelle = tare d'origine - tare distribuée aux ajustements
+        // Bornée à 0 et au max de origTotalTare (robustesse si tares mal saisies)
+        const residualTare = parseFloat(
+            Math.max(0, Math.min(origTotalTare, origTotalTare - totalAdjTare)).toFixed(3)
+        );
+
         originalReception.netWeight   = Math.max(0, newNet);
         originalReception.grossWeight = Math.max(0, parseFloat((Math.max(0, newNet) + residualTare).toFixed(2)));
         originalReception.totalValue  = Math.max(0, parseFloat((Math.max(0, newNet) * (originalReception.price||0)).toFixed(0)));

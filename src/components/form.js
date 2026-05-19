@@ -582,8 +582,16 @@ async function saveReception() {
 
     const form      = document.getElementById('reception-form');
     const isEditing = form.dataset.editId;
+    // Tare totale exacte : lire depuis le dataset si pesage rapide, sinon bagCount × bagWeight
+    const grossEl     = document.getElementById('reception-gross-weight');
+    const storedTare  = grossEl?.dataset?.totalTare;
+    const exactTotalTare = (storedTare !== undefined && storedTare !== '')
+        ? parseFloat(storedTare)
+        : parseFloat((bagCount * bagWeight).toFixed(3));
+
     const reception = {
         collectorId, date, grossWeight, bagCount, bagWeight, netWeight, quality, price, totalValue,
+        tare: exactTotalTare,
         quickWeights: quickWeights.map(e => ({ weight: e.weight, tare: e.tare })),
         year: new Date(date).getFullYear()
     };
@@ -746,7 +754,7 @@ function updateIndividualTare(index, value) {
     const netSpans = list.querySelectorAll('span > span > span:last-of-type');
     if (netSpans[index]) {
         const netW = Math.max(0, entry.weight - quickWeights[index].tare).toFixed(2);
-        netSpans[index].textContent = `&#8594; ${netW} kg net`;
+        netSpans[index].textContent = `→ ${netW} kg net`;
     }
     updateReceptionFromQuickWeights();
 }
@@ -785,7 +793,7 @@ function onGlobalTareChange() {
 function updateReceptionFromQuickWeights() {
     const globalTare = parseFloat(document.getElementById('quick-tare-input')?.value?.replace(',', '.')) || 0;
     const total      = quickWeights.reduce((s, e) => s + e.weight, 0);
-    // Tare effective moyenne (pour renseigner reception-bag-weight, usage informatif / rétrocompat)
+    // Tare totale exacte (somme des tares individuelles)
     const totalTare  = quickWeights.reduce((s, e) => {
         const t = (e.tare !== null && e.tare !== undefined) ? e.tare : globalTare;
         return s + t;
@@ -795,6 +803,9 @@ function updateReceptionFromQuickWeights() {
     document.getElementById('reception-gross-weight').value = total.toFixed(2);
     document.getElementById('reception-bag-count').value    = quickWeights.length;
     document.getElementById('reception-bag-weight').value   = avgTare;
+    // Stocker la tare totale réelle sur l'élément pour que saveReception puisse la lire
+    const grossEl = document.getElementById('reception-gross-weight');
+    if (grossEl) grossEl.dataset.totalTare = parseFloat(totalTare.toFixed(3));
     calculateReceptionValues();
 }
 
