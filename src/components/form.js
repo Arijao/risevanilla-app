@@ -746,7 +746,7 @@ function updateIndividualTare(index, value) {
     const netSpans = list.querySelectorAll('span > span > span:last-of-type');
     if (netSpans[index]) {
         const netW = Math.max(0, entry.weight - quickWeights[index].tare).toFixed(2);
-        netSpans[index].textContent = \`→ ${netW} kg net\`;
+        netSpans[index].textContent = `→ ${netW} kg net`;
     }
     updateReceptionFromQuickWeights();
 }
