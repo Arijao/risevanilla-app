@@ -205,7 +205,7 @@ async function saveAllAdjustments() {
         if (net <= 0) { showToast(`Ajustement #${idx+1}: Poids net > 0 requis`,     'error'); hasError = true; return; }
 
         totalAdjW += net;
-        adjustments.push({ quality, grossWeight: gross||net, tare, netWeight: net, price, note });
+        adjustments.push({ quality, grossWeight: gross > 0 ? gross : parseFloat((net + tare).toFixed(2)), tare, netWeight: net, price, note });
     });
 
     if (hasError) { isSaving = false; return; }
@@ -252,12 +252,18 @@ async function saveAllAdjustments() {
             await saveToDB('receptions', newRec);
         }
 
-        const oldNet   = originalReception.netWeight || 0;
-        const newNet   = parseFloat((oldNet - totalAdjW).toFixed(2));
-        const origTare = parseFloat((originalReception.tare||0).toFixed(2));
+        const oldNet     = originalReception.netWeight  || 0;
+        const oldGross   = originalReception.grossWeight || 0;
+        const newNet     = parseFloat((oldNet - totalAdjW).toFixed(2));
+        // Tare résiduelle : proportion du brut-net d'origine conservée après redistribution
+        // Si tout est redistribué (newNet=0), la tare résiduelle est aussi 0.
+        const origTotalTare = parseFloat((oldGross - oldNet).toFixed(2));
+        const residualTare  = oldNet > 0
+            ? parseFloat((origTotalTare * (Math.max(0, newNet) / oldNet)).toFixed(2))
+            : 0;
         originalReception.netWeight   = Math.max(0, newNet);
-        originalReception.grossWeight = Math.max(0, parseFloat((newNet + origTare).toFixed(2)));
-        originalReception.totalValue  = Math.max(0, parseFloat((newNet * (originalReception.price||0)).toFixed(0)));
+        originalReception.grossWeight = Math.max(0, parseFloat((Math.max(0, newNet) + residualTare).toFixed(2)));
+        originalReception.totalValue  = Math.max(0, parseFloat((Math.max(0, newNet) * (originalReception.price||0)).toFixed(0)));
         originalReception.note        = `[Ajusté — ${adjustments.length} tri(s)] ${originalReception.note||''}`.trim();
 
         await saveToDB('receptions', originalReception);
