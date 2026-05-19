@@ -1116,7 +1116,13 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Solde Actuel</label>
-                        <input type="text" class="form-input" id="reception-collector-balance" readonly tabindex="-1" placeholder="Solde du collecteur">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <input type="text" class="form-input" id="reception-collector-balance" readonly tabindex="-1" placeholder="Solde du collecteur" style="flex: 1;">
+                            <div class="collector-status-badge" id="reception-status-badge" style="display: none;">
+                                <span class="material-icons" id="reception-status-icon" style="font-size: 18px; margin-right: 4px;"></span>
+                                <span id="reception-status-text"></span>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Date</label>

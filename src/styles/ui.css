@@ -1181,6 +1181,29 @@
             color: var(--md-sys-color-on-secondary-container);
         }
 
+        /* ── Badge de statut collecteur dans le formulaire de réception ── */
+        .collector-status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .collector-status-badge.debiteur {
+            background-color: var(--md-sys-color-error-container, #f9dedc);
+            color: var(--md-sys-color-error, #ba1a1a);
+        }
+
+        .collector-status-badge.crediteur {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+
         .fab {
             position: fixed;
             bottom: 24px;

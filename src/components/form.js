@@ -720,27 +720,37 @@ function updateReceptionFromQuickWeights() {
 function updateCollectorBalanceDisplay() {
     const collectorId = parseInt(document.getElementById('reception-collector')?.value);
     const balEl = document.getElementById('reception-collector-balance');
-    if (!balEl) return;
+    const badgeEl = document.getElementById('reception-status-badge');
+    const badgeIconEl = document.getElementById('reception-status-icon');
+    const badgeTextEl = document.getElementById('reception-status-text');
+    
+    if (!balEl || !badgeEl) return;
+    
     if (!collectorId) {
         balEl.value = '';
-        balEl.style.color      = '';
-        balEl.style.fontWeight = '';
+        badgeEl.style.display = 'none';
+        badgeEl.className = 'collector-status-badge';
         return;
     }
+    
     const balance = calculateCollectorBalance(collectorId);
     const status  = getCollectorStatus(balance);
-    balEl.value   = `${formatCurrency(Math.abs(balance))} (${status.label})`;
+    balEl.value   = formatCurrency(Math.abs(balance));
 
-    // Coloration conditionnelle selon le statut
+    // Mise à jour du badge avec icône et statut
+    badgeEl.style.display = 'inline-flex';
+    badgeEl.className = 'collector-status-badge';
+    
     if (status.label === 'Débiteur') {
-        balEl.style.color      = 'var(--md-sys-color-error, #ba1a1a)';
-        balEl.style.fontWeight = '700';
+        badgeEl.classList.add('debiteur');
+        badgeIconEl.textContent = 'error_outline';
+        badgeTextEl.textContent = 'Débiteur';
     } else if (status.label === 'Créditeur') {
-        balEl.style.color      = 'var(--md-sys-color-success, #2e7d32)';
-        balEl.style.fontWeight = '700';
+        badgeEl.classList.add('crediteur');
+        badgeIconEl.textContent = 'check_circle_outline';
+        badgeTextEl.textContent = 'Créditeur';
     } else {
-        balEl.style.color      = '';
-        balEl.style.fontWeight = '';
+        badgeEl.style.display = 'none';
     }
 }
 
