@@ -314,18 +314,33 @@ function exportCollectorReport(collectorId) {
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
     <title>Rapport — ${collector.name}</title>
     <style>body{font-family:Arial,sans-serif;margin:20px;color:#333;font-size:12px}
-    h1{color:#6750a4;font-size:22px}h2{font-size:15px;color:#333;border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:20px}
+    h2{font-size:15px;color:#333;border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:20px}
     table{width:100%;border-collapse:collapse;margin-bottom:16px}
     th,td{border:1px solid #ddd;padding:7px;text-align:left}th{background:#f2f2f2}
     .summary{display:flex;gap:16px;margin-bottom:20px}.card{flex:1;border:1px solid #ddd;border-radius:8px;padding:12px;text-align:center}
-    .val{font-size:18px;font-weight:700}.lbl{font-size:11px;color:#666}.total{font-weight:700;background:#f8f9fa}</style>
+    .val{font-size:18px;font-weight:700}.lbl{font-size:11px;color:#666}.total{font-weight:700;background:#f8f9fa}
+    .pdf-header{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+    .pdf-logo{width:44px;height:44px;flex-shrink:0}
+    .pdf-brand-name{font-size:21px;font-weight:800;color:#6750a4;letter-spacing:.5px;line-height:1.1;margin:0}
+    .pdf-brand-sub{font-size:10px;color:#888;letter-spacing:1.8px;text-transform:uppercase;margin:0}
+    .status-debiteur{color:#ba1a1a;font-weight:700}</style>
     </head><body>
-    <h1>RISEVANILLA — Rapport Collecteur</h1>
+    <div class="pdf-header">
+        <svg class="pdf-logo" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="22" cy="22" r="22" fill="#6750a4"/>
+            <text x="22" y="29" text-anchor="middle" font-size="19" font-family="Arial" font-weight="800" fill="#fff">RV</text>
+        </svg>
+        <div>
+            <p class="pdf-brand-name">RISEVANILLA</p>
+            <p class="pdf-brand-sub">Rapport Collecteur</p>
+        </div>
+    </div>
+    <hr style="border:none;border-top:2px solid #6750a4;margin:6px 0 14px">
     <p><strong>Collecteur:</strong> ${collector.name} &nbsp; <strong>CIN:</strong> ${collector.cin||'—'} &nbsp; <strong>Adresse:</strong> ${collector.address||'—'}</p>
     <div class="summary">
         <div class="card"><div class="val" style="color:#ba1a1a">${formatCurrency(totalAdv+totalPai)}</div><div class="lbl">Total Débits</div></div>
         <div class="card"><div class="val" style="color:#2e7d32">${formatCurrency(totalRec+totalRemb)}</div><div class="lbl">Total Crédits</div></div>
-        <div class="card"><div class="val">${formatCurrency(Math.abs(balance))}</div><div class="lbl">Solde — ${status.label}</div></div>
+        <div class="card"><div class="val">${formatCurrency(Math.abs(balance))}</div><div class="lbl">Solde — <span ${status.label === 'Débiteur' ? 'class=\"status-debiteur\"' : ''}>${status.label}</span></div></div>
     </div>
     <h2>💰 Avances</h2>
     ${advances.length ? `<table><thead><tr><th>Date</th><th>Motif</th><th>Montant</th></tr></thead><tbody>
