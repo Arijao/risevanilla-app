@@ -554,6 +554,11 @@ async function openReceptionModal(receptionId = null) {
         }
     }
     openModal('reception-modal');
+
+    // Focus automatique sur le champ Collecteur à l'ouverture
+    setTimeout(() => {
+        document.getElementById('reception-collector')?.focus();
+    }, 120);
 }
 
 async function saveReception() {
@@ -716,10 +721,27 @@ function updateCollectorBalanceDisplay() {
     const collectorId = parseInt(document.getElementById('reception-collector')?.value);
     const balEl = document.getElementById('reception-collector-balance');
     if (!balEl) return;
-    if (!collectorId) { balEl.value = ''; return; }
+    if (!collectorId) {
+        balEl.value = '';
+        balEl.style.color      = '';
+        balEl.style.fontWeight = '';
+        return;
+    }
     const balance = calculateCollectorBalance(collectorId);
     const status  = getCollectorStatus(balance);
     balEl.value   = `${formatCurrency(Math.abs(balance))} (${status.label})`;
+
+    // Coloration conditionnelle selon le statut
+    if (status.label === 'Débiteur') {
+        balEl.style.color      = 'var(--md-sys-color-error, #ba1a1a)';
+        balEl.style.fontWeight = '700';
+    } else if (status.label === 'Créditeur') {
+        balEl.style.color      = 'var(--md-sys-color-success, #2e7d32)';
+        balEl.style.fontWeight = '700';
+    } else {
+        balEl.style.color      = '';
+        balEl.style.fontWeight = '';
+    }
 }
 
 // ── Live Validation ───────────────────────────────────────────
