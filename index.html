@@ -1136,7 +1136,7 @@
                         <div style="display: flex; gap: 10px; margin-top: 12px; align-items: stretch;">
                             <div style="flex: 1; display: flex; gap: 8px;">
                                 <input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" class="form-input" id="quick-weight-input" placeholder="Poids (kg)" autocomplete="off" style="flex: 1;" onkeypress="if(event.key === 'Enter') { event.preventDefault(); addQuickWeight(); }">
-                                <input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" class="form-input" id="quick-tare-input" placeholder="Tare" value="0.2" autocomplete="off" style="width: 70px; background: var(--md-sys-color-surface-variant); border: 1px solid var(--md-sys-color-outline);" oninput="updateReceptionFromQuickWeights()">
+                                <input type="tel" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" class="form-input" id="quick-tare-input" placeholder="Tare" value="0.2" autocomplete="off" style="width: 70px; background: var(--md-sys-color-surface-variant); border: 1px solid var(--md-sys-color-outline);" oninput="onGlobalTareChange()">
                                 <button type="button" class="btn btn-primary btn-add-weight" onclick="addQuickWeight()" style="padding: 0 20px; white-space: nowrap">
                                     <span class="material-icons" style="font-size: 18px">add</span>
                                     <span class="btn-text">Ajouter</span>

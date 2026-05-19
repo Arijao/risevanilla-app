@@ -549,7 +549,7 @@ async function openReceptionModal(receptionId = null) {
             document.getElementById('reception-quality').value      = reception.quality || '';
             document.getElementById('reception-price').value        = reception.price || '';
             document.getElementById('reception-total-value').value  = reception.totalValue || '';
-            if (reception.quickWeights) { quickWeights = [...reception.quickWeights]; renderQuickWeights(); }
+            if (reception.quickWeights) { quickWeights = _normalizeQuickWeights(reception.quickWeights); renderQuickWeights(); }
             updateCollectorBalanceDisplay();
         }
     }
@@ -584,7 +584,7 @@ async function saveReception() {
     const isEditing = form.dataset.editId;
     const reception = {
         collectorId, date, grossWeight, bagCount, bagWeight, netWeight, quality, price, totalValue,
-        quickWeights: [...quickWeights],
+        quickWeights: quickWeights.map(e => ({ weight: e.weight, tare: e.tare })),
         year: new Date(date).getFullYear()
     };
 
@@ -630,17 +630,45 @@ function calculateReceptionValues() {
     const bagCount  = parseInt(document.getElementById('reception-bag-count').value) || 0;
     const bagWeight = parseFloat(document.getElementById('reception-bag-weight').value?.replace(',','.')) || 0;
     const price     = parseFloat(document.getElementById('reception-price').value?.replace(',','.')) || 0;
-    const netWeight = Math.max(0, gross - (bagCount * bagWeight));
+
+    // Si le pesage rapide est actif avec des tares individuelles, calculer le net précis
+    let netWeight;
+    if (quickWeights && quickWeights.length > 0 && quickWeights.some(e => typeof e === 'object')) {
+        const globalTare = parseFloat(document.getElementById('quick-tare-input')?.value?.replace(',','.')) || 0;
+        netWeight = Math.max(0, quickWeights.reduce((s, e) => {
+            const w = typeof e === 'object' ? e.weight : e;
+            const t = (typeof e === 'object' && e.tare !== null && e.tare !== undefined) ? e.tare : globalTare;
+            return s + Math.max(0, w - t);
+        }, 0));
+    } else {
+        netWeight = Math.max(0, gross - (bagCount * bagWeight));
+    }
+
     document.getElementById('reception-net-weight').value  = netWeight.toFixed(2);
     document.getElementById('reception-total-value').value = Math.round(netWeight * price) || '';
 }
 
 // ── Reception Quick Weights ───────────────────────────────────
+// quickWeights est un tableau d'objets {weight, tare}.
+// La tare par défaut est lue depuis le champ global quick-tare-input.
+// Rétrocompatibilité : les anciennes entrées sous forme de nombre brut
+// sont normalisées à l'ouverture du modal (voir openReceptionModal).
+
+function _normalizeQuickWeights(arr) {
+    // Convertit les éventuels nombres bruts (ancien format) en objets
+    return (arr || []).map(entry =>
+        (typeof entry === 'object' && entry !== null && 'weight' in entry)
+            ? entry
+            : { weight: entry, tare: null }   // null = héritera de la tare globale à l'affichage
+    );
+}
+
 function addQuickWeight() {
     const input  = document.getElementById('quick-weight-input');
     const val    = parseFloat((input?.value || '').replace(',', '.'));
     if (isNaN(val) || val <= 0) { showToast('Poids invalide (> 0 kg)', 'error', 2000); return; }
-    quickWeights.push(val);
+    const globalTare = parseFloat(document.getElementById('quick-tare-input')?.value?.replace(',', '.')) || 0;
+    quickWeights.push({ weight: val, tare: globalTare });
     if (input) input.value = '';
     input?.focus();
     renderQuickWeights();
@@ -648,33 +676,57 @@ function addQuickWeight() {
 }
 
 function renderQuickWeights() {
-    const list     = document.getElementById('quick-weights-list');
-    const countEl  = document.getElementById('quick-bag-count');
-    const totalEl  = document.getElementById('quick-total-weight');
-    const netEl    = document.getElementById('quick-net-weight');
-    const tareEl   = document.getElementById('quick-tare-input');
+    const list    = document.getElementById('quick-weights-list');
+    const countEl = document.getElementById('quick-bag-count');
+    const totalEl = document.getElementById('quick-total-weight');
+    const netEl   = document.getElementById('quick-net-weight');
+    const tareEl  = document.getElementById('quick-tare-input');
     if (!list) return;
 
-    const tare  = parseFloat(tareEl?.value?.replace(',', '.')) || 0;
-    const total = quickWeights.reduce((s, w) => s + w, 0);
-    const net   = Math.max(0, total - quickWeights.length * tare);
+    const globalTare = parseFloat(tareEl?.value?.replace(',', '.')) || 0;
+    const total      = quickWeights.reduce((s, e) => s + e.weight, 0);
+    const net        = Math.max(0, quickWeights.reduce((s, e) => {
+        const t = (e.tare !== null && e.tare !== undefined) ? e.tare : globalTare;
+        return s + Math.max(0, e.weight - t);
+    }, 0));
 
     if (countEl) countEl.textContent = quickWeights.length;
     if (totalEl) totalEl.textContent = total.toFixed(2);
     if (netEl)   netEl.textContent   = net.toFixed(2);
 
-    list.innerHTML = quickWeights.length
-        ? quickWeights.map((w, i) => `
-            <span style="display:inline-flex;align-items:center;gap:4px;
-                         background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary);
-                         padding:4px 10px;border-radius:20px;font-size:13px;font-weight:500;">
-                <strong>${w} kg</strong>
-                <span class="material-icons" style="font-size:14px;cursor:pointer;"
-                      onclick="removeQuickWeight(${i})">close</span>
-            </span>`).join('')
-        : `<div style="opacity:.6;font-size:13px;padding:4px;">
+    if (!quickWeights.length) {
+        list.innerHTML = `<div style="opacity:.6;font-size:13px;padding:4px;">
                Aucun poids ajouté — saisir ci-dessus
            </div>`;
+        return;
+    }
+
+    list.innerHTML = quickWeights.map((entry, i) => {
+        const indivTare = (entry.tare !== null && entry.tare !== undefined) ? entry.tare : globalTare;
+        const netW      = Math.max(0, entry.weight - indivTare).toFixed(2);
+        return `
+        <span style="display:inline-flex;align-items:center;gap:6px;
+                     background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary);
+                     padding:4px 10px 4px 12px;border-radius:20px;font-size:13px;font-weight:500;
+                     flex-wrap:nowrap;">
+            <strong>${entry.weight} kg</strong>
+            <span style="display:inline-flex;align-items:center;gap:2px;opacity:.85;font-size:11px;font-weight:400;">
+                <span style="opacity:.7;">tare:</span>
+                <input type="number"
+                       value="${indivTare}"
+                       min="0" step="0.01"
+                       title="Tare pour ce poids (kg)"
+                       style="width:46px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.35);
+                              border-radius:6px;color:inherit;font-size:11px;padding:1px 4px;
+                              text-align:center;-moz-appearance:textfield;"
+                       oninput="updateIndividualTare(${i}, this.value)"
+                       onclick="event.stopPropagation()">
+                <span style="opacity:.7;">&#8594; ${netW} kg net</span>
+            </span>
+            <span class="material-icons" style="font-size:14px;cursor:pointer;opacity:.85;"
+                  onclick="removeQuickWeight(${i})">close</span>
+        </span>`;
+    }).join('');
 }
 
 function removeQuickWeight(index) {
@@ -683,12 +735,28 @@ function removeQuickWeight(index) {
     updateReceptionFromQuickWeights();
 }
 
+function updateIndividualTare(index, value) {
+    if (quickWeights[index] === undefined) return;
+    const t = parseFloat(String(value).replace(',', '.'));
+    quickWeights[index].tare = isNaN(t) ? 0 : Math.max(0, t);
+    // Recalcul net + affichage sans re-render complet (évite de perdre le focus)
+    const list = document.getElementById('quick-weights-list');
+    if (!list) return;
+    const entry    = quickWeights[index];
+    const netSpans = list.querySelectorAll('span > span > span:last-of-type');
+    if (netSpans[index]) {
+        const netW = Math.max(0, entry.weight - quickWeights[index].tare).toFixed(2);
+        netSpans[index].textContent = \`→ ${netW} kg net\`;
+    }
+    updateReceptionFromQuickWeights();
+}
+
 function undoLastWeight() {
     if (!quickWeights.length) return;
     const removed = quickWeights.pop();
     renderQuickWeights();
     updateReceptionFromQuickWeights();
-    showToast(`↩ ${removed} kg retiré`, 'info', 1500);
+    showToast(`↩ ${removed.weight} kg retiré`, 'info', 1500);
 }
 
 async function clearQuickWeights() {
@@ -707,12 +775,26 @@ async function clearQuickWeights() {
     updateReceptionFromQuickWeights();
 }
 
+function onGlobalTareChange() {
+    // Appelé par oninput du champ quick-tare-input (index.html)
+    // Met à jour l'affichage ET les calculs sans risque de boucle
+    renderQuickWeights();
+    updateReceptionFromQuickWeights();
+}
+
 function updateReceptionFromQuickWeights() {
-    const total    = quickWeights.reduce((s, w) => s + w, 0);
-    const tare     = parseFloat(document.getElementById('quick-tare-input')?.value?.replace(',', '.')) || 0;
+    const globalTare = parseFloat(document.getElementById('quick-tare-input')?.value?.replace(',', '.')) || 0;
+    const total      = quickWeights.reduce((s, e) => s + e.weight, 0);
+    // Tare effective moyenne (pour renseigner reception-bag-weight, usage informatif / rétrocompat)
+    const totalTare  = quickWeights.reduce((s, e) => {
+        const t = (e.tare !== null && e.tare !== undefined) ? e.tare : globalTare;
+        return s + t;
+    }, 0);
+    const avgTare = quickWeights.length ? parseFloat((totalTare / quickWeights.length).toFixed(3)) : globalTare;
+
     document.getElementById('reception-gross-weight').value = total.toFixed(2);
     document.getElementById('reception-bag-count').value    = quickWeights.length;
-    document.getElementById('reception-bag-weight').value   = tare;
+    document.getElementById('reception-bag-weight').value   = avgTare;
     calculateReceptionValues();
 }
 
