@@ -226,7 +226,7 @@ function updateCharts() {
     const outlineVar  = style.getPropertyValue('--md-sys-color-outline-variant').trim();
     const isDark      = document.body.dataset.theme === 'dark';
     const textColor   = isDark ? '#e6e1e5' : '#1a1c1e';
-    const chartColors = [primary,'#7d5260','#FFC107','#4CAF50','#2196F3','#FF5722','#9C27B0','#607D8B'];
+    const chartColors = [primary,'#C9AECF','#A78EB8','#B89EC4','#DEBBD8','#EDD6E8','#9890A8','#706878'];
 
     Chart.defaults.color       = onSurface;
     Chart.defaults.borderColor = outlineVar;
@@ -479,8 +479,8 @@ function openQualityDetailModal() {
     // Palette
     const style    = getComputedStyle(document.body);
     const primary  = style.getPropertyValue('--md-sys-color-primary').trim() || '#6750A4';
-    const PALETTE  = [primary,'#7d5260','#FFC107','#4CAF50','#2196F3','#FF5722','#9C27B0','#607D8B',
-                      '#00BCD4','#8BC34A','#FF9800','#E91E63','#009688','#795548'];
+    const PALETTE  = [primary,'#C9AECF','#A78EB8','#B89EC4','#DEBBD8','#EDD6E8','#9890A8','#706878',
+                      '#D8D2E2','#B8B0C8','#9890A8','#706878','#504858','#EDD6E8'];
 
     // ── Summary chips ──────────────────────────────────────────
     const chipsEl = document.getElementById('qdm-chips');
@@ -544,8 +544,8 @@ function openQualityDetailModal() {
                             transition:width .4s ease;
                             box-sizing:border-box;
                         ">
-                            <span style="font-size:.72rem;font-weight:600;color:#fff;white-space:nowrap;
-                                         text-shadow:0 1px 2px rgba(0,0,0,.3);">
+                            <span style="font-size:.72rem;font-weight:700;color:#504858;white-space:nowrap;
+                                         text-shadow:0 1px 1px rgba(255,255,255,.4);">
                                 ${row.pct.toFixed(1)}%
                             </span>
                         </div>
