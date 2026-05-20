@@ -944,7 +944,7 @@
         .form-input:focus {
             border-color: var(--md-sys-color-primary);
             background-color: var(--md-sys-color-surface);
-            box-shadow: 0 0 0 4px rgba(243, 229, 171, 0.1);
+            box-shadow: 0 0 0 4px rgba(152, 144, 168, 0.15);
             transform: translateY(-1px);
         }
 
@@ -983,7 +983,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             outline: none;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%230061a4' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23A78EB8' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
             background-size: 20px;
@@ -1023,7 +1023,7 @@
 
         .form-textarea:focus {
             border-color: var(--md-sys-color-primary);
-            box-shadow: 0 0 0 4px rgba(243, 229, 171, 0.1);
+            box-shadow: 0 0 0 4px rgba(152, 144, 168, 0.15);
             transform: translateY(-1px);
         }
 
@@ -1394,7 +1394,7 @@
         .modal-content .form-textarea:focus {
             border-color: var(--md-sys-color-primary);
             background-color: var(--md-sys-color-surface);
-            box-shadow: 0 0 0 4px rgba(243, 229, 171, 0.1);
+            box-shadow: 0 0 0 4px rgba(152, 144, 168, 0.15);
             transform: translateY(-1px);
         }
 
@@ -1636,14 +1636,14 @@
         .stat-card:hover {
             background: rgba(90, 90, 90, 0.6) !important;
             transform: translateY(-8px) scale(1.02) !important;
-            box-shadow: 0 12px 40px rgba(243, 229, 171, 0.4) !important;
+            box-shadow: 0 12px 40px rgba(184, 158, 196, 0.35) !important;
             border: 1px solid rgba(255, 255, 255, 0.25) !important;
         }
 
         .stat-card::before {
             background: linear-gradient(90deg,
                     rgba(216, 210, 226, 0.8),
-                    rgba(212, 175, 55, 0.8)) !important;
+                    rgba(167, 142, 184, 0.8)) !important;
         }
 
         .stat-value,
@@ -1829,21 +1829,21 @@
 
         /* FAB Button */
         .fab {
-            background: rgba(243, 229, 171, 0.8) !important;
+            background: rgba(167, 142, 184, 0.85) !important;
             backdrop-filter: blur(15px) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            box-shadow: 0 8px 32px rgba(216, 210, 226, 0.5) !important;
+            box-shadow: 0 8px 32px rgba(167, 142, 184, 0.4) !important;
         }
 
         .fab:hover {
-            background: rgba(216, 210, 226, 1) !important;
-            box-shadow: 0 12px 40px rgba(216, 210, 226, 0.7) !important;
+            background: rgba(184, 158, 196, 1) !important;
+            box-shadow: 0 12px 40px rgba(184, 158, 196, 0.6) !important;
         }
 
         /* Logo Icon */
         .logo-icon {
-            background: rgba(243, 229, 171, 0.8) !important;
-            box-shadow: 0 4px 16px rgba(216, 210, 226, 0.5) !important;
+            background: rgba(167, 142, 184, 0.85) !important;
+            box-shadow: 0 4px 16px rgba(167, 142, 184, 0.4) !important;
         }
 
         /* Scrollbar */
@@ -2378,7 +2378,7 @@
         .solde-global-card:hover {
             background: rgba(90, 90, 90, 0.6) !important;
             transform: translateY(-8px) scale(1.02) !important;
-            box-shadow: 0 12px 40px rgba(243, 229, 171, 0.4) !important;
+            box-shadow: 0 12px 40px rgba(184, 158, 196, 0.35) !important;
             border: 1px solid rgba(255, 255, 255, 0.25) !important;
         }
 
