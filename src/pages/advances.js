@@ -368,9 +368,9 @@ function updateAdvancesTable() {
             <td data-label="Motif">
                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                     ${adv.vanilleType === 'verte'
-                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(76,175,80,.18);color:#4caf50;font-weight:600;"><span class="material-icons" style="font-size:11px;">grass</span>Verte</span>`
+                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(152,144,168,.18);color:#9890A8;font-weight:600;"><span class="material-icons" style="font-size:11px;">grass</span>Verte</span>`
                         : adv.vanilleType === 'preparee'
-                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(103,80,164,.10);color:var(--md-sys-color-primary);font-weight:600;"><span class="material-icons" style="font-size:11px;">verified</span>Préparée</span>`
+                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(152,144,168,.10);color:var(--md-sys-color-primary);font-weight:600;"><span class="material-icons" style="font-size:11px;">verified</span>Préparée</span>`
                         : ''}
                     <span>${RiseVanillaSearch.highlightText(adv.motif || '—', _q)}</span>
                 </div>

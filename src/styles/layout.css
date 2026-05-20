@@ -192,7 +192,7 @@
                 display: flex !important;
                 flex-direction: column !important;
                 visibility: visible !important;
-                background: rgba(30, 30, 30, 0.98) !important;
+                background: rgba(80, 88, 136, 0.98) !important;
                 backdrop-filter: blur(20px) !important;
                 overflow: hidden !important;
             }
@@ -231,7 +231,7 @@
                 display: flex !important;
                 align-items: center !important;
                 justify-content: space-between !important;
-                background: rgba(40, 40, 40, 0.9) !important;
+                background: rgba(90, 98, 146, 0.9) !important;
             }
 
             #sidebar-toggle {
@@ -424,7 +424,7 @@
                 width: 100% !important;
                 background: transparent !important;
                 border: none !important;
-                color: #fff !important;
+                color: #F0EDF4 !important;
                 font-size: 13px !important;
                 padding: 0 !important;
                 position: relative !important;
@@ -629,8 +629,8 @@
             left: calc(100% + 12px);
             top: 50%;
             transform: translateY(-50%);
-            background-color: #1e1e1e;
-            color: #ffffff;
+            background-color: #6A6677;
+            color: #F0EDF4;
             padding: 8px 16px;
             border-radius: 8px;
             font-size: 13px;
@@ -651,7 +651,7 @@
             top: 50%;
             transform: translateY(-50%);
             border: 6px solid transparent;
-            border-right-color: #1e1e1e;
+            border-right-color: #6A6677;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.15s ease, visibility 0.15s ease;
@@ -888,7 +888,7 @@
         /* Background with blur effect */
         body {
             background-color: #0f0f12;
-            background-image: radial-gradient(circle at 50% 50%, rgba(243, 229, 171, 0.05) 0%, rgba(15, 15, 18, 1) 100%);
+            background-image: radial-gradient(circle at 50% 50%, rgba(216, 210, 226, 0.05) 0%, rgba(80, 72, 88, 1) 100%);
             background-attachment: fixed;
             position: relative;
         }

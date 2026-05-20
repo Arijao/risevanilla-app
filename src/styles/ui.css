@@ -61,7 +61,7 @@
         }
 
         .btn-primary:hover {
-            box-shadow: 0 6px 16px rgba(0, 97, 164, 0.3);
+            box-shadow: 0 6px 16px rgba(152, 144, 168, 0.3);
         }
 
         .btn-secondary {
@@ -172,7 +172,7 @@
         .btn-icon.btn-primary:hover {
             background-color: var(--md-sys-color-primary);
             filter: brightness(1.1);
-            box-shadow: 0 4px 12px rgba(0, 97, 164, 0.3);
+            box-shadow: 0 4px 12px rgba(152, 144, 168, 0.3);
         }
 
         .btn-icon.btn-secondary {
@@ -184,7 +184,7 @@
         .btn-icon.btn-secondary:hover {
             background-color: var(--md-sys-color-secondary);
             color: var(--md-sys-color-on-secondary);
-            box-shadow: 0 4px 12px rgba(83, 95, 112, 0.3);
+            box-shadow: 0 4px 12px rgba(184, 176, 200, 0.3);
         }
 
         .btn-icon.btn-danger {
@@ -992,7 +992,7 @@
 
         .form-select:focus {
             border-color: var(--md-sys-color-primary);
-            box-shadow: 0 0 0 4px rgba(243, 229, 171, 0.1)!important;
+            box-shadow: 0 0 0 4px rgba(216, 210, 226, 0.1)!important;
             transform: translateY(-1px);
         }
 
@@ -1642,7 +1642,7 @@
 
         .stat-card::before {
             background: linear-gradient(90deg,
-                    rgba(243, 229, 171, 0.8),
+                    rgba(216, 210, 226, 0.8),
                     rgba(212, 175, 55, 0.8)) !important;
         }
 
@@ -1742,14 +1742,14 @@
         .form-select option:hover,
         .form-select option:focus,
         .form-select option:checked {
-            background-color: rgba(243, 229, 171, 0.8) !important;
+            background-color: rgba(216, 210, 226, 0.8) !important;
             color: white !important;
         }
 
         .form-select:focus {
             background: rgba(40, 40, 40, 0.95) !important;
-            border: 2px solid rgba(243, 229, 171, 0.8) !important;
-            box-shadow: 0 0 20px rgba(243, 229, 171, 0.5) !important;
+            border: 2px solid rgba(216, 210, 226, 0.8) !important;
+            box-shadow: 0 0 20px rgba(216, 210, 226, 0.5) !important;
         }
 
         .form-select option:disabled {
@@ -1763,8 +1763,8 @@
         .form-select:focus,
         .form-textarea:focus {
             background: rgba(255, 255, 255, 0.15) !important;
-            border: 2px solid rgba(243, 229, 171, 0.6) !important;
-            box-shadow: 0 0 20px rgba(243, 229, 171, 0.4) !important;
+            border: 2px solid rgba(216, 210, 226, 0.6) !important;
+            box-shadow: 0 0 20px rgba(216, 210, 226, 0.4) !important;
         }
 
         .form-label {
@@ -1780,12 +1780,12 @@
         }
 
         .btn-primary {
-            background: rgba(243, 229, 171, 0.7) !important;
+            background: rgba(216, 210, 226, 0.7) !important;
         }
 
         .btn-primary:hover {
-            background: rgba(243, 229, 171, 0.9) !important;
-            box-shadow: 0 8px 24px rgba(243, 229, 171, 0.5) !important;
+            background: rgba(216, 210, 226, 0.9) !important;
+            box-shadow: 0 8px 24px rgba(216, 210, 226, 0.5) !important;
         }
 
         .btn-outline {
@@ -1832,18 +1832,18 @@
             background: rgba(243, 229, 171, 0.8) !important;
             backdrop-filter: blur(15px) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            box-shadow: 0 8px 32px rgba(243, 229, 171, 0.5) !important;
+            box-shadow: 0 8px 32px rgba(216, 210, 226, 0.5) !important;
         }
 
         .fab:hover {
-            background: rgba(243, 229, 171, 1) !important;
-            box-shadow: 0 12px 40px rgba(243, 229, 171, 0.7) !important;
+            background: rgba(216, 210, 226, 1) !important;
+            box-shadow: 0 12px 40px rgba(216, 210, 226, 0.7) !important;
         }
 
         /* Logo Icon */
         .logo-icon {
             background: rgba(243, 229, 171, 0.8) !important;
-            box-shadow: 0 4px 16px rgba(243, 229, 171, 0.5) !important;
+            box-shadow: 0 4px 16px rgba(216, 210, 226, 0.5) !important;
         }
 
         /* Scrollbar */
@@ -1853,13 +1853,13 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(243, 229, 171, 0.7);
+            background: rgba(216, 210, 226, 0.7);
             border-radius: 10px;
             border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(243, 229, 171, 0.9);
+            background: rgba(216, 210, 226, 0.9);
         }
 
         /* Grid layout optimization for product-like cards */

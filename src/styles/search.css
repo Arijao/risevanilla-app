@@ -7,15 +7,15 @@
 
 mark.search-highlight {
   /* Glassmorphism */
-  background: rgba(245, 158, 11, 0.18);
+  background: rgba(152, 144, 168, 0.18);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  border: 1px solid rgba(245, 158, 11, 0.45);
+  border: 1px solid rgba(152, 144, 168, 0.45);
   border-radius: 4px;
   padding: 0 3px;
   /* Underline */
   text-decoration: underline;
-  text-decoration-color: rgba(245, 158, 11, 0.8);
+  text-decoration-color: rgba(152, 144, 168, 0.8);
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
   /* Texte */
@@ -27,34 +27,34 @@ mark.search-highlight {
 
 @keyframes sh-pop {
   from {
-    background: rgba(245, 158, 11, 0);
-    border-color: rgba(245, 158, 11, 0);
+    background: rgba(152, 144, 168, 0);
+    border-color: rgba(152, 144, 168, 0);
   }
   to {
-    background: rgba(245, 158, 11, 0.18);
-    border-color: rgba(245, 158, 11, 0.45);
+    background: rgba(152, 144, 168, 0.18);
+    border-color: rgba(152, 144, 168, 0.45);
   }
 }
 
 /* Thème sombre */
 [data-theme="dark"] mark.search-highlight {
-  background: rgba(251, 191, 36, 0.15);
-  border-color: rgba(251, 191, 36, 0.5);
-  text-decoration-color: rgba(251, 191, 36, 0.9);
-  color: #fef3c7;
+  background: rgba(216, 210, 226, 0.15);
+  border-color: rgba(216, 210, 226, 0.5);
+  text-decoration-color: rgba(216, 210, 226, 0.9);
+  color: #F0EDF4;
 }
 
 /* ── Champ actif ──────────────────────────────────────────── */
 
 .search-wrapper--active {
-  border-color: var(--color-primary, #10b981) !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12) !important;
+  border-color: var(--color-primary, #9890A8) !important;
+  box-shadow: 0 0 0 3px rgba(152, 144, 168, 0.12) !important;
 }
 
 .search-wrapper--active .material-icons,
 .search-wrapper--active .fa-search,
 .search-wrapper--active .fa-magnifying-glass {
-  color: var(--color-primary, #10b981);
+  color: var(--color-primary, #9890A8);
   transition: color 0.2s;
 }
 
@@ -79,7 +79,7 @@ mark.search-highlight {
 }
 
 .search-clear-btn:hover {
-  color: var(--color-primary, #10b981);
+  color: var(--color-primary, #9890A8);
 }
 
 /* ── Badge résultats ──────────────────────────────────────── */
@@ -91,9 +91,9 @@ mark.search-highlight {
   border-radius: 10px;
   font-size: 11px;
   font-weight: 600;
-  background: rgba(16, 185, 129, 0.12);
-  color: var(--color-primary, #10b981);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba(152, 144, 168, 0.12);
+  color: var(--color-primary, #9890A8);
+  border: 1px solid rgba(152, 144, 168, 0.2);
   animation: sh-badge 0.15s ease-out;
   white-space: nowrap;
 }

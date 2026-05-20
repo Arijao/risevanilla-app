@@ -584,7 +584,7 @@ function openQualityDetailModal() {
                             <span style="font-weight:500;">${row.quality}</span>
                             <span style="
                                 font-size:10px;padding:1px 7px;border-radius:20px;
-                                background:${row.vanilleType === 'verte' ? 'rgba(76,175,80,.18)' : 'rgba(103,80,164,.10)'};
+                                background:${row.vanilleType === 'verte' ? 'rgba(152,144,168,.18)' : 'rgba(152,144,168,.10)'};
                                 color:${row.vanilleType === 'verte' ? '#4caf50' : '#6750a4'};
                                 font-weight:600;white-space:nowrap;">
                                 ${row.vanilleType === 'verte' ? 'Verte' : 'Préparée'}

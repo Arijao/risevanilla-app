@@ -103,7 +103,7 @@ function showCollectorDetails(collectorId) {
     const recSummary = `
         <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
             <div style="flex:1;min-width:160px;display:flex;align-items:center;gap:10px;
-                        padding:10px 14px;border-radius:10px;background:rgba(76,175,80,.13);">
+                        padding:10px 14px;border-radius:10px;background:rgba(152,144,168,.13);">
                 <span class="material-icons" style="color:#4caf50;font-size:18px;">grass</span>
                 <div>
                     <div style="font-size:10px;font-weight:700;color:#4caf50;text-transform:uppercase;letter-spacing:.4px;">Vanille Verte</div>
@@ -112,7 +112,7 @@ function showCollectorDetails(collectorId) {
                 </div>
             </div>
             <div style="flex:1;min-width:160px;display:flex;align-items:center;gap:10px;
-                        padding:10px 14px;border-radius:10px;background:rgba(103,80,164,.10);">
+                        padding:10px 14px;border-radius:10px;background:rgba(152,144,168,.10);">
                 <span class="material-icons" style="color:var(--md-sys-color-primary);font-size:18px;">verified</span>
                 <div>
                     <div style="font-size:10px;font-weight:700;color:var(--md-sys-color-primary);text-transform:uppercase;letter-spacing:.4px;">Vanille Préparée</div>
@@ -138,8 +138,8 @@ function showCollectorDetails(collectorId) {
         receptions.sort((a,b)=>new Date(a.date)-new Date(b.date)).map(r => {
             const vt = getVanilleType(r.quality);
             const badge = vt === 'verte'
-                ? '<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(76,175,80,.18);color:#4caf50;font-weight:600;"><span class="material-icons" style="font-size:11px;">grass</span>Verte</span>'
-                : '<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(103,80,164,.10);color:var(--md-sys-color-primary);font-weight:600;"><span class="material-icons" style="font-size:11px;">verified</span>Préparée</span>';
+                ? '<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(152,144,168,.18);color:#9890A8;font-weight:600;"><span class="material-icons" style="font-size:11px;">grass</span>Verte</span>'
+                : '<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(152,144,168,.10);color:var(--md-sys-color-primary);font-weight:600;"><span class="material-icons" style="font-size:11px;">verified</span>Préparée</span>';
             return [formatDate(r.date), r.netWeight.toFixed(2)+' kg', r.quality, badge, formatCurrency(r.price), formatCurrency(r.totalValue)];
         }),
         `<td colspan="5" style="${tdStyle}">TOTAL</td><td style="${tdStyle}text-align:right;">${formatCurrency(totalDeliveries)}</td>`
@@ -171,7 +171,7 @@ function showCollectorDetails(collectorId) {
                     <div style="flex-shrink:0;">
                         <img src="${collector.photo}" alt="${collector.name}"
                              style="width:80px;height:80px;border-radius:12px;object-fit:cover;
-                                    border:3px solid rgba(255,255,255,0.35);
+                                    border:3px solid rgba(240,237,244,0.35);
                                     box-shadow:0 4px 16px rgba(0,0,0,0.25);">
                     </div>` : ''}
                     <div style="flex:1;min-width:0;">

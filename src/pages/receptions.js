@@ -100,12 +100,12 @@ function addAdjustmentRow() {
     const div = document.createElement('div');
     div.id = rowId;
     div.className = 'adjustment-row';
-    div.style.cssText = 'background:rgba(80,80,80,.3);padding:16px;border-radius:12px;margin-bottom:16px;position:relative;';
+    div.style.cssText = 'background:rgba(120,128,160,.3);padding:16px;border-radius:12px;margin-bottom:16px;position:relative;';
     div.innerHTML = `
         <button type="button" class="btn btn-icon btn-danger" onclick="removeAdjustmentRow('${rowId}')" style="position:absolute;top:8px;right:8px;width:32px;height:32px;">
             <span class="material-icons" style="font-size:18px;">close</span>
         </button>
-        <h4 style="margin-bottom:12px;font-size:14px;color:rgba(255,255,255,.9);">Ajustement #${adjustmentCounter}</h4>
+        <h4 style="margin-bottom:12px;font-size:14px;color:rgba(240,237,244,.9);">Ajustement #${adjustmentCounter}</h4>
         <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label required">Nouvelle Qualité</label>
@@ -119,7 +119,7 @@ function addAdjustmentRow() {
             <div class="form-group" style="margin-bottom:0;"><label class="form-label">Tare (kg)</label><input type="number" class="form-input adj-tare" data-row="${rowId}" step="0.01" min="0" placeholder="Ex: 5"></div>
             <div class="form-group" style="margin-bottom:0;"><label class="form-label required">Poids Net (kg)</label><input type="number" class="form-input adj-net" data-row="${rowId}" step="0.01" min="0.01" required placeholder="Ex: 295"></div>
             <div class="form-group" style="margin-bottom:0;"><label class="form-label">Prix/kg (Ar)</label><input type="number" class="form-input adj-price" data-row="${rowId}" step="1" min="0" placeholder="Auto selon qualité"></div>
-            <div class="form-group" style="margin-bottom:0;"><label class="form-label">Valeur Totale</label><input type="text" class="form-input adj-total" data-row="${rowId}" readonly style="background:rgba(255,255,255,.1);cursor:not-allowed;" placeholder="Calculé auto"></div>
+            <div class="form-group" style="margin-bottom:0;"><label class="form-label">Valeur Totale</label><input type="text" class="form-input adj-total" data-row="${rowId}" readonly style="background:rgba(240,237,244,.1);cursor:not-allowed;" placeholder="Calculé auto"></div>
         </div>
         <div class="form-group" style="margin-top:12px;margin-bottom:0;"><label class="form-label">Note / Raison</label><input type="text" class="form-input adj-note" data-row="${rowId}" placeholder="Ex: Tri manuel — produits abîmés"></div>`;
 

@@ -257,7 +257,7 @@ function _ensurePromptModal() {
     overlay.id = 'prompt-modal-overlay';
     overlay.innerHTML = `
         <div class="confirm-modal-box" role="dialog" aria-modal="true" aria-labelledby="prompt-modal-title">
-            <div class="confirm-modal-icon-wrap" style="background:rgba(0,97,164,0.12);color:var(--md-sys-color-primary);box-shadow:0 0 0 8px rgba(0,97,164,0.06);">
+            <div class="confirm-modal-icon-wrap" style="background:rgba(152,144,168,0.12);color:var(--md-sys-color-primary);box-shadow:0 0 0 8px rgba(152,144,168,0.06);">
                 <span class="material-icons" id="prompt-modal-icon">edit</span>
             </div>
             <h2 class="confirm-modal-title" id="prompt-modal-title">Nouvelle entrée</h2>
@@ -461,12 +461,12 @@ function _ensureConfirmModal() {
             box-shadow: 0 0 0 8px rgba(186, 26, 26, 0.06);
         }
         #confirm-modal-overlay[data-variant="warning"] .confirm-modal-icon-wrap {
-            background: rgba(245, 158, 11, 0.12);
+            background: rgba(152,144,168,0.12);
             color: #f59e0b;
             box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.06);
         }
         #confirm-modal-overlay[data-variant="info"] .confirm-modal-icon-wrap {
-            background: rgba(0, 97, 164, 0.12);
+            background: rgba(152,144,168,0.12);
             color: var(--md-sys-color-primary);
             box-shadow: 0 0 0 8px rgba(0, 97, 164, 0.06);
         }

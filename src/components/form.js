@@ -724,7 +724,7 @@ function renderQuickWeights() {
                        value="${indivTare}"
                        min="0" step="0.01"
                        title="Tare pour ce poids (kg)"
-                       style="width:46px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.35);
+                       style="width:46px;background:rgba(0,0,0,.25);border:1px solid rgba(240,237,244,.35);
                               border-radius:6px;color:inherit;font-size:11px;padding:1px 4px;
                               text-align:center;-moz-appearance:textfield;"
                        oninput="updateIndividualTare(${i}, this.value)"
