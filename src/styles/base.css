@@ -1,432 +1,129 @@
 /* ============================================================
- * BASE.CSS — Design Tokens, Reset, Typography
- * RISEVANILLA - Gestion de Collecte de Vanille
- * ============================================================ */
+BASE.CSS — Design Tokens, Reset, Typography
+RISEVANILLA - Identité "NEIGE & BRUME" + "CIEL & FOND"
+============================================================ */
+:root {
+    /* --- PALETTE NEIGE & BRUME + CIEL & FOND (Thème Clair) --- */
+    --md-sys-color-primary: #A78EB8; /* Mauve profond (Accent principal) */
+    --md-sys-color-on-primary: #F0EDF4; /* Blanc neige */
+    --md-sys-color-primary-container: #EDD6E8; /* Lilas pâle */
+    --md-sys-color-on-primary-container: #504858; /* Gris sombre */
+    
+    --md-sys-color-secondary: #B89EC4; /* Mauve moyen */
+    --md-sys-color-on-secondary: #F0EDF4; 
+    --md-sys-color-secondary-container: #DEBBD8; /* Rose lavande */
+    --md-sys-color-on-secondary-container: #504858; 
+    
+    --md-sys-color-tertiary: #9890A8; /* Ardoise froide */
+    --md-sys-color-on-tertiary: #F0EDF4; 
+    --md-sys-color-tertiary-container: #D8D2E2; /* Givre */
+    --md-sys-color-on-tertiary-container: #504858; 
+    
+    --md-sys-color-error: #ba1a1a;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-error-container: #ffdad6;
+    --md-sys-color-on-error-container: #410002;
+    
+    --md-sys-color-success: #006d3a;
+    --md-sys-color-on-success: #ffffff;
+    --md-sys-color-success-container: #98f7b5;
+    --md-sys-color-on-success-container: #00210e;
+    
+    --md-sys-color-background: #F0EDF4; /* Blanc neige (Fond global) */
+    --md-sys-color-on-background: #504858; /* Gris sombre (Texte global) */
+    --md-sys-color-surface: #F0EDF4; /* Blanc neige */
+    --md-sys-color-on-surface: #504858; /* Gris sombre */
+    --md-sys-color-surface-variant: #D8D2E2; /* Givre (Surfaces secondaires) */
+    --md-sys-color-on-surface-variant: #706878; /* Granite violet (Texte secondaire) */
+    --md-sys-color-outline: #9890A8; /* Ardoise froide */
+    --md-sys-color-outline-variant: #B8B0C8; /* Lilas gris (Bordures) */
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-inverse-surface: #504858;
+    --md-sys-color-inverse-on-surface: #F0EDF4;
+    --md-sys-color-inverse-primary: #D8D2E2;
+    --md-sys-color-surface-tint: #A78EB8;
+}
 
-        :root {
-            --md-sys-color-primary: #9890A8;
-            --md-sys-color-on-primary: #F0EDF4;
-            --md-sys-color-primary-container: #D8D2E2;
-            --md-sys-color-on-primary-container: #504858;
-            --md-sys-color-secondary: #B8B0C8;
-            --md-sys-color-on-secondary: #F0EDF4;
-            --md-sys-color-secondary-container: #E0D9F0;
-            --md-sys-color-on-secondary-container: #504858;
-            --md-sys-color-tertiary: #706878;
-            --md-sys-color-on-tertiary: #F0EDF4;
-            --md-sys-color-tertiary-container: #D0C9E0;
-            --md-sys-color-on-tertiary-container: #504858;
-            --md-sys-color-error: #ba1a1a;
-            --md-sys-color-on-error: #ffffff;
-            --md-sys-color-error-container: #ffdad6;
-            --md-sys-color-on-error-container: #410002;
-            --md-sys-color-success: #7B5EA7;
-            --md-sys-color-on-success: #F0EDF4;
-            --md-sys-color-success-container: #EDD6E8;
-            --md-sys-color-on-success-container: #3A2D4A;
-            --md-sys-color-background: #F0EDF4;
-            --md-sys-color-on-background: #504858;
-            --md-sys-color-surface: #F0EDF4;
-            --md-sys-color-on-surface: #504858;
-            --md-sys-color-surface-variant: #D8D2E2;
-            --md-sys-color-on-surface-variant: #706878;
-            --md-sys-color-outline: #9890A8;
-            --md-sys-color-outline-variant: #D8D2E2;
-            --md-sys-color-shadow: #000000;
-            --md-sys-color-scrim: #000000;
-            --md-sys-color-inverse-surface: #5D5566;
-            --md-sys-color-inverse-on-surface: #F0EDF4;
-            --md-sys-color-inverse-primary: #D8D2E2;
-            --md-sys-color-surface-tint: #9890A8;
-        }
+[data-theme="dark"] {
+    /* --- Thème Sombre adapté (Gris sombre & Granite) --- */
+    --md-sys-color-primary: #C9AECF; /* Mauve clair (Plus lumineux pour le sombre) */
+    --md-sys-color-on-primary: #504858;
+    --md-sys-color-primary-container: #A78EB8; /* Mauve profond */
+    --md-sys-color-on-primary-container: #F0EDF4;
+    
+    --md-sys-color-secondary: #B89EC4;
+    --md-sys-color-on-secondary: #504858;
+    --md-sys-color-secondary-container: #706878; /* Granite violet */
+    --md-sys-color-on-secondary-container: #F0EDF4;
+    
+    --md-sys-color-tertiary: #9890A8;
+    --md-sys-color-on-tertiary: #504858;
+    --md-sys-color-tertiary-container: #6A6677;
+    --md-sys-color-on-tertiary-container: #F0EDF4;
+    
+    --md-sys-color-error: #ffb4ab;
+    --md-sys-color-on-error: #690005;
+    --md-sys-color-error-container: #93000a;
+    --md-sys-color-on-error-container: #ffdad6;
+    
+    --md-sys-color-success: #a5d6a7;
+    --md-sys-color-on-success: #1b5e20;
+    --md-sys-color-success-container: #2e7d32;
+    --md-sys-color-on-success-container: #e8f5e8;
+    
+    --md-sys-color-background: #504858; /* Gris sombre */
+    --md-sys-color-on-background: #F0EDF4;
+    --md-sys-color-surface: #5D5566; 
+    --md-sys-color-on-surface: #F0EDF4;
+    --md-sys-color-surface-variant: #6A6677;
+    --md-sys-color-on-surface-variant: #D8D2E2;
+    --md-sys-color-outline: #9890A8;
+    --md-sys-color-outline-variant: #706878;
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-inverse-surface: #F0EDF4;
+    --md-sys-color-inverse-on-surface: #504858;
+    --md-sys-color-inverse-primary: #A78EB8;
+    --md-sys-color-surface-tint: #C9AECF;
+}
 
-        [data-theme="dark"] {
-            --md-sys-color-primary: #D8D2E2; /* Givre */
-            --md-sys-color-on-primary: #504858;
-            --md-sys-color-primary-container: #706878;
-            --md-sys-color-on-primary-container: #F0EDF4;
-            --md-sys-color-secondary: #B8B0C8;
-            --md-sys-color-on-secondary: #504858;
-            --md-sys-color-secondary-container: #6A6677;
-            --md-sys-color-on-secondary-container: #F0EDF4;
-            --md-sys-color-tertiary: #B8B0C8;
-            --md-sys-color-on-tertiary: #504858;
-            --md-sys-color-tertiary-container: #706878;
-            --md-sys-color-on-tertiary-container: #F0EDF4;
-            --md-sys-color-error: #ffb4ab;
-            --md-sys-color-on-error: #690005;
-            --md-sys-color-error-container: #93000a;
-            --md-sys-color-on-error-container: #ffdad6;
-            --md-sys-color-success: #C9AECF;
-            --md-sys-color-on-success: #2D2438;
-            --md-sys-color-success-container: #5A4870;
-            --md-sys-color-on-success-container: #EDD6E8;
-            --md-sys-color-background: #2F2A3A; /* Violet nuit profond */
-            --md-sys-color-on-background: #F0EDF4;
-            --md-sys-color-surface: #3A3447;
-            --md-sys-color-on-surface: #F0EDF4;
-            --md-sys-color-surface-variant: #47405A;
-            --md-sys-color-on-surface-variant: #D8D2E2;
-            --md-sys-color-outline: #9890A8;
-            --md-sys-color-outline-variant: #6A6677;
-            --md-sys-color-shadow: #000000;
-            --md-sys-color-scrim: #000000;
-            --md-sys-color-inverse-surface: #F0EDF4;
-            --md-sys-color-inverse-on-surface: #504858;
-            --md-sys-color-inverse-primary: #9890A8;
-            --md-sys-color-surface-tint: #D8D2E2;
-        }
+/* Nettoyage des anciennes palettes identiques pour utiliser les variables racines */
+[data-palette="deep-blue"], [data-palette="emerald"], [data-palette="deep-teal"], 
+[data-palette="amber"], [data-palette="rose"], [data-palette="violet"], 
+[data-palette="teal"], [data-palette="brilliant-green"], [data-palette="olive"], 
+[data-palette="apricot"], [data-palette="future-dusk"] {
+    /* Ces palettes héritent désormais directement de :root pour une cohérence "NEIGE & BRUME" */
+}
 
-/* ============================================================
- * PALETTES DE COULEURS — 6 thèmes chromatiques prédéfinis
- * Seuls les tokens primaire/secondaire/tertiaire sont redéfinis.
- * Compatible avec [data-theme="light"] et [data-theme="dark"].
- * ============================================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        /* ── Blue (défaut — défini dans :root, aucun bloc nécessaire) ── */
-
-        /* ── Deep Blue (Redesigned with NEIGE & BRUME) ── */
-        [data-palette="deep-blue"] {
-            --md-sys-color-primary:                #9890A8;
-            --md-sys-color-on-primary:             #F0EDF4;
-            --md-sys-color-primary-container:      #D8D2E2;
-            --md-sys-color-on-primary-container:   #504858;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #F0EDF4;
-            --md-sys-color-secondary-container:    #E0D9F0;
-            --md-sys-color-on-secondary-container: #504858;
-            --md-sys-color-tertiary:               #706878;
-            --md-sys-color-on-tertiary:            #F0EDF4;
-            --md-sys-color-tertiary-container:     #D0C9E0;
-            --md-sys-color-on-tertiary-container:  #504858;
-            --md-sys-color-surface-tint:           #9890A8;
-            --md-sys-color-inverse-primary:        #D8D2E2;
-        }
-        [data-theme="dark"][data-palette="deep-blue"] {
-            --md-sys-color-primary:                #D8D2E2;
-            --md-sys-color-on-primary:             #504858;
-            --md-sys-color-primary-container:      #706878;
-            --md-sys-color-on-primary-container:   #F0EDF4;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #504858;
-            --md-sys-color-secondary-container:    #6A6677;
-            --md-sys-color-on-secondary-container: #F0EDF4;
-            --md-sys-color-tertiary:               #B8B0C8;
-            --md-sys-color-on-tertiary:            #504858;
-            --md-sys-color-tertiary-container:     #706878;
-            --md-sys-color-on-tertiary-container:  #F0EDF4;
-            --md-sys-color-surface-tint:           #D8D2E2;
-            --md-sys-color-inverse-primary:        #9890A8;
-        }
-[data-palette="emerald"] {
-            --md-sys-color-primary:                #9890A8;
-            --md-sys-color-on-primary:             #F0EDF4;
-            --md-sys-color-primary-container:      #D8D2E2;
-            --md-sys-color-on-primary-container:   #504858;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #F0EDF4;
-            --md-sys-color-secondary-container:    #E0D9F0;
-            --md-sys-color-on-secondary-container: #504858;
-            --md-sys-color-tertiary:               #706878;
-            --md-sys-color-on-tertiary:            #F0EDF4;
-            --md-sys-color-tertiary-container:     #D0C9E0;
-            --md-sys-color-on-tertiary-container:  #504858;
-            --md-sys-color-surface-tint:           #9890A8;
-            --md-sys-color-inverse-primary:        #D8D2E2;
-        }
-        [data-theme="dark"][data-palette="emerald"] {
-            --md-sys-color-primary:                #D8D2E2;
-            --md-sys-color-on-primary:             #504858;
-            --md-sys-color-primary-container:      #706878;
-            --md-sys-color-on-primary-container:   #F0EDF4;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #504858;
-            --md-sys-color-secondary-container:    #6A6677;
-            --md-sys-color-on-secondary-container: #F0EDF4;
-            --md-sys-color-tertiary:               #B8B0C8;
-            --md-sys-color-on-tertiary:            #504858;
-            --md-sys-color-tertiary-container:     #706878;
-            --md-sys-color-on-tertiary-container:  #F0EDF4;
-            --md-sys-color-surface-tint:           #D8D2E2;
-            --md-sys-color-inverse-primary:        #9890A8;
-        }
-[data-palette="deep-teal"] {
-            --md-sys-color-primary:                #9890A8;
-            --md-sys-color-on-primary:             #F0EDF4;
-            --md-sys-color-primary-container:      #D8D2E2;
-            --md-sys-color-on-primary-container:   #504858;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #F0EDF4;
-            --md-sys-color-secondary-container:    #E0D9F0;
-            --md-sys-color-on-secondary-container: #504858;
-            --md-sys-color-tertiary:               #706878;
-            --md-sys-color-on-tertiary:            #F0EDF4;
-            --md-sys-color-tertiary-container:     #D0C9E0;
-            --md-sys-color-on-tertiary-container:  #504858;
-            --md-sys-color-surface-tint:           #9890A8;
-            --md-sys-color-inverse-primary:        #D8D2E2;
-        }
-        [data-theme="dark"][data-palette="deep-teal"] {
-            --md-sys-color-primary:                #D8D2E2;
-            --md-sys-color-on-primary:             #504858;
-            --md-sys-color-primary-container:      #706878;
-            --md-sys-color-on-primary-container:   #F0EDF4;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #504858;
-            --md-sys-color-secondary-container:    #6A6677;
-            --md-sys-color-on-secondary-container: #F0EDF4;
-            --md-sys-color-tertiary:               #B8B0C8;
-            --md-sys-color-on-tertiary:            #504858;
-            --md-sys-color-tertiary-container:     #706878;
-            --md-sys-color-on-tertiary-container:  #F0EDF4;
-            --md-sys-color-surface-tint:           #D8D2E2;
-            --md-sys-color-inverse-primary:        #9890A8;
-        }
-
-        /* ── Amber (Redesigned with NEIGE & BRUME) ── */
-        [data-palette="amber"] {
-            --md-sys-color-primary:                #9890A8;
-            --md-sys-color-on-primary:             #F0EDF4;
-            --md-sys-color-primary-container:      #D8D2E2;
-            --md-sys-color-on-primary-container:   #504858;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #F0EDF4;
-            --md-sys-color-secondary-container:    #E0D9F0;
-            --md-sys-color-on-secondary-container: #504858;
-            --md-sys-color-tertiary:               #706878;
-            --md-sys-color-on-tertiary:            #F0EDF4;
-            --md-sys-color-tertiary-container:     #D0C9E0;
-            --md-sys-color-on-tertiary-container:  #504858;
-            --md-sys-color-surface-tint:           #9890A8;
-            --md-sys-color-inverse-primary:        #D8D2E2;
-        }
-        [data-theme="dark"][data-palette="amber"] {
-            --md-sys-color-primary:                #D8D2E2;
-            --md-sys-color-on-primary:             #504858;
-            --md-sys-color-primary-container:      #706878;
-            --md-sys-color-on-primary-container:   #F0EDF4;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #504858;
-            --md-sys-color-secondary-container:    #6A6677;
-            --md-sys-color-on-secondary-container: #F0EDF4;
-            --md-sys-color-tertiary:               #B8B0C8;
-            --md-sys-color-on-tertiary:            #504858;
-            --md-sys-color-tertiary-container:     #706878;
-            --md-sys-color-on-tertiary-container:  #F0EDF4;
-            --md-sys-color-surface-tint:           #D8D2E2;
-            --md-sys-color-inverse-primary:        #9890A8;
-        }
-
-        /* ── Rose (Redesigned with NEIGE & BRUME) ── */
-        [data-palette="rose"] {
-            --md-sys-color-primary:                #9890A8;
-            --md-sys-color-on-primary:             #F0EDF4;
-            --md-sys-color-primary-container:      #D8D2E2;
-            --md-sys-color-on-primary-container:   #504858;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #F0EDF4;
-            --md-sys-color-secondary-container:    #E0D9F0;
-            --md-sys-color-on-secondary-container: #504858;
-            --md-sys-color-tertiary:               #706878;
-            --md-sys-color-on-tertiary:            #F0EDF4;
-            --md-sys-color-tertiary-container:     #D0C9E0;
-            --md-sys-color-on-tertiary-container:  #504858;
-            --md-sys-color-surface-tint:           #9890A8;
-            --md-sys-color-inverse-primary:        #D8D2E2;
-        }
-        [data-theme="dark"][data-palette="rose"] {
-            --md-sys-color-primary:                #D8D2E2;
-            --md-sys-color-on-primary:             #504858;
-            --md-sys-color-primary-container:      #706878;
-            --md-sys-color-on-primary-container:   #F0EDF4;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #504858;
-            --md-sys-color-secondary-container:    #6A6677;
-            --md-sys-color-on-secondary-container: #F0EDF4;
-            --md-sys-color-tertiary:               #B8B0C8;
-            --md-sys-color-on-tertiary:            #504858;
-            --md-sys-color-tertiary-container:     #706878;
-            --md-sys-color-on-tertiary-container:  #F0EDF4;
-            --md-sys-color-surface-tint:           #D8D2E2;
-            --md-sys-color-inverse-primary:        #9890A8;
-        }
-
-        /* ── Violet (Redesigned with NEIGE & BRUME) ── */
-        [data-palette="violet"] {
-            --md-sys-color-primary:                #9890A8;
-            --md-sys-color-on-primary:             #F0EDF4;
-            --md-sys-color-primary-container:      #D8D2E2;
-            --md-sys-color-on-primary-container:   #504858;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #F0EDF4;
-            --md-sys-color-secondary-container:    #E0D9F0;
-            --md-sys-color-on-secondary-container: #504858;
-            --md-sys-color-tertiary:               #706878;
-            --md-sys-color-on-tertiary:            #F0EDF4;
-            --md-sys-color-tertiary-container:     #D0C9E0;
-            --md-sys-color-on-tertiary-container:  #504858;
-            --md-sys-color-surface-tint:           #9890A8;
-            --md-sys-color-inverse-primary:        #D8D2E2;
-        }
-        [data-theme="dark"][data-palette="violet"] {
-            --md-sys-color-primary:                #D8D2E2;
-            --md-sys-color-on-primary:             #504858;
-            --md-sys-color-primary-container:      #706878;
-            --md-sys-color-on-primary-container:   #F0EDF4;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #504858;
-            --md-sys-color-secondary-container:    #6A6677;
-            --md-sys-color-on-secondary-container: #F0EDF4;
-            --md-sys-color-tertiary:               #B8B0C8;
-            --md-sys-color-on-tertiary:            #504858;
-            --md-sys-color-tertiary-container:     #706878;
-            --md-sys-color-on-tertiary-container:  #F0EDF4;
-            --md-sys-color-surface-tint:           #D8D2E2;
-            --md-sys-color-inverse-primary:        #9890A8;
-        }
-
-        /* ── Teal (Redesigned with NEIGE & BRUME) ── */
-        [data-palette="teal"] {
-            --md-sys-color-primary:                #9890A8;
-            --md-sys-color-on-primary:             #F0EDF4;
-            --md-sys-color-primary-container:      #D8D2E2;
-            --md-sys-color-on-primary-container:   #504858;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #F0EDF4;
-            --md-sys-color-secondary-container:    #E0D9F0;
-            --md-sys-color-on-secondary-container: #504858;
-            --md-sys-color-tertiary:               #706878;
-            --md-sys-color-on-tertiary:            #F0EDF4;
-            --md-sys-color-tertiary-container:     #D0C9E0;
-            --md-sys-color-on-tertiary-container:  #504858;
-            --md-sys-color-surface-tint:           #9890A8;
-            --md-sys-color-inverse-primary:        #D8D2E2;
-        }
-        [data-theme="dark"][data-palette="teal"] {
-            --md-sys-color-primary:                #D8D2E2;
-            --md-sys-color-on-primary:             #504858;
-            --md-sys-color-primary-container:      #706878;
-            --md-sys-color-on-primary-container:   #F0EDF4;
-            --md-sys-color-secondary:              #B8B0C8;
-            --md-sys-color-on-secondary:           #504858;
-            --md-sys-color-secondary-container:    #6A6677;
-            --md-sys-color-on-secondary-container: #F0EDF4;
-            --md-sys-color-tertiary:               #B8B0C8;
-            --md-sys-color-on-tertiary:            #504858;
-            --md-sys-color-tertiary-container:     #706878;
-            --md-sys-color-on-tertiary-container:  #F0EDF4;
-            --md-sys-color-surface-tint:           #D8D2E2;
-            --md-sys-color-inverse-primary:        #9890A8;
-        }
-
-        /* ── Brilliant Green (Redesigned with NEIGE & BRUME) ── */
-        [data-palette="brilliant-green"] {
-        --md-sys-color-primary: #9890A8; --md-sys-color-on-primary: #F0EDF4;
-        --md-sys-color-primary-container: #D8D2E2; --md-sys-color-on-primary-container: #504858;
-        --md-sys-color-secondary: #B8B0C8; --md-sys-color-on-secondary: #F0EDF4;
-        --md-sys-color-secondary-container: #E0D9F0; --md-sys-color-on-secondary-container: #504858;
-        --md-sys-color-tertiary: #706878; --md-sys-color-on-tertiary: #F0EDF4;
-        --md-sys-color-tertiary-container: #D0C9E0; --md-sys-color-on-tertiary-container: #504858;
-        --md-sys-color-surface-tint: #9890A8; --md-sys-color-inverse-primary: #D8D2E2;
-        }
-        [data-theme="dark"][data-palette="brilliant-green"] {
-        --md-sys-color-primary: #D8D2E2; --md-sys-color-on-primary: #504858;
-        --md-sys-color-primary-container: #706878; --md-sys-color-on-primary-container: #F0EDF4;
-        --md-sys-color-secondary: #B8B0C8; --md-sys-color-on-secondary: #504858;
-        --md-sys-color-secondary-container: #6A6677; --md-sys-color-on-secondary-container: #F0EDF4;
-        --md-sys-color-tertiary: #B8B0C8; --md-sys-color-on-tertiary: #504858;
-        --md-sys-color-tertiary-container: #706878; --md-sys-color-on-tertiary-container: #F0EDF4;
-        --md-sys-color-surface-tint: #D8D2E2; --md-sys-color-inverse-primary: #9890A8;
-        }
-
-        /* ── Olive (Redesigned with NEIGE & BRUME) ── */
-        [data-palette="olive"] {
-        --md-sys-color-primary: #9890A8; --md-sys-color-on-primary: #F0EDF4;
-        --md-sys-color-primary-container: #D8D2E2; --md-sys-color-on-primary-container: #504858;
-        --md-sys-color-secondary: #B8B0C8; --md-sys-color-on-secondary: #F0EDF4;
-        --md-sys-color-secondary-container: #E0D9F0; --md-sys-color-on-secondary-container: #504858;
-        --md-sys-color-tertiary: #706878; --md-sys-color-on-tertiary: #F0EDF4;
-        --md-sys-color-tertiary-container: #D0C9E0; --md-sys-color-on-tertiary-container: #504858;
-        --md-sys-color-surface-tint: #9890A8; --md-sys-color-inverse-primary: #D8D2E2;
-        }
-        [data-theme="dark"][data-palette="olive"] {
-        --md-sys-color-primary: #D8D2E2; --md-sys-color-on-primary: #504858;
-        --md-sys-color-primary-container: #706878; --md-sys-color-on-primary-container: #F0EDF4;
-        --md-sys-color-secondary: #B8B0C8; --md-sys-color-on-secondary: #504858;
-        --md-sys-color-secondary-container: #6A6677; --md-sys-color-on-secondary-container: #F0EDF4;
-        --md-sys-color-tertiary: #B8B0C8; --md-sys-color-on-tertiary: #504858;
-        --md-sys-color-tertiary-container: #706878; --md-sys-color-on-tertiary-container: #F0EDF4;
-        --md-sys-color-surface-tint: #D8D2E2; --md-sys-color-inverse-primary: #9890A8;
-        }
-
-        /* ── Apricot (Redesigned with NEIGE & BRUME) ── */
-        [data-palette="apricot"] {
-        --md-sys-color-primary: #9890A8; --md-sys-color-on-primary: #F0EDF4;
-        --md-sys-color-primary-container: #D8D2E2; --md-sys-color-on-primary-container: #504858;
-        --md-sys-color-secondary: #B8B0C8; --md-sys-color-on-secondary: #F0EDF4;
-        --md-sys-color-secondary-container: #E0D9F0; --md-sys-color-on-secondary-container: #504858;
-        --md-sys-color-tertiary: #706878; --md-sys-color-on-tertiary: #F0EDF4;
-        --md-sys-color-tertiary-container: #D0C9E0; --md-sys-color-on-tertiary-container: #504858;
-        --md-sys-color-surface-tint: #9890A8; --md-sys-color-inverse-primary: #D8D2E2;
-        }
-        [data-theme="dark"][data-palette="apricot"] {
-        --md-sys-color-primary: #D8D2E2; --md-sys-color-on-primary: #504858;
-        --md-sys-color-primary-container: #706878; --md-sys-color-on-primary-container: #F0EDF4;
-        --md-sys-color-secondary: #B8B0C8; --md-sys-color-on-secondary: #504858;
-        --md-sys-color-secondary-container: #6A6677; --md-sys-color-on-secondary-container: #F0EDF4;
-        --md-sys-color-tertiary: #B8B0C8; --md-sys-color-on-tertiary: #504858;
-        --md-sys-color-tertiary-container: #706878; --md-sys-color-on-tertiary-container: #F0EDF4;
-        --md-sys-color-surface-tint: #D8D2E2; --md-sys-color-inverse-primary: #9890A8;
-        }
-
-        /* ── Future Dusk (Redesigned with NEIGE & BRUME) ── */
-        [data-palette="future-dusk"] {
-        --md-sys-color-primary: #9890A8; --md-sys-color-on-primary: #F0EDF4;
-        --md-sys-color-primary-container: #D8D2E2; --md-sys-color-on-primary-container: #504858;
-        --md-sys-color-secondary: #B8B0C8; --md-sys-color-on-secondary: #F0EDF4;
-        --md-sys-color-secondary-container: #E0D9F0; --md-sys-color-on-secondary-container: #504858;
-        --md-sys-color-tertiary: #706878; --md-sys-color-on-tertiary: #F0EDF4;
-        --md-sys-color-tertiary-container: #D0C9E0; --md-sys-color-on-tertiary-container: #504858;
-        --md-sys-color-surface-tint: #9890A8; --md-sys-color-inverse-primary: #D8D2E2;
-        }
-        [data-theme="dark"][data-palette="future-dusk"] {
-        --md-sys-color-primary: #D8D2E2; --md-sys-color-on-primary: #504858;
-        --md-sys-color-primary-container: #706878; --md-sys-color-on-primary-container: #F0EDF4;
-        --md-sys-color-secondary: #B8B0C8; --md-sys-color-on-secondary: #504858;
-        --md-sys-color-secondary-container: #6A6677; --md-sys-color-on-secondary-container: #F0EDF4;
-        --md-sys-color-tertiary: #B8B0C8; --md-sys-color-on-tertiary: #504858;
-        --md-sys-color-tertiary-container: #706878; --md-sys-color-on-tertiary-container: #F0EDF4;
-        --md-sys-color-surface-tint: #D8D2E2; --md-sys-color-inverse-primary: #9890A8;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--md-sys-color-background);
-            color: var(--md-sys-color-on-background);
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--md-sys-color-background);
+    color: var(--md-sys-color-on-background);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 14px;
+}
 
 /* ============================================================
- * SCROLLBAR
- * ============================================================ */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--md-sys-color-surface-variant);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background-color: var(--md-sys-color-primary);
-            border-radius: 10px;
-            border: 2px solid var(--md-sys-color-surface-variant);
-        }
+SCROLLBAR
+============================================================ */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--md-sys-color-surface-variant);
+}
+::-webkit-scrollbar-thumb {
+    background-color: var(--md-sys-color-outline);
+    border-radius: 10px;
+    border: 2px solid var(--md-sys-color-surface-variant);
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--md-sys-color-primary);
+}
