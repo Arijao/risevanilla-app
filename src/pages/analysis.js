@@ -247,7 +247,7 @@ function updatePrixRevientAnalysis() {
                     <span class="insight-rec-count">${recVerte.length} réception${recVerte.length > 1 ? 's' : ''}</span>
                     <span class="insight-footer-label">Qualités :</span>
                     ${[...new Set(recVerte.map(r => r.quality))].map(q =>
-                        `<span class="status-badge status-${q.toLowerCase()}" style="font-size:10px;">${q}</span>`
+                        `<span class="status-badge status-${q.toLowerCase().replace(/\s+/g, '-')}" style="font-size:10px;">${q}</span>`
                     ).join('')}
                 </div>` : `
                 <div class="insight-metric-row" style="opacity:.6;">
@@ -301,7 +301,7 @@ function updatePrixRevientAnalysis() {
                     <span class="insight-rec-count">${recPreparee.length} réception${recPreparee.length > 1 ? 's' : ''}</span>
                     <span class="insight-footer-label">Qualités :</span>
                     ${[...new Set(recPreparee.map(r => r.quality))].map(q =>
-                        `<span class="status-badge status-${q.toLowerCase()}" style="font-size:10px;">${q}</span>`
+                        `<span class="status-badge status-${q.toLowerCase().replace(/\s+/g, '-')}" style="font-size:10px;">${q}</span>`
                     ).join('')}
                 </div>` : `
                 <div class="insight-metric-row" style="opacity:.6;">

@@ -3727,14 +3727,14 @@
 
 /* ── Variables RGB des cartes analyse (même pattern que collector-stat-card) ── */
 :root {
-    --sic-verte-rgb:    76, 175,  80;   /* Vert herbe     */
+    --sic-verte-rgb:   134, 210, 138;   /* Vert sauge lumineux */
     --sic-preparee-rgb:  0,  97, 164;   /* Bleu primaire  */
     --sic-global-rgb:  245, 158,  11;   /* Ambre          */
 
     /* Couleurs des badges qualité — à ajouter une fois pour toutes */
     --quality-lava-rgb:    239,  83,  80;
-    --quality-fohy-rgb:    171,  71, 188;
-    --quality-verte-rgb:    76, 175,  80;
+    --quality-fohy-rgb:    201, 174, 207;
+    --quality-verte-rgb:   134, 210, 138;
     --quality-fendue-rgb:  255, 152,   0;
     --quality-preparee-rgb:  0,  97, 164;
     --quality-seche-rgb:   121,  85,  72;
@@ -3777,11 +3777,29 @@
 
 /* Thème clair — assombrir le texte pour le contraste */
 [data-theme="light"] .status-lava     { color: #c62828; }
-[data-theme="light"] .status-fohy     { color: #7b1fa2; }
-[data-theme="light"] .status-verte    { color: #2e7d32; }
+[data-theme="light"] .status-fohy     { color: #7B5EA7; }
+[data-theme="light"] .status-verte    { color: #2d6b30; }
 [data-theme="light"] .status-fendue   { color: #e65100; }
 [data-theme="light"] .status-preparee { color: #01579b; }
 [data-theme="light"] .status-seche    { color: #4e342e; }
+
+/* ── Qualités dynamiques (ex: "Noire 16", "Noire 12"…)
+   Slug : quality.toLowerCase().replace(/\s+/g, "-") → "noire-16"   */
+[class*="status-noire-"] {
+    background: rgba(180, 160, 200, 0.16);
+    color:       rgb(180, 160, 200);
+    border: 1px solid rgba(180, 160, 200, 0.30);
+}
+[data-theme="light"] [class*="status-noire-"] {
+    color: #6B4E8A;
+}
+
+/* Fallback : toute qualité inconnue → badge neutre, jamais texte brut */
+.status-badge:not([class*="status-lava"]):not([class*="status-fohy"]):not([class*="status-verte"]):not([class*="status-fendue"]):not([class*="status-preparee"]):not([class*="status-seche"]):not([class*="status-noire-"]) {
+    background: rgba(var(--quality-default-rgb), 0.14);
+    color:      rgb(var(--quality-default-rgb));
+    border: 1px solid rgba(var(--quality-default-rgb), 0.28);
+}
 
 /* ══════════════════════════════════════════════════════
  * SUMMARY INSIGHT CARD — Base (même mécanique que
