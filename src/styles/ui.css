@@ -1167,13 +1167,17 @@
         }
 
         .status-debiteur {
-            background-color: var(--md-sys-color-error-container);
-            color: var(--md-sys-color-on-error-container);
+            background-color: rgba(244, 67, 54, 0.15);
+            color: #ff5252;
+            border: 1px solid rgba(244, 67, 54, 0.35);
+            font-weight: 700;
         }
 
         .status-crediteur {
-            background-color: #e8f5e8;
-            color: #2e7d32;
+            background-color: rgba(0, 200, 83, 0.15);
+            color: #00c853;
+            border: 1px solid rgba(0, 200, 83, 0.35);
+            font-weight: 700;
         }
 
         .status-equilibre {
@@ -1195,13 +1199,15 @@
         }
 
         .collector-status-badge.debiteur {
-            background-color: var(--md-sys-color-error-container, #f9dedc);
-            color: var(--md-sys-color-error, #ba1a1a);
+            background-color: rgba(244, 67, 54, 0.15);
+            color: #ff5252;
+            border: 1px solid rgba(244, 67, 54, 0.35);
         }
 
         .collector-status-badge.crediteur {
-            background-color: #e8f5e8;
-            color: #2e7d32;
+            background-color: rgba(0, 200, 83, 0.15);
+            color: #00c853;
+            border: 1px solid rgba(0, 200, 83, 0.35);
         }
 
         .fab {
@@ -3778,7 +3784,7 @@
 /* Thème clair — assombrir le texte pour le contraste */
 [data-theme="light"] .status-lava     { color: #c62828; }
 [data-theme="light"] .status-fohy     { color: #7B5EA7; }
-[data-theme="light"] .status-verte    { color: #2d6b30; }
+[data-theme="light"] .status-verte    { color: #2d8b30; }
 [data-theme="light"] .status-fendue   { color: #e65100; }
 [data-theme="light"] .status-preparee { color: #01579b; }
 [data-theme="light"] .status-seche    { color: #4e342e; }

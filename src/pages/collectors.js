@@ -104,9 +104,9 @@ function showCollectorDetails(collectorId) {
         <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
             <div style="flex:1;min-width:160px;display:flex;align-items:center;gap:10px;
                         padding:10px 14px;border-radius:10px;background:rgba(152,144,168,.13);">
-                <span class="material-icons" style="color:#4caf50;font-size:18px;">grass</span>
+                <span class="material-icons" style="color:#64dd17;font-size:18px;">grass</span>
                 <div>
-                    <div style="font-size:10px;font-weight:700;color:#4caf50;text-transform:uppercase;letter-spacing:.4px;">Vanille Verte</div>
+                    <div style="font-size:10px;font-weight:700;color:#64dd17;text-transform:uppercase;letter-spacing:.4px;">Vanille Verte</div>
                     <div style="font-size:13px;font-weight:600;">${poidsVerte.toFixed(2)} kg</div>
                     <div style="font-size:11px;opacity:.7;">${formatCurrency(Math.round(valVerte))}</div>
                 </div>
@@ -322,8 +322,8 @@ function exportCollectorReport(collectorId) {
     .pdf-header{display:flex;align-items:center;gap:14px;margin-bottom:8px}
     .pdf-brand-name{font-size:20px;font-weight:800;color:#1a1a1a;letter-spacing:.3px;line-height:1.1;margin:0}
     .pdf-brand-sub{font-size:10px;color:#888;letter-spacing:1.8px;text-transform:uppercase;margin:2px 0 0 0}
-    .status-debiteur{color:#ba1a1a;font-weight:700}
-    .status-crediteur{color:#2e7d32;font-weight:700}</style>
+    .status-debiteur{color:#c62828;font-weight:700}
+    .status-crediteur{color:#2e7b32;font-weight:700}</style>
     </head><body>
     <div class="pdf-header">
         <svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 620" width="50" height="50" style="flex-shrink:0;border-radius:8px;">
@@ -346,8 +346,8 @@ function exportCollectorReport(collectorId) {
     <hr style="border:none;border-top:2px solid #e0e0e0;margin:8px 0 14px">
     <p><strong>Collecteur:</strong> ${collector.name} &nbsp; <strong>CIN:</strong> ${collector.cin||'—'} &nbsp; <strong>Adresse:</strong> ${collector.address||'—'}</p>
     <div class="summary">
-        <div class="card"><div class="val" style="color:#ba1a1a">${formatCurrency(totalAdv+totalPai)}</div><div class="lbl">Total Débits</div></div>
-        <div class="card"><div class="val" style="color:#2e7d32">${formatCurrency(totalRec+totalRemb)}</div><div class="lbl">Total Crédits</div></div>
+        <div class="card"><div class="val" style="color:#c62828">${formatCurrency(totalAdv+totalPai)}</div><div class="lbl">Total Débits</div></div>
+        <div class="card"><div class="val" style="color:#2e7b32">${formatCurrency(totalRec+totalRemb)}</div><div class="lbl">Total Crédits</div></div>
         <div class="card"><div class="val">${formatCurrency(Math.abs(balance))}</div><div class="lbl">Solde — <span ${status.label === 'Débiteur' ? 'class=\"status-debiteur\"' : status.label === 'Créditeur' ? 'class=\"status-crediteur\"' : ''}>${status.label}</span></div></div>
     </div>
     <h2>💰 Avances</h2>
@@ -365,11 +365,11 @@ function exportCollectorReport(collectorId) {
         const vp = rp.reduce((s,r)=>s+(r.totalValue||0),0);
         return '<div style="display:flex;gap:12px;margin-bottom:12px;font-size:11px;">'
             + '<div style="flex:1;border:1px solid #a5d6a7;border-radius:6px;padding:8px 12px;background:#f1f8e9;">'
-            + '<strong style="color:#2e7d32;">🌿 Vanille Verte</strong><br>'
+            + '<strong style="color:#2e7b32;">🌿 Vanille Verte</strong><br>'
             + pv.toFixed(2) + ' kg — ' + formatCurrency(Math.round(vv))
             + '</div>'
             + '<div style="flex:1;border:1px solid #ce93d8;border-radius:6px;padding:8px 12px;background:#f3e5f5;">'
-            + '<strong style="color:#6750a4;">✅ Vanille Préparée</strong><br>'
+            + '<strong style="color:#7B5EA7;">✅ Vanille Préparée</strong><br>'
             + pp.toFixed(2) + ' kg — ' + formatCurrency(Math.round(vp))
             + '</div></div>'
             + '<table><thead><tr><th>Date</th><th>Poids Net</th><th>Qualité</th><th>Type</th><th>Valeur</th></tr></thead><tbody>'

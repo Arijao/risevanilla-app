@@ -34,7 +34,7 @@ async function openAdjustModal(receptionId) {
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
                 <div><strong>Date:</strong> ${formatDate(originalReception.date)}</div>
                 <div><strong>Collecteur:</strong> ${collector ? collector.name : '—'}</div>
-                <div><strong>Qualité:</strong> <span class="status-badge status-${originalReception.quality.toLowerCase()}">${originalReception.quality}</span></div>
+                <div><strong>Qualité:</strong> <span class="status-badge status-${originalReception.quality.toLowerCase().replace(/\s+/g, '-')}">${originalReception.quality}</span></div>
                 <div><strong>Poids Brut:</strong> ${gross} kg</div>
                 <div><strong>Tare:</strong> ${tare} kg</div>
                 <div><strong>Poids Net:</strong> ${net} kg</div>
