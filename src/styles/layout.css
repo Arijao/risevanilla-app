@@ -874,7 +874,7 @@
 
         /* Background with blur effect */
         body {
-            background-color: #3A3545;
+            background-color: #2F2A3A;
             background-image: radial-gradient(circle at 50% 50%, rgba(201, 174, 207, 0.08) 0%, rgba(80, 72, 88, 1) 100%);
             background-attachment: fixed;
             position: relative;
