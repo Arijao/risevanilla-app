@@ -3821,7 +3821,7 @@
     --quality-fohy-rgb:    166, 216, 14;
     --quality-verte-rgb:   0,  230, 118;
     --quality-fendue-rgb:  255, 152,   0;
-    --quality-lo-rgb:  250, 239, 22;
+    --quality-lo-rgb:  250, 182, 22;
     --quality-preparee-rgb: 0,  150, 255;
     --quality-seche-rgb:   141, 110,  99;
     --quality-default-rgb: 120, 120, 120;
@@ -3885,7 +3885,7 @@
     [data-theme="light"] .status-fohy     { color: #a6d80e !important; }
     [data-theme="light"] .status-verte    { color: #009624 !important; }
     [data-theme="light"] .status-fendue   { color: #e65100 !important; }
-    [data-theme="light"] .status-lo       { color: #faef16 !important; }
+    [data-theme="light"] .status-lo       { color: #fab616 !important; }
     [data-theme="light"] .status-preparee { color: #01579b !important; }
     [data-theme="light"] .status-seche    { color: #4e342e !important; }
 
