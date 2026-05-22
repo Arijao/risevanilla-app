@@ -55,8 +55,6 @@
   font-display: block;
   src: url('material-icons-v145-regular.woff2') format('woff2'),
        url('material-icons-v145-latin-regular.woff2') format('woff2');
-       /* Note: télécharger material-icons-v145-regular.woff2 depuis :
-          https://fonts.gstatic.com/s/materialicons/v145/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2 */
 }
 
 .material-icons {
@@ -82,7 +80,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: block;
-  src: url('material-icons-outlined-v110-latin-regular.woff2') format('woff2');
+  src: url('material-icons-outlined-regular.woff2') format('woff2'),
+       url('material-icons-outlined-v110-latin-regular.woff2') format('woff2');
 }
 
 .material-icons-outlined {
