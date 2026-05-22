@@ -2995,10 +2995,6 @@
     padding: 18px 16px 16px;
     margin-bottom: 16px;
     border: 1px solid var(--md-sys-color-outline-variant);
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    max-width: 100%;
 }
 
 [data-theme="dark"] .cform-section {
@@ -3020,6 +3016,7 @@
 
 .cform-section__title .material-icons {
     font-size: 18px;
+    text-transform: none;   /* neutralise l'uppercase hérité du titre */
 }
 
 /* Badge compteur documents */
@@ -3048,9 +3045,6 @@
     gap: 8px;
     flex-shrink: 0;
     width: 96px;
-    min-width: 96px;
-    max-width: 100%;
-    box-sizing: border-box;
 }
 
 /* ── Aperçu photo ── */
@@ -3067,7 +3061,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-sizing: border-box;
 }
 
 [data-theme="dark"] .cform-photo-zone {
@@ -3121,11 +3114,8 @@
 /* ── Boutons Caméra / Galerie ── */
 .cform-photo-actions {
     display: flex;
-    flex-direction: row;
     gap: 5px;
     width: 100%;
-    justify-content: center;
-    align-items: stretch;
 }
 
 .cform-photo-btn {
@@ -3153,6 +3143,7 @@
 
 .cform-photo-btn .material-icons {
     font-size: 16px;
+    text-transform: none;   /* neutralise l'uppercase hérité du bouton */
 }
 
 .cform-photo-btn:hover {
@@ -3272,8 +3263,6 @@
     transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     margin-bottom: 12px;
     user-select: none;
-    max-width: 100%;
-    box-sizing: border-box;
 }
 
 .cform-dropzone:hover,
@@ -3301,7 +3290,6 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: 100%;
 }
 
 .cform-doc-item {
@@ -3835,7 +3823,7 @@
     --quality-fohy-rgb:    166, 216, 14;
     --quality-verte-rgb:   0,  230, 118;
     --quality-fendue-rgb:  255, 152,   0;
-    --quality-lo-rgb:  250, 182, 22;
+    --quality-lo-rgb:  250, 239, 22;
     --quality-preparee-rgb: 0,  150, 255;
     --quality-seche-rgb:   141, 110,  99;
     --quality-default-rgb: 120, 120, 120;
@@ -3899,7 +3887,7 @@
     [data-theme="light"] .status-fohy     { color: #a6d80e !important; }
     [data-theme="light"] .status-verte    { color: #009624 !important; }
     [data-theme="light"] .status-fendue   { color: #e65100 !important; }
-    [data-theme="light"] .status-lo       { color: #fab616 !important; }
+    [data-theme="light"] .status-lo       { color: #faef16 !important; }
     [data-theme="light"] .status-preparee { color: #01579b !important; }
     [data-theme="light"] .status-seche    { color: #4e342e !important; }
 
