@@ -196,7 +196,7 @@ function updateReceptionTable() {
         const netWeight   = parseFloat((r.netWeight   || 0).toFixed(2));
         const price       = parseFloat((r.price       || 0).toFixed(0));
         const totalValue  = parseFloat((r.totalValue  || 0).toFixed(0));
-        const qualClass   = getQualitySlug(r.quality);
+        const qualClass   = (r.quality || '').toLowerCase();
 
         // ── Badge type verte/préparée ────────────────────────────────
         const vType     = getVanilleType(r.quality);
