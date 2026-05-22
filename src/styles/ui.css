@@ -1167,22 +1167,28 @@
         }
 
         .status-debiteur {
-            background-color: rgba(244, 67, 54, 0.15);
-            color: #ff5252;
-            border: 1px solid rgba(244, 67, 54, 0.35);
-            font-weight: 700;
+            background-color: rgba(255, 23, 68, 0.14);
+            color: #ff1744;
+            border: 1px solid rgba(255, 23, 68, 0.45);
+            font-weight: 800;
+            box-shadow: 0 0 12px rgba(255, 23, 68, 0.25);
+            text-shadow: 0 0 1px rgba(255, 23, 68, 0.2);
         }
 
         .status-crediteur {
-            background-color: rgba(0, 200, 83, 0.15);
-            color: #00c853;
-            border: 1px solid rgba(0, 200, 83, 0.35);
-            font-weight: 700;
+            background-color: rgba(0, 230, 118, 0.14);
+            color: #00e676;
+            border: 1px solid rgba(0, 230, 118, 0.45);
+            font-weight: 800;
+            box-shadow: 0 0 12px rgba(0, 230, 118, 0.25);
+            text-shadow: 0 0 1px rgba(0, 230, 118, 0.2);
         }
 
         .status-equilibre {
-            background-color: var(--md-sys-color-secondary-container);
-            color: var(--md-sys-color-on-secondary-container);
+            background-color: rgba(33, 150, 243, 0.12);
+            color: #2196f3;
+            border: 1px solid rgba(33, 150, 243, 0.35);
+            font-weight: 700;
         }
 
         /* ── Badge de statut collecteur dans le formulaire de réception ── */
@@ -1199,15 +1205,17 @@
         }
 
         .collector-status-badge.debiteur {
-            background-color: rgba(244, 67, 54, 0.15);
-            color: #ff5252;
-            border: 1px solid rgba(244, 67, 54, 0.35);
+            background-color: rgba(255, 23, 68, 0.14);
+            color: #ff1744;
+            border: 1px solid rgba(255, 23, 68, 0.45);
+            box-shadow: 0 0 12px rgba(255, 23, 68, 0.2);
         }
 
         .collector-status-badge.crediteur {
-            background-color: rgba(0, 200, 83, 0.15);
-            color: #00c853;
-            border: 1px solid rgba(0, 200, 83, 0.35);
+            background-color: rgba(0, 230, 118, 0.14);
+            color: #00e676;
+            border: 1px solid rgba(0, 230, 118, 0.45);
+            box-shadow: 0 0 12px rgba(0, 230, 118, 0.2);
         }
 
         .fab {
@@ -3739,73 +3747,89 @@
 
     /* Couleurs des badges qualité — à ajouter une fois pour toutes */
     --quality-lava-rgb:    239,  83,  80;
-    --quality-fohy-rgb:    201, 174, 207;
-    --quality-verte-rgb:   134, 210, 138;
+    --quality-fohy-rgb:    174, 134, 184;
+    --quality-verte-rgb:   0,  230, 118;
     --quality-fendue-rgb:  255, 152,   0;
-    --quality-preparee-rgb:  0,  97, 164;
-    --quality-seche-rgb:   121,  85,  72;
+    --quality-preparee-rgb: 0,  150, 255;
+    --quality-seche-rgb:   141, 110,  99;
     --quality-default-rgb: 120, 120, 120;
-}
+    }
 
-/* ══════════════════════════════════════════════════════
- * BADGES QUALITÉ (manquants dans le CSS actuel)
- * ══════════════════════════════════════════════════════ */
-.status-lava {
-    background: rgba(var(--quality-lava-rgb), 0.16);
-    color: rgb(var(--quality-lava-rgb));
-    border: 1px solid rgba(var(--quality-lava-rgb), 0.30);
-}
-.status-fohy {
-    background: rgba(var(--quality-fohy-rgb), 0.16);
-    color: rgb(var(--quality-fohy-rgb));
-    border: 1px solid rgba(var(--quality-fohy-rgb), 0.30);
-}
-.status-verte {
-    background: rgba(var(--quality-verte-rgb), 0.16);
-    color: rgb(var(--quality-verte-rgb));
-    border: 1px solid rgba(var(--quality-verte-rgb), 0.30);
-}
-.status-fendue {
-    background: rgba(var(--quality-fendue-rgb), 0.16);
-    color: rgb(var(--quality-fendue-rgb));
-    border: 1px solid rgba(var(--quality-fendue-rgb), 0.30);
-}
-.status-preparee {
-    background: rgba(var(--quality-preparee-rgb), 0.16);
-    color: rgb(var(--quality-preparee-rgb));
-    border: 1px solid rgba(var(--quality-preparee-rgb), 0.30);
-}
-.status-seche {
-    background: rgba(var(--quality-seche-rgb), 0.16);
-    color: rgb(var(--quality-seche-rgb));
-    border: 1px solid rgba(var(--quality-seche-rgb), 0.30);
-}
+    /* ══════════════════════════════════════════════════════
+    * BADGES QUALITÉ — Rendu brillant et harmonisé
+    * ══════════════════════════════════════════════════════ */
+    .status-badge[class*="status-"] {
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    }
 
-/* Thème clair — assombrir le texte pour le contraste */
-[data-theme="light"] .status-lava     { color: #c62828; }
-[data-theme="light"] .status-fohy     { color: #7B5EA7; }
-[data-theme="light"] .status-verte    { color: #2d8b30; }
-[data-theme="light"] .status-fendue   { color: #e65100; }
-[data-theme="light"] .status-preparee { color: #01579b; }
-[data-theme="light"] .status-seche    { color: #4e342e; }
+    .status-lava {
+    background: rgba(var(--quality-lava-rgb), 0.18) !important;
+    color: rgb(var(--quality-lava-rgb)) !important;
+    border: 1px solid rgba(var(--quality-lava-rgb), 0.45) !important;
+    box-shadow: 0 0 12px rgba(var(--quality-lava-rgb), 0.25) !important;
+    }
+    .status-fohy {
+    background: rgba(var(--quality-fohy-rgb), 0.18) !important;
+    color: rgb(var(--quality-fohy-rgb)) !important;
+    border: 1px solid rgba(var(--quality-fohy-rgb), 0.45) !important;
+    box-shadow: 0 0 12px rgba(var(--quality-fohy-rgb), 0.20) !important;
+    }
+    .status-verte {
+    background: rgba(var(--quality-verte-rgb), 0.18) !important;
+    color: rgb(var(--quality-verte-rgb)) !important;
+    border: 1px solid rgba(var(--quality-verte-rgb), 0.45) !important;
+    box-shadow: 0 0 12px rgba(var(--quality-verte-rgb), 0.25) !important;
+    }
+    .status-fendue {
+    background: rgba(var(--quality-fendue-rgb), 0.18) !important;
+    color: rgb(var(--quality-fendue-rgb)) !important;
+    border: 1px solid rgba(var(--quality-fendue-rgb), 0.45) !important;
+    box-shadow: 0 0 12px rgba(var(--quality-fendue-rgb), 0.20) !important;
+    }
+    .status-preparee {
+    background: rgba(var(--quality-preparee-rgb), 0.18) !important;
+    color: rgb(var(--quality-preparee-rgb)) !important;
+    border: 1px solid rgba(var(--quality-preparee-rgb), 0.45) !important;
+    box-shadow: 0 0 12px rgba(var(--quality-preparee-rgb), 0.20) !important;
+    }
+    .status-seche {
+    background: rgba(var(--quality-seche-rgb), 0.18) !important;
+    color: rgb(var(--quality-seche-rgb)) !important;
+    border: 1px solid rgba(var(--quality-seche-rgb), 0.45) !important;
+    box-shadow: 0 0 12px rgba(var(--quality-seche-rgb), 0.20) !important;
+    }
 
-/* ── Qualités dynamiques (ex: "Noire 16", "Noire 12"…)
-   Slug : quality.toLowerCase().replace(/\s+/g, "-") → "noire-16"   */
-[class*="status-noire-"] {
-    background: rgba(180, 160, 200, 0.16);
-    color:       rgb(180, 160, 200);
-    border: 1px solid rgba(180, 160, 200, 0.30);
-}
-[data-theme="light"] [class*="status-noire-"] {
-    color: #6B4E8A;
-}
+    /* Thème clair — assombrir le texte pour le contraste */
+    [data-theme="light"] .status-lava     { color: #c62828 !important; }
+    [data-theme="light"] .status-fohy     { color: #7B5EA7 !important; }
+    [data-theme="light"] .status-verte    { color: #009624 !important; }
+    [data-theme="light"] .status-fendue   { color: #e65100 !important; }
+    [data-theme="light"] .status-preparee { color: #01579b !important; }
+    [data-theme="light"] .status-seche    { color: #4e342e !important; }
 
-/* Fallback : toute qualité inconnue → badge neutre, jamais texte brut */
-.status-badge:not([class*="status-lava"]):not([class*="status-fohy"]):not([class*="status-verte"]):not([class*="status-fendue"]):not([class*="status-preparee"]):not([class*="status-seche"]):not([class*="status-noire-"]) {
-    background: rgba(var(--quality-default-rgb), 0.14);
-    color:      rgb(var(--quality-default-rgb));
-    border: 1px solid rgba(var(--quality-default-rgb), 0.28);
-}
+    /* ── Qualités dynamiques (ex: "Noire 16", "Noire 12"…)
+    Slug : quality.toLowerCase().replace(/\s+/g, "-") → "noire-16"   */
+    [class*="status-noire-"] {
+    background: rgba(180, 160, 200, 0.18) !important;
+    color:       rgb(180, 160, 200) !important;
+    border: 1px solid rgba(180, 160, 200, 0.45) !important;
+    box-shadow: 0 0 10px rgba(180, 160, 200, 0.2) !important;
+    font-weight: 800 !important;
+    }
+    [data-theme="light"] [class*="status-noire-"] {
+    color: #6B4E8A !important;
+    }
+
+    /* Fallback : toute qualité inconnue → badge neutre, jamais texte brut */
+    .status-badge:not([class*="status-lava"]):not([class*="status-fohy"]):not([class*="status-verte"]):not([class*="status-fendue"]):not([class*="status-preparee"]):not([class*="status-seche"]):not([class*="status-noire-"]) {
+    background: rgba(var(--quality-default-rgb), 0.16) !important;
+    color:      rgb(var(--quality-default-rgb)) !important;
+    border: 1px solid rgba(var(--quality-default-rgb), 0.40) !important;
+    font-weight: 800 !important;
+    }
 
 /* ══════════════════════════════════════════════════════
  * SUMMARY INSIGHT CARD — Base (même mécanique que

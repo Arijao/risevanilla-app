@@ -368,9 +368,9 @@ function updateAdvancesTable() {
             <td data-label="Motif">
                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                     ${adv.vanilleType === 'verte'
-                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(152,144,168,.18);color:#9890A8;font-weight:600;"><span class="material-icons" style="font-size:11px;">grass</span>Verte</span>`
+                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(0, 230, 118, 0.15);color:#00e676;font-weight:700;border:1px solid rgba(0, 230, 118, 0.3);box-shadow: 0 0 8px rgba(0, 230, 118, 0.15);"><span class="material-icons" style="font-size:11px;">grass</span>Verte</span>`
                         : adv.vanilleType === 'preparee'
-                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:20px;background:rgba(152,144,168,.10);color:var(--md-sys-color-primary);font-weight:600;"><span class="material-icons" style="font-size:11px;">verified</span>Préparée</span>`
+                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(152,144,168,.10);color:var(--md-sys-color-primary);font-weight:700;border:1px solid rgba(152,144,168,0.2);"><span class="material-icons" style="font-size:11px;">verified</span>Préparée</span>`
                         : ''}
                     <span>${RiseVanillaSearch.highlightText(adv.motif || '—', _q)}</span>
                 </div>
