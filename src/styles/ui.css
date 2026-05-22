@@ -3821,6 +3821,7 @@
     --quality-fohy-rgb:    166, 216, 14;
     --quality-verte-rgb:   0,  230, 118;
     --quality-fendue-rgb:  255, 152,   0;
+    --quality-lo-rgb:  250, 182, 22;
     --quality-preparee-rgb: 0,  150, 255;
     --quality-seche-rgb:   141, 110,  99;
     --quality-default-rgb: 120, 120, 120;
@@ -3860,6 +3861,12 @@
     border: 1px solid rgba(var(--quality-fendue-rgb), 0.45) !important;
     box-shadow: 0 0 12px rgba(var(--quality-fendue-rgb), 0.20) !important;
     }
+    .status-lo {
+    background: rgba(var(--quality-lo-rgb), 0.18) !important;
+    color: rgb(var(--quality-lo-rgb)) !important;
+    border: 1px solid rgba(var(--quality-lo-rgb), 0.45) !important;
+    box-shadow: 0 0 12px rgba(var(--quality-lo-rgb), 0.20) !important;
+    }
     .status-preparee {
     background: rgba(var(--quality-preparee-rgb), 0.18) !important;
     color: rgb(var(--quality-preparee-rgb)) !important;
@@ -3878,6 +3885,7 @@
     [data-theme="light"] .status-fohy     { color: #a6d80e !important; }
     [data-theme="light"] .status-verte    { color: #009624 !important; }
     [data-theme="light"] .status-fendue   { color: #e65100 !important; }
+    [data-theme="light"] .status-lo       { color: #fab616 !important; }
     [data-theme="light"] .status-preparee { color: #01579b !important; }
     [data-theme="light"] .status-seche    { color: #4e342e !important; }
 
@@ -3895,7 +3903,7 @@
     }
 
     /* Fallback : toute qualité inconnue → badge neutre, jamais texte brut */
-    .status-badge:not([class*="status-lava"]):not([class*="status-fohy"]):not([class*="status-verte"]):not([class*="status-fendue"]):not([class*="status-preparee"]):not([class*="status-seche"]):not([class*="status-noire-"]):not([class*="status-debiteur"]):not([class*="status-crediteur"]):not([class*="status-equilibre"]) {
+    .status-badge:not([class*="status-lava"]):not([class*="status-fohy"]):not([class*="status-verte"]):not([class*="status-fendue"]):not([class*="status-lo"]):not([class*="status-seche"]):not([class*="status-noire-"]):not([class*="status-debiteur"]):not([class*="status-crediteur"]):not([class*="status-equilibre"]) {
     background: rgba(var(--quality-default-rgb), 0.16) !important;
     color:      rgb(var(--quality-default-rgb)) !important;
     border: 1px solid rgba(var(--quality-default-rgb), 0.40) !important;
