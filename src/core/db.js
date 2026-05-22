@@ -81,11 +81,11 @@ function initDB() {
             qualityStore.createIndex('name', 'name', { unique: true });
 
             const defaultQualities = [
-                { name: 'Lava',    description: 'Vanille de qualité supérieure' },
-                { name: 'Fohy',    description: 'Vanille plus courte' },
-                { name: 'Fendue', description: 'Vanille fendue ou vaky' },
-                { name: 'Lo',      description: 'Vanille de qualité inférieure' },
-                { name: 'Verte',   description: 'Vanille non préparée' }
+                { name: 'Lava',    description: 'Vanille de qualité supérieure', vanilleType: 'verte' },
+                { name: 'Fohy',    description: 'Vanille plus courte',           vanilleType: 'verte' },
+                { name: 'Fendue',  description: 'Vanille fendue ou vaky',        vanilleType: 'verte' },
+                { name: 'Lo',      description: 'Vanille de qualité inférieure', vanilleType: 'verte' },
+                { name: 'Verte',   description: 'Vanille non préparée',          vanilleType: 'verte'    }
             ];
             defaultQualities.forEach(q => qualityStore.add(q));
         }
@@ -381,7 +381,29 @@ async function resetData() {
     executeWhenReady(() => {
         clearAllData(() => {
             Object.assign(appData, { collectors:[], advances:[], receptions:[], deliveries:[], expenses:[], qualities:[], remboursements:[], paiements:[] });
-            updateAllTables();
+
+            // ── Réinsérer les qualités prédéfinies après la remise à zéro ──
+            const defaultQualities = [
+                { name: 'Lava',    description: 'Vanille de qualité supérieure', vanilleType: 'verte' },
+                { name: 'Fohy',    description: 'Vanille plus courte',           vanilleType: 'verte' },
+                { name: 'Fendue',  description: 'Vanille fendue ou vaky',        vanilleType: 'verte' },
+                { name: 'Lo',      description: 'Vanille de qualité inférieure', vanilleType: 'verte' },
+                { name: 'Verte',   description: 'Vanille non préparée',          vanilleType: 'verte'    }
+            ];
+            const tx = db.transaction('qualities', 'readwrite');
+            const store = tx.objectStore('qualities');
+            defaultQualities.forEach(q => store.add(q));
+            tx.oncomplete = () => {
+                // Recharger appData.qualities depuis la base pour être en sync
+                const txRead = db.transaction('qualities', 'readonly');
+                const req    = txRead.objectStore('qualities').getAll();
+                req.onsuccess = () => {
+                    appData.qualities = req.result || [];
+                    updateAllTables();
+                };
+            };
+            tx.onerror = () => updateAllTables();
+
             showToast('Toutes les données ont été supprimées.', 'warning');
         });
     });

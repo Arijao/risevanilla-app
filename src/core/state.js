@@ -141,6 +141,93 @@ function getCollectorStatus(balance) {
     return                   { class: 'equilibre', label: 'Équilibré' };
 }
 
+// ── Quality Color System ─────────────────────────────────────
+// Mapping prédéfini : nom normalisé → slug CSS (.status-<slug>)
+// Les couleurs sont dans ui.css via --quality-*-rgb.
+const QUALITY_SLUG_MAP = {
+    'lava':     'lava',
+    'fohy':     'fohy',
+    'verte':    'verte',
+    'fendue':   'fendue',
+    'lo':       'lo',
+    'preparee': 'preparee',
+    'preparee': 'preparee',
+    'seche':    'seche',
+    'sechee':   'seche',
+};
+
+function _normalizeQualityKey(name) {
+    return (name || '')
+        .toLowerCase()
+        .replace(/[éèê]/g, 'e').replace(/[àâ]/g, 'a')
+        .replace(/[ùû]/g, 'u').replace(/[îï]/g, 'i')
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '');
+}
+
+function _qualityHueFromName(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+    }
+    let hue = hash % 360;
+    const reserved = [[0,20],[50,90],[110,145],[200,225]];
+    for (const [lo, hi] of reserved) {
+        if (hue >= lo && hue <= hi) { hue = (hue + 150) % 360; break; }
+    }
+    return hue;
+}
+
+function _hslToRgbString(h, s, l) {
+    s /= 100; l /= 100;
+    const k = n => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => Math.round((l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)))) * 255);
+    return `${f(0)},${f(8)},${f(4)}`;
+}
+
+/**
+ * Retourne le slug CSS à utiliser dans class="status-badge status-<slug>".
+ * - Prédéfinie → slug fixe (QUALITY_SLUG_MAP)
+ * - "noire-XX" → slug direct (déjà géré en CSS)
+ * - Inconnue   → slug normalisé + injection CSS déterministe
+ */
+function getQualitySlug(qualityName) {
+    if (!qualityName) return 'unknown';
+    const key = _normalizeQualityKey(qualityName);
+    if (QUALITY_SLUG_MAP[key]) return QUALITY_SLUG_MAP[key];
+    if (key.startsWith('noire')) return key;
+    const rgb = _hslToRgbString(_qualityHueFromName(key), 75, 62);
+    injectQualityStyle(key, rgb);
+    return key;
+}
+
+/**
+ * Injecte une règle CSS dynamique pour une qualité inconnue.
+ * Idempotent — sans effet si la règle existe déjà.
+ */
+function injectQualityStyle(slug, rgb) {
+    if (!slug || !rgb) return;
+    const styleId = `qs-${slug}`;
+    if (document.getElementById(styleId)) return;
+    const style = document.createElement('style');
+    style.id    = styleId;
+    style.textContent = [
+        `.status-${slug} {`,
+        `    background-color: rgba(${rgb}, 0.18) !important;`,
+        `    color: rgb(${rgb}) !important;`,
+        `    border: 1px solid rgba(${rgb}, 0.45) !important;`,
+        `    box-shadow: 0 0 12px rgba(${rgb}, 0.22) !important;`,
+        `    font-weight: 800 !important;`,
+        `}`,
+        `[data-theme="light"] .status-${slug} {`,
+        `    background-color: rgba(${rgb}, 0.12) !important;`,
+        `    filter: brightness(0.6) !important;`,
+        `}`
+    ].join('\n');
+    document.head.appendChild(style);
+}
+
 // ── Utilities ────────────────────────────────────────────────
 function formatCurrency(amount) {
     return new Intl.NumberFormat('fr-MG', {
