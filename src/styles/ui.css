@@ -2745,7 +2745,6 @@
     font-weight: 500;
     color: var(--md-sys-color-on-surface);
     position: relative;
-}
 
 .palette-option:hover {
     border-color: var(--pal-primary, var(--md-sys-color-primary));
@@ -3654,6 +3653,7 @@
 }
 
 /* ── Tag statut ── */
+/* Badge statut solde collecteur — couleurs harmonisées avec status-badge */
 .balance-info__tag {
     display: inline-flex;
     align-items: center;
@@ -3663,11 +3663,28 @@
     font-weight: 800;
     letter-spacing: 0.09em;
     text-transform: uppercase;
-    background: rgba(255, 255, 255, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.40);
     margin-left: 6px;
     vertical-align: middle;
     color: inherit;
+    border: 1px solid transparent;
+}
+.balance-info__tag.crediteur {
+    background: rgba(0, 230, 118, 0.15);
+    color: #00e676;
+    border: 1px solid rgba(0, 230, 118, 0.30);
+    box-shadow: 0 0 6px rgba(0, 230, 118, 0.13);
+}
+.balance-info__tag.debiteur {
+    background: rgba(255, 82, 82, 0.15);
+    color: #ff5252;
+    border: 1px solid rgba(255, 82, 82, 0.35);
+    box-shadow: 0 0 6px rgba(255, 82, 82, 0.15);
+}
+.balance-info__tag.equilibre {
+    background: rgba(152, 144, 168, 0.10);
+    color: #5c5c6e;
+    border: 1px solid rgba(152, 144, 168, 0.22);
+}
 }
 
 /* ── Responsive mobile ── */

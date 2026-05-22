@@ -300,21 +300,21 @@ function _updateAdvanceCollectorBalance() {
         if (icon) icon.textContent = 'trending_up';
         if (text) text.textContent = 'Solde créditeur';
         if (amount) amount.textContent = formatCurrency(balance);
-        else text.innerHTML = `Solde restant : <strong>${formatCurrency(balance)}</strong> <span class="balance-info__tag">Créditeur</span>`;
+        else text.innerHTML = `Solde restant : <strong>${formatCurrency(balance)}</strong> <span class="balance-info__tag crediteur">Créditeur</span>`;
     } else if (balance < 0) {
         // Débiteur (Le collecteur doit de l'argent à RiseVanilla)
         info.classList.add('balance-info--debit');
         if (icon) icon.textContent = 'trending_down';
         if (text) text.textContent = 'Montant dû';
         if (amount) amount.textContent = formatCurrency(Math.abs(balance));
-        else text.innerHTML = `Montant dû : <strong>${formatCurrency(Math.abs(balance))}</strong> <span class="balance-info__tag">Débiteur</span>`;
+        else text.innerHTML = `Montant dû : <strong>${formatCurrency(Math.abs(balance))}</strong> <span class="balance-info__tag debiteur">Débiteur</span>`;
     } else {
         // Neutre
         info.classList.add('balance-info--neutral');
         if (icon) icon.textContent = 'check_circle';
         if (text) text.textContent = 'Solde équilibré';
         if (amount) amount.textContent = formatCurrency(0);
-        else text.innerHTML = `Solde : <strong>0 Ar</strong>`;
+        else text.innerHTML = `Solde : <strong>0 Ar</strong> <span class="balance-info__tag equilibre">Équilibré</span>`;
     }
 }
 
