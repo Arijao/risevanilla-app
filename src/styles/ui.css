@@ -1168,49 +1168,51 @@
 
         /* ── Débiteur : rouge vif — même intensité que badge Verte ── */
         .status-debiteur {
-            background-color: rgba(255, 82, 82, 0.15);
-            color: #ff5252;
-            border: 1px solid rgba(255, 82, 82, 0.35);
-            font-weight: 700;
-            box-shadow: 0 0 8px rgba(255, 82, 82, 0.18);
+              background-color: rgba(255, 82, 82, 0.18);
+              color: #ff5252;
+              border: 1px solid rgba(255, 82, 82, 0.40);
+              font-weight: 700;
+              box-shadow: 0 0 12px 2px rgba(255, 82, 82, 0.22), 0 0 0 1.5px rgba(255,82,82,0.10);
         }
 
         /* ── Créditeur : vert vif — calqué exactement sur badge Verte ── */
         .status-crediteur {
-            background-color: rgba(0, 230, 118, 0.15);
-            color: #00e676;
-            border: 1px solid rgba(0, 230, 118, 0.30);
-            font-weight: 700;
-            box-shadow: 0 0 8px rgba(0, 230, 118, 0.15);
+              background-color: rgba(0, 230, 118, 0.18);
+              color: #00e676;
+              border: 1px solid rgba(0, 230, 118, 0.38);
+              font-weight: 700;
+              box-shadow: 0 0 12px 2px rgba(0, 230, 118, 0.18), 0 0 0 1.5px rgba(0,230,118,0.10);
         }
 
         /* ── Équilibré : sobre — calqué sur badge Préparée ── */
         .status-equilibre {
-            background-color: rgba(152, 144, 168, 0.10);
-            color: var(--md-sys-color-primary);
-            border: 1px solid rgba(152, 144, 168, 0.25);
-            font-weight: 700;
+              background-color: rgba(120, 120, 130, 0.13);
+              color: #5c5c6e;
+              border: 1px solid rgba(120, 120, 130, 0.22);
+              font-weight: 700;
+              box-shadow: 0 0 8px 1.5px rgba(120,120,130,0.10);
         }
 
         /* ── Thème clair : couleurs lisibles sur fond blanc ── */
         [data-theme="light"] .status-debiteur {
-            background-color: rgba(211, 47, 47, 0.10);
-            color: #c62828;
-            border-color: rgba(211, 47, 47, 0.35);
-            box-shadow: 0 0 6px rgba(211, 47, 47, 0.14);
+              background-color: rgba(211, 47, 47, 0.13);
+              color: #c62828;
+              border-color: rgba(211, 47, 47, 0.40);
+              box-shadow: 0 0 10px 2px rgba(211, 47, 47, 0.18), 0 0 0 1.5px rgba(211,47,47,0.10);
         }
 
         [data-theme="light"] .status-crediteur {
-            background-color: rgba(0, 150, 36, 0.10);
-            color: #1b5e20;
-            border-color: rgba(0, 150, 36, 0.30);
-            box-shadow: 0 0 6px rgba(0, 150, 36, 0.12);
+              background-color: rgba(0, 150, 36, 0.13);
+              color: #1b5e20;
+              border-color: rgba(0, 150, 36, 0.38);
+              box-shadow: 0 0 10px 2px rgba(0, 150, 36, 0.15), 0 0 0 1.5px rgba(0,150,36,0.10);
         }
 
         [data-theme="light"] .status-equilibre {
-            background-color: rgba(84, 79, 99, 0.08);
-            color: #4a4458;
-            border-color: rgba(84, 79, 99, 0.22);
+              background-color: rgba(120, 120, 130, 0.10);
+              color: #4a4458;
+              border-color: rgba(120, 120, 130, 0.18);
+              box-shadow: 0 0 7px 1.5px rgba(120,120,130,0.08);
         }
 
         /* ── Badge de statut collecteur dans le formulaire de réception ── */
