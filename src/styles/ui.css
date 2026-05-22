@@ -3875,7 +3875,7 @@
 
     /* Thème clair — assombrir le texte pour le contraste */
     [data-theme="light"] .status-lava     { color: #c62828 !important; }
-    [data-theme="light"] .status-fohy     { color: #7B5EA7 !important; }
+    [data-theme="light"] .status-fohy     { color: #a6d80e !important; }
     [data-theme="light"] .status-verte    { color: #009624 !important; }
     [data-theme="light"] .status-fendue   { color: #e65100 !important; }
     [data-theme="light"] .status-preparee { color: #01579b !important; }
