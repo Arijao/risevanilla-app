@@ -1192,6 +1192,27 @@
             font-weight: 700;
         }
 
+        /* ── Thème clair : couleurs lisibles sur fond blanc ── */
+        [data-theme="light"] .status-debiteur {
+            background-color: rgba(211, 47, 47, 0.10);
+            color: #c62828;
+            border-color: rgba(211, 47, 47, 0.35);
+            box-shadow: 0 0 6px rgba(211, 47, 47, 0.14);
+        }
+
+        [data-theme="light"] .status-crediteur {
+            background-color: rgba(0, 150, 36, 0.10);
+            color: #1b5e20;
+            border-color: rgba(0, 150, 36, 0.30);
+            box-shadow: 0 0 6px rgba(0, 150, 36, 0.12);
+        }
+
+        [data-theme="light"] .status-equilibre {
+            background-color: rgba(84, 79, 99, 0.08);
+            color: #4a4458;
+            border-color: rgba(84, 79, 99, 0.22);
+        }
+
         /* ── Badge de statut collecteur dans le formulaire de réception ── */
         .collector-status-badge {
             display: inline-flex;
@@ -1226,6 +1247,27 @@
             background-color: rgba(152, 144, 168, 0.10);
             color: var(--md-sys-color-primary);
             border: 1px solid rgba(152, 144, 168, 0.25);
+        }
+
+        /* ── Thème clair : collector-status-badge ── */
+        [data-theme="light"] .collector-status-badge.debiteur {
+            background-color: rgba(211, 47, 47, 0.10);
+            color: #c62828;
+            border-color: rgba(211, 47, 47, 0.35);
+            box-shadow: 0 0 6px rgba(211, 47, 47, 0.14);
+        }
+
+        [data-theme="light"] .collector-status-badge.crediteur {
+            background-color: rgba(0, 150, 36, 0.10);
+            color: #1b5e20;
+            border-color: rgba(0, 150, 36, 0.30);
+            box-shadow: 0 0 6px rgba(0, 150, 36, 0.12);
+        }
+
+        [data-theme="light"] .collector-status-badge.equilibre {
+            background-color: rgba(84, 79, 99, 0.08);
+            color: #4a4458;
+            border-color: rgba(84, 79, 99, 0.22);
         }
 
         .fab {
