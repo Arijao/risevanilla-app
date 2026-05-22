@@ -3895,7 +3895,7 @@
     }
 
     /* Fallback : toute qualité inconnue → badge neutre, jamais texte brut */
-    .status-badge:not([class*="status-lava"]):not([class*="status-fohy"]):not([class*="status-verte"]):not([class*="status-fendue"]):not([class*="status-preparee"]):not([class*="status-seche"]):not([class*="status-noire-"]) {
+    .status-badge:not([class*="status-lava"]):not([class*="status-fohy"]):not([class*="status-verte"]):not([class*="status-fendue"]):not([class*="status-preparee"]):not([class*="status-seche"]):not([class*="status-noire-"]):not([class*="status-debiteur"]):not([class*="status-crediteur"]):not([class*="status-equilibre"]) {
     background: rgba(var(--quality-default-rgb), 0.16) !important;
     color:      rgb(var(--quality-default-rgb)) !important;
     border: 1px solid rgba(var(--quality-default-rgb), 0.40) !important;
