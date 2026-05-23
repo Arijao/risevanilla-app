@@ -199,13 +199,13 @@ function openDeliveryModal(deliveryId = null) {
             document.getElementById('delivery-exporter').value     = delivery.exporter || '';
 
             if (delivery.quickWeights?.length) {
-                _deliveryQuickWeights = [...delivery.quickWeights];
+                _deliveryQuickWeights = _normalizeDeliveryQuickWeights(delivery.quickWeights);
                 _renderDeliveryQuickWeights();
             }
         }
     }
 
-    openModal('delivery-modal');
+    openModal('delivery-modal', { noBackdropClose: true });
     setTimeout(() => document.getElementById('delivery-quick-weight-input')?.focus(), 300);
 }
 
@@ -244,7 +244,7 @@ function saveDelivery(event) {
         price:       _parseDeliveryNumber(document.getElementById('delivery-price')?.value),
         totalValue:  _parseDeliveryNumber(document.getElementById('delivery-total-value')?.value),
         exporter,
-        quickWeights: [..._deliveryQuickWeights],
+        quickWeights: _deliveryQuickWeights.map(e => ({ weight: e.weight, tare: e.tare })),
         createdAt:   new Date().toISOString()
     };
 
@@ -296,8 +296,8 @@ function setupDeliveryCalculations() {
     const tareEl = document.getElementById('delivery-quick-tare-input');
     if (tareEl) {
         tareEl.addEventListener('input', () => {
-            _syncDeliveryFromQuickWeights();
             _renderDeliveryQuickWeights();
+            _syncDeliveryFromQuickWeights();
         });
     }
 
@@ -311,6 +311,18 @@ function setupDeliveryCalculations() {
 }
 
 // ── Pesage Rapide Livraison ───────────────────────────────────
+// _deliveryQuickWeights est un tableau d'objets {weight, tare}.
+// La tare par défaut est lue depuis le champ global delivery-quick-tare-input.
+// Rétrocompatibilité : les anciennes entrées sous forme de nombre brut
+// sont normalisées à l'ouverture du modal (voir openDeliveryModal).
+
+function _normalizeDeliveryQuickWeights(arr) {
+    return (arr || []).map(entry =>
+        (typeof entry === 'object' && entry !== null && 'weight' in entry)
+            ? entry
+            : { weight: entry, tare: null }  // null = héritera de la tare globale à l'affichage
+    );
+}
 
 async function addDeliveryQuickWeight() {
     const input  = document.getElementById('delivery-quick-weight-input');
@@ -333,7 +345,8 @@ async function addDeliveryQuickWeight() {
         if (!ok) return;
     }
 
-    _deliveryQuickWeights.push(val);
+    const globalTare = _parseDeliveryNumber(document.getElementById('delivery-quick-tare-input')?.value);
+    _deliveryQuickWeights.push({ weight: val, tare: globalTare });
     if (input) input.value = '';
     input?.focus();
     _renderDeliveryQuickWeights();
@@ -347,12 +360,28 @@ function removeDeliveryQuickWeight(index) {
     _syncDeliveryFromQuickWeights();
 }
 
+function updateDeliveryIndividualTare(index, value) {
+    if (_deliveryQuickWeights[index] === undefined) return;
+    const t = parseFloat(String(value).replace(',', '.'));
+    _deliveryQuickWeights[index].tare = isNaN(t) ? 0 : Math.max(0, t);
+    // Mise à jour du net affiché sans re-render complet (préserve le focus)
+    const list = document.getElementById('delivery-quick-weights-list');
+    if (!list) return;
+    const entry    = _deliveryQuickWeights[index];
+    const netSpans = list.querySelectorAll('span > span > span:last-of-type');
+    if (netSpans[index]) {
+        const netW = Math.max(0, entry.weight - _deliveryQuickWeights[index].tare).toFixed(2);
+        netSpans[index].textContent = `→ ${netW} kg net`;
+    }
+    _syncDeliveryFromQuickWeights();
+}
+
 function undoLastDeliveryWeight() {
     if (!_deliveryQuickWeights.length) return;
     const removed = _deliveryQuickWeights.pop();
     _renderDeliveryQuickWeights();
     _syncDeliveryFromQuickWeights();
-    showToast(`↩ ${removed} kg retiré`, 'info', 1500);
+    showToast(`↩ ${removed.weight} kg retiré`, 'info', 1500);
 }
 
 async function clearDeliveryQuickWeights() {
@@ -372,22 +401,36 @@ async function clearDeliveryQuickWeights() {
 }
 
 function updateDeliveryFromQuickWeights() {
-    _syncDeliveryFromQuickWeights();
     _renderDeliveryQuickWeights();
+    _syncDeliveryFromQuickWeights();
 }
 
 function _syncDeliveryFromQuickWeights() {
     if (!_deliveryQuickWeights.length) return;
-    const tare  = _parseDeliveryNumber(document.getElementById('delivery-quick-tare-input')?.value);
-    const total = _deliveryQuickWeights.reduce((s, w) => s + w, 0);
+
+    const globalTare = _parseDeliveryNumber(document.getElementById('delivery-quick-tare-input')?.value);
+    const total      = _deliveryQuickWeights.reduce((s, e) => s + e.weight, 0);
+
+    // Tare totale exacte (somme des tares individuelles)
+    const totalTare = _deliveryQuickWeights.reduce((s, e) => {
+        const t = (e.tare !== null && e.tare !== undefined) ? e.tare : globalTare;
+        return s + t;
+    }, 0);
+    const avgTare = _deliveryQuickWeights.length
+        ? parseFloat((totalTare / _deliveryQuickWeights.length).toFixed(3))
+        : globalTare;
 
     const grossEl = document.getElementById('delivery-gross-weight');
     const bagEl   = document.getElementById('delivery-bag-count');
     const bagWEl  = document.getElementById('delivery-bag-weight');
 
-    if (grossEl) grossEl.value = total.toFixed(2);
-    if (bagEl)   bagEl.value   = _deliveryQuickWeights.length;
-    if (bagWEl && tare) bagWEl.value = tare;
+    if (grossEl) {
+        grossEl.value = total.toFixed(2);
+        // Stocker la tare totale réelle pour saveDelivery
+        grossEl.dataset.totalTare = parseFloat(totalTare.toFixed(3));
+    }
+    if (bagEl)  bagEl.value  = _deliveryQuickWeights.length;
+    if (bagWEl) bagWEl.value = avgTare;
     calculateDeliveryValues();
 }
 
@@ -396,15 +439,19 @@ function _renderDeliveryQuickWeights() {
     const countEl = document.getElementById('delivery-quick-bag-count');
     const totalEl = document.getElementById('delivery-quick-total-weight');
     const netEl   = document.getElementById('delivery-quick-net-weight');
-    const tare    = _parseDeliveryNumber(document.getElementById('delivery-quick-tare-input')?.value);
-    const total   = _deliveryQuickWeights.reduce((s, w) => s + w, 0);
-    const net     = Math.max(0, total - _deliveryQuickWeights.length * tare);
+    const tareEl  = document.getElementById('delivery-quick-tare-input');
+    if (!list) return;
+
+    const globalTare = _parseDeliveryNumber(tareEl?.value);
+    const total      = _deliveryQuickWeights.reduce((s, e) => s + e.weight, 0);
+    const net        = Math.max(0, _deliveryQuickWeights.reduce((s, e) => {
+        const t = (e.tare !== null && e.tare !== undefined) ? e.tare : globalTare;
+        return s + Math.max(0, e.weight - t);
+    }, 0));
 
     if (countEl) countEl.textContent = _deliveryQuickWeights.length;
     if (totalEl) totalEl.textContent = total.toFixed(2);
     if (netEl)   netEl.textContent   = net.toFixed(2);
-
-    if (!list) return;
 
     if (!_deliveryQuickWeights.length) {
         list.innerHTML = `
@@ -416,16 +463,32 @@ function _renderDeliveryQuickWeights() {
         return;
     }
 
-    list.innerHTML = _deliveryQuickWeights.map((w, i) => `
-        <span style="display:inline-flex;align-items:center;gap:4px;
+    list.innerHTML = _deliveryQuickWeights.map((entry, i) => {
+        const indivTare = (entry.tare !== null && entry.tare !== undefined) ? entry.tare : globalTare;
+        const netW      = Math.max(0, entry.weight - indivTare).toFixed(2);
+        return `
+        <span style="display:inline-flex;align-items:center;gap:6px;
                      background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary);
-                     padding:4px 10px;border-radius:20px;font-size:13px;font-weight:500;
-                     cursor:default;user-select:none;">
-            <span style="font-size:10px;opacity:.75;">#${i + 1}</span>
-            <strong>${w} kg</strong>
-            <span class="material-icons" style="font-size:14px;cursor:pointer;"
+                     padding:4px 10px 4px 12px;border-radius:20px;font-size:13px;font-weight:500;
+                     flex-wrap:nowrap;">
+            <strong>${entry.weight} kg</strong>
+            <span style="display:inline-flex;align-items:center;gap:2px;opacity:.85;font-size:11px;font-weight:400;">
+                <span style="opacity:.7;">tare:</span>
+                <input type="number"
+                       value="${indivTare}"
+                       min="0" step="0.01"
+                       title="Tare pour ce poids (kg)"
+                       style="width:46px;background:rgba(0,0,0,.25);border:1px solid rgba(240,237,244,.35);
+                              border-radius:6px;color:inherit;font-size:11px;padding:1px 4px;
+                              text-align:center;-moz-appearance:textfield;"
+                       oninput="updateDeliveryIndividualTare(${i}, this.value)"
+                       onclick="event.stopPropagation()">
+                <span style="opacity:.7;">&#8594; ${netW} kg net</span>
+            </span>
+            <span class="material-icons" style="font-size:14px;cursor:pointer;opacity:.85;"
                   onclick="removeDeliveryQuickWeight(${i})">close</span>
-        </span>`).join('');
+        </span>`;
+    }).join('');
 }
 
 // Initialisation listeners
