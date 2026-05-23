@@ -3824,7 +3824,7 @@
     --quality-lo-rgb:  250, 239, 22;
     --quality-preparee-rgb: 0,  150, 255;
     --quality-seche-rgb:   141, 110,  99;
-    --quality-default-rgb: 120, 120, 120;
+    --quality-default-rgb:  30, 160, 255;
     }
 
     /* ══════════════════════════════════════════════════════
@@ -3902,12 +3902,16 @@
     color: #6B4E8A !important;
     }
 
-    /* Fallback : toute qualité inconnue → badge neutre, jamais texte brut */
-    .status-badge:not([class*="status-lava"]):not([class*="status-fohy"]):not([class*="status-verte"]):not([class*="status-fendue"]):not([class*="status-lo"]):not([class*="status-seche"]):not([class*="status-noire-"]):not([class*="status-debiteur"]):not([class*="status-crediteur"]):not([class*="status-equilibre"]) {
-    background: rgba(var(--quality-default-rgb), 0.16) !important;
+    /* Fallback : toute qualité inconnue → badge bleu clair, jamais texte brut */
+    .status-badge:not([class*="status-lava"]):not([class*="status-fohy"]):not([class*="status-verte"]):not([class*="status-fendue"]):not([class*="status-lo"]):not([class*="status-seche"]):not([class*="status-noire-"]):not([class*="status-debiteur"]):not([class*="status-crediteur"]):not([class*="status-equilibre"]):not([class*="status-preparee"]) {
+    background: rgba(var(--quality-default-rgb), 0.18) !important;
     color:      rgb(var(--quality-default-rgb)) !important;
-    border: 1px solid rgba(var(--quality-default-rgb), 0.40) !important;
+    border: 1px solid rgba(var(--quality-default-rgb), 0.45) !important;
+    box-shadow: 0 0 12px rgba(var(--quality-default-rgb), 0.22) !important;
     font-weight: 800 !important;
+    }
+    [data-theme="light"] .status-badge:not([class*="status-lava"]):not([class*="status-fohy"]):not([class*="status-verte"]):not([class*="status-fendue"]):not([class*="status-lo"]):not([class*="status-seche"]):not([class*="status-noire-"]):not([class*="status-debiteur"]):not([class*="status-crediteur"]):not([class*="status-equilibre"]):not([class*="status-preparee"]) {
+    color: #0160c8 !important;
     }
 
 /* ══════════════════════════════════════════════════════
