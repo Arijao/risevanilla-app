@@ -171,12 +171,45 @@ function calculateDebtorsCount() {
 }
 
 function updateProgressBars(b, totalWeight) {
-    const totalOut = b.totalAdvances + b.totalExpenses;
-    _setWidth('advances-progress', 100);
-    _setWidth('expenses-progress', 100);
-    _setWidth('vanilla-progress',  totalWeight > 0 ? 100 : 0);
-    _setWidth('value-progress',    totalOut > 0 ? Math.min(100, (b.totalVanillaValue / totalOut) * 100) : 0);
-    _setWidth('solde-progress',    b.isPositive ? 100 : (totalOut > 0 ? Math.min(100, (b.totalVanillaValue / totalOut) * 100) : 0));
+    const totalOut = b.totalMoneyOut; // base commune = totalAdvances + totalExpenses + totalPaiements
+
+    // Référence pour les jauges financières : max observé parmi les valeurs affichées
+    // Chaque jauge = part de SA valeur par rapport au total des sorties (si > 0)
+    const pct = (val, ref) => ref > 0 ? Math.min(100, Math.max(0, (val / ref) * 100)) : 0;
+
+    // Référence commune : totalMoneyOut (somme de toutes les sorties)
+    // Si totalMoneyOut = 0, on utilise la valeur elle-même comme référence (jauge pleine si > 0)
+    const ref = totalOut > 0 ? totalOut : 1;
+
+    // Avances : part des avances dans le total des sorties
+    _setWidth('advances-progress',
+        b.totalAdvances > 0 ? pct(b.totalAdvances, ref) : 0);
+
+    // Dépenses : part des dépenses dans le total des sorties
+    _setWidth('expenses-progress',
+        b.totalExpenses > 0 ? pct(b.totalExpenses, ref) : 0);
+
+    // Vanille collectée : proportion du poids réel vs objectif implicite
+    // Représentée comme taux de recouvrement valeur vanille / total sorties
+    _setWidth('vanilla-progress',
+        totalWeight > 0 ? pct(b.totalVanillaValue, ref) : 0);
+
+    // Valeur vanille : recouvrement valeur vanille / total sorties
+    _setWidth('value-progress',
+        pct(b.totalVanillaValue, ref));
+
+    // Avances non récupérées : part dans le total des sorties
+    _setWidth('avances-non-recuperees-progress',
+        b.totalAdvances > 0 ? pct(b.totalAdvances, ref) : 0);
+
+    // Paiements effectués : part dans le total des sorties
+    _setWidth('paiements-progress',
+        b.totalPaiements > 0 ? pct(b.totalPaiements, ref) : 0);
+
+    // Solde global : taux de recouvrement total (entrées / sorties)
+    // 0% si déficit total, jusqu'à 100% si tout est couvert
+    _setWidth('solde-progress',
+        totalOut > 0 ? Math.min(100, Math.max(0, (b.totalMoneyIn / totalOut) * 100)) : 0);
 }
 
 function updateRentabiliteInsights() {
