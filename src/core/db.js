@@ -81,10 +81,10 @@ function initDB() {
             qualityStore.createIndex('name', 'name', { unique: true });
 
             const defaultQualities = [
-                { name: 'Lava',    description: 'Vanille de qualité supérieure', vanilleType: 'preparee' },
-                { name: 'Fohy',    description: 'Vanille plus courte',           vanilleType: 'preparee' },
-                { name: 'Fendue',  description: 'Vanille fendue ou vaky',        vanilleType: 'preparee' },
-                { name: 'Lo',      description: 'Vanille de qualité inférieure', vanilleType: 'preparee' },
+                { name: 'Lava',    description: 'Vanille de qualité supérieure', vanilleType: 'verte' },
+                { name: 'Fohy',    description: 'Vanille plus courte',           vanilleType: 'verte' },
+                { name: 'Fendue',  description: 'Vanille fendue ou vaky',        vanilleType: 'verte' },
+                { name: 'Lo',      description: 'Vanille de qualité inférieure', vanilleType: 'verte' },
                 { name: 'Verte',   description: 'Vanille non préparée',          vanilleType: 'verte'    }
             ];
             defaultQualities.forEach(q => qualityStore.add(q));
@@ -384,10 +384,10 @@ async function resetData() {
 
             // ── Réinsérer les qualités prédéfinies après la remise à zéro ──
             const defaultQualities = [
-                { name: 'Lava',    description: 'Vanille de qualité supérieure', vanilleType: 'preparee' },
-                { name: 'Fohy',    description: 'Vanille plus courte',           vanilleType: 'preparee' },
-                { name: 'Fendue',  description: 'Vanille fendue ou vaky',        vanilleType: 'preparee' },
-                { name: 'Lo',      description: 'Vanille de qualité inférieure', vanilleType: 'preparee' },
+                { name: 'Lava',    description: 'Vanille de qualité supérieure', vanilleType: 'verte' },
+                { name: 'Fohy',    description: 'Vanille plus courte',           vanilleType: 'verte' },
+                { name: 'Fendue',  description: 'Vanille fendue ou vaky',        vanilleType: 'verte' },
+                { name: 'Lo',      description: 'Vanille de qualité inférieure', vanilleType: 'verte' },
                 { name: 'Verte',   description: 'Vanille non préparée',          vanilleType: 'verte'    }
             ];
             const tx = db.transaction('qualities', 'readwrite');
