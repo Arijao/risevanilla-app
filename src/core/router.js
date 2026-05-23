@@ -45,8 +45,8 @@ function navigateToSection(sectionName) {
         }
     }
 
-    // Close sidebar on mobile
-    if (window.innerWidth <= 768) closeSidebar();
+    // Close sidebar on mobile and tablet (cohérent avec initSidebar → 992px)
+    if (window.innerWidth <= 992) closeSidebar();
 }
 
 // ── Sidebar ──────────────────────────────────────────────────
