@@ -45,8 +45,8 @@ function navigateToSection(sectionName) {
         }
     }
 
-    // Close sidebar on mobile and tablet (cohérent avec initSidebar → 992px)
-    if (window.innerWidth <= 992) closeSidebar();
+    // Close sidebar on mobile
+    if (window.innerWidth <= 768) closeSidebar();
 }
 
 // ── Sidebar ──────────────────────────────────────────────────
@@ -207,13 +207,24 @@ function searchInAllData(query) {
 
             // Highlight dans les cellules textuelles (hors actions-cell)
             row.querySelectorAll('td:not(.actions-cell)').forEach(td => {
-                // Cellules DOM riches (avatars) : re-surligner uniquement le <span> interne
+                // Cellules DOM riches : re-surligner uniquement le contenu textuel interne
                 if (td.dataset.noHighlight) {
-                    const span = td.querySelector('.collector-avatar-cell > span');
-                    if (span) {
-                        const orig = span.dataset.origText ?? span.textContent;
-                        span.dataset.origText = orig;
-                        span.innerHTML = isMatch
+                    // Cas 1 — avatar collecteur
+                    const avatarSpan = td.querySelector('.collector-avatar-cell > span');
+                    if (avatarSpan) {
+                        const orig = avatarSpan.dataset.origText ?? avatarSpan.textContent;
+                        avatarSpan.dataset.origText = orig;
+                        avatarSpan.innerHTML = isMatch
+                            ? RiseVanillaSearch.highlightText(orig, query)
+                            : RiseVanillaSearch.escapeHtml(orig);
+                    }
+                    // Cas 2 — badge qualité : re-surligner uniquement le texte du status-badge
+                    // sans toucher au typeBadge (icône Material Icons) qui polluerait textContent
+                    const qualBadge = td.querySelector('.status-badge');
+                    if (qualBadge) {
+                        const orig = qualBadge.dataset.origText ?? qualBadge.textContent.trim();
+                        qualBadge.dataset.origText = orig;
+                        qualBadge.innerHTML = isMatch
                             ? RiseVanillaSearch.highlightText(orig, query)
                             : RiseVanillaSearch.escapeHtml(orig);
                     }
