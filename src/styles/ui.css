@@ -1184,13 +1184,13 @@
               box-shadow: 0 0 12px 2px rgba(0, 230, 118, 0.18), 0 0 0 1.5px rgba(0,230,118,0.10);
         }
 
-        /* ── Équilibré : sobre — calqué sur badge Préparée ── */
+        /* ── Équilibré : bleu clair — cohérent avec les qualités non déterminées ── */
         .status-equilibre {
-              background-color: rgba(120, 120, 130, 0.13);
-              color: #5c5c6e;
-              border: 1px solid rgba(120, 120, 130, 0.22);
+              background-color: rgba(30, 160, 255, 0.15);
+              color: rgb(30, 160, 255);
+              border: 1px solid rgba(30, 160, 255, 0.40);
               font-weight: 700;
-              box-shadow: 0 0 8px 1.5px rgba(120,120,130,0.10);
+              box-shadow: 0 0 10px 1.5px rgba(30, 160, 255, 0.18);
         }
 
         /* ── Thème clair : couleurs lisibles sur fond blanc ── */
@@ -1209,10 +1209,10 @@
         }
 
         [data-theme="light"] .status-equilibre {
-              background-color: rgba(120, 120, 130, 0.10);
-              color: #4a4458;
-              border-color: rgba(120, 120, 130, 0.18);
-              box-shadow: 0 0 7px 1.5px rgba(120,120,130,0.08);
+              background-color: rgba(30, 160, 255, 0.12);
+              color: #0160c8;
+              border-color: rgba(30, 160, 255, 0.35);
+              box-shadow: 0 0 8px 1.5px rgba(30, 160, 255, 0.12);
         }
 
         /* ── Badge de statut collecteur dans le formulaire de réception ── */
