@@ -6,16 +6,15 @@
 /* ── Highlight <mark> ─────────────────────────────────────── */
 
 mark.search-highlight {
-  /* Glassmorphism */
-  background: rgba(152, 144, 168, 0.18);
+  background: rgba(250, 204, 21, 0.28);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  border: 1px solid rgba(152, 144, 168, 0.45);
+  border: 1px solid rgba(250, 204, 21, 0.60);
   border-radius: 4px;
   padding: 0 3px;
   /* Underline */
   text-decoration: underline;
-  text-decoration-color: rgba(152, 144, 168, 0.8);
+  text-decoration-color: rgba(250, 204, 21, 0.9);
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
   /* Texte */
@@ -27,21 +26,21 @@ mark.search-highlight {
 
 @keyframes sh-pop {
   from {
-    background: rgba(152, 144, 168, 0);
-    border-color: rgba(152, 144, 168, 0);
+    background: rgba(250, 204, 21, 0);
+    border-color: rgba(250, 204, 21, 0);
   }
   to {
-    background: rgba(152, 144, 168, 0.18);
-    border-color: rgba(152, 144, 168, 0.45);
+    background: rgba(250, 204, 21, 0.28);
+    border-color: rgba(250, 204, 21, 0.60);
   }
 }
 
 /* Thème sombre */
 [data-theme="dark"] mark.search-highlight {
-  background: rgba(216, 210, 226, 0.15);
-  border-color: rgba(216, 210, 226, 0.5);
-  text-decoration-color: rgba(216, 210, 226, 0.9);
-  color: #F0EDF4;
+  background: rgba(250, 204, 21, 0.22);
+  border-color: rgba(250, 204, 21, 0.65);
+  text-decoration-color: rgba(250, 204, 21, 1);
+  color: #fef9c3;
 }
 
 /* ── Champ actif ──────────────────────────────────────────── */
