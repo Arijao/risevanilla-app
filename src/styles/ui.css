@@ -2745,6 +2745,7 @@
     font-weight: 500;
     color: var(--md-sys-color-on-surface);
     position: relative;
+}   /* ← accolade fermante manquante — causait l'ignorance de ~950 lignes de CSS */
 
 .palette-option:hover {
     border-color: var(--pal-primary, var(--md-sys-color-primary));
@@ -3460,7 +3461,6 @@
     padding: 13px 16px;
     border-radius: 14px;
     border: none;
-    margin-top: 10px; /* espace sous le select */
     /* Ombre portée nette — profondeur sans brume */
     box-shadow:
         0 4px 14px rgba(0, 0, 0, 0.18),
@@ -3535,12 +3535,12 @@
  * VARIANTE : Créditeur — vert émeraude éclatant
  * ══════════════════════════════════════════════════════ */
 .balance-info--credit {
-    background: linear-gradient(145deg, #00c853 0%, #00a846 55%, #007a33 100%) !important;
-    color: #ffffff !important;
+    background: linear-gradient(145deg, #00c853 0%, #00a846 55%, #007a33 100%);
+    color: #ffffff;
 }
 [data-theme="dark"] .balance-info--credit {
-    background: linear-gradient(145deg, #00e676 0%, #00c853 55%, #009e3d 100%) !important;
-    color: #ffffff !important;
+    background: linear-gradient(145deg, #00e676 0%, #00c853 55%, #009e3d 100%);
+    color: #ffffff;
 }
 
 /* ── Icône créditeur ── */
@@ -3557,12 +3557,12 @@
  * VARIANTE : Débiteur — rouge rubis éclatant
  * ══════════════════════════════════════════════════════ */
 .balance-info--debit {
-    background: linear-gradient(145deg, #f44336 0%, #e53935 55%, #b71c1c 100%) !important;
-    color: #ffffff !important;
+    background: linear-gradient(145deg, #f44336 0%, #e53935 55%, #b71c1c 100%);
+    color: #ffffff;
 }
 [data-theme="dark"] .balance-info--debit {
-    background: linear-gradient(145deg, #ff5252 0%, #f44336 55%, #c62828 100%) !important;
-    color: #ffffff !important;
+    background: linear-gradient(145deg, #ff5252 0%, #f44336 55%, #c62828 100%);
+    color: #ffffff;
 }
 
 /* ── Icône débiteur ── */
@@ -3579,12 +3579,12 @@
  * VARIANTE : Neutre — ardoise bleue propre
  * ══════════════════════════════════════════════════════ */
 .balance-info--neutral {
-    background: linear-gradient(145deg, #546e7a 0%, #455a64 55%, #263238 100%) !important;
-    color: #ffffff !important;
+    background: linear-gradient(145deg, #546e7a 0%, #455a64 55%, #263238 100%);
+    color: #ffffff;
 }
 [data-theme="dark"] .balance-info--neutral {
-    background: linear-gradient(145deg, #78909c 0%, #607d8b 55%, #37474f 100%) !important;
-    color: #ffffff !important;
+    background: linear-gradient(145deg, #78909c 0%, #607d8b 55%, #37474f 100%);
+    color: #ffffff;
 }
 
 /* ── Icône neutre ── */
@@ -3623,7 +3623,6 @@
 .balance-info__icon .material-icons {
     font-size: 22px;
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
-    text-transform: none; /* protège les ligatures d'icône */
 }
 
 /* ── Corps texte ── */
@@ -3686,7 +3685,6 @@
     background: rgba(152, 144, 168, 0.10);
     color: #5c5c6e;
     border: 1px solid rgba(152, 144, 168, 0.22);
-}
 }
 
 /* ── Responsive mobile ── */
