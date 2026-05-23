@@ -4,7 +4,7 @@
   "description": "Système premium de gestion de collecte de vanille.",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#504858",
+  "background_color": "#252129",
   "theme_color": "#9890A8",
   "orientation": "portrait-primary",
   "icons": [
