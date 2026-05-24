@@ -203,9 +203,22 @@ function getQualitySlug(qualityName) {
 }
 
 /**
- * Injecte une règle CSS dynamique pour une qualité inconnue.
- * Idempotent — sans effet si la règle existe déjà.
+ * Retourne la couleur rgb d'une qualité sous forme "r,g,b"
+ * — Prédéfinie  → lit la variable CSS --quality-<slug>-rgb (source de vérité ui.css)
+ * — Dynamique   → calcul déterministe identique à getQualitySlug()
+ * Utilisable partout : `rgb(${getQualityColor(name)})` ou `rgba(${getQualityColor(name)}, 0.18)`
  */
+function getQualityColor(qualityName) {
+    const slug = getQualitySlug(qualityName);
+    // Lire la variable CSS si elle existe (qualités prédéfinies dans ui.css)
+    const cssVar = `--quality-${slug}-rgb`;
+    const fromCss = getComputedStyle(document.documentElement)
+                        .getPropertyValue(cssVar).trim();
+    if (fromCss) return fromCss;
+    // Qualité dynamique : recalcul déterministe
+    const key = _normalizeQualityKey(qualityName || '');
+    return _hslToRgbString(_qualityHueFromName(key), 75, 62);
+}
 function injectQualityStyle(slug, rgb) {
     if (!slug || !rgb) return;
     const styleId = `qs-${slug}`;

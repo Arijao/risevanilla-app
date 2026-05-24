@@ -509,12 +509,6 @@ function openQualityDetailModal() {
     const badge = document.getElementById('qdm-year-badge');
     if (badge) badge.textContent = `Année ${currentYear}`;
 
-    // Palette
-    const style    = getComputedStyle(document.body);
-    const primary  = style.getPropertyValue('--md-sys-color-primary').trim() || '#6750A4';
-    const PALETTE  = [primary,'#C9AECF','#A78EB8','#B89EC4','#DEBBD8','#EDD6E8','#9890A8','#706878',
-                      '#D8D2E2','#B8B0C8','#9890A8','#706878','#504858','#EDD6E8'];
-
     // ── Summary chips ──────────────────────────────────────────
     const chipsEl = document.getElementById('qdm-chips');
     if (chipsEl) {
@@ -538,7 +532,7 @@ function openQualityDetailModal() {
         chipsEl.appendChild(makeChip('Qualités', rows.length + ' types'));
         chipsEl.appendChild(makeChip('Réceptions', rows.reduce((s,r)=>s+r.count,0) + ' entrées'));
         if (rows.length > 0) {
-            chipsEl.appendChild(makeChip('1ère qualité', rows[0].quality, PALETTE[0]));
+            chipsEl.appendChild(makeChip('1ère qualité', rows[0].quality, `rgb(${getQualityColor(rows[0].quality)})`));
         }
     }
 
@@ -553,7 +547,9 @@ function openQualityDetailModal() {
             const maxPct = rows[0].pct; // already sorted desc
 
             rows.forEach((row, i) => {
-                const color = PALETTE[i % PALETTE.length];
+                const rgb   = getQualityColor(row.quality);
+                const color = `rgb(${rgb})`;
+                const colorBg = `rgba(${rgb}, 0.18)`;
                 const barWidth = maxPct > 0 ? (row.pct / maxPct * 100) : 0;
 
                 const rowEl = document.createElement('div');
@@ -604,7 +600,9 @@ function openQualityDetailModal() {
                 color:var(--md-sys-color-on-surface-variant);">Aucune donnée disponible.</td></tr>`;
         } else {
             rows.forEach((row, i) => {
-                const color = PALETTE[i % PALETTE.length];
+                const rgb   = getQualityColor(row.quality);
+                const color = `rgb(${rgb})`;
+                const colorBg = `rgba(${rgb}, 0.18)`;
                 const tr = document.createElement('tr');
                 tr.style.borderBottom = '1px solid var(--md-sys-color-outline-variant)';
                 tr.onmouseover = () => tr.style.background = 'var(--md-sys-color-surface-variant,#e7e0ec)';
@@ -617,8 +615,8 @@ function openQualityDetailModal() {
                             <span style="font-weight:500;">${row.quality}</span>
                             <span style="
                                 font-size:10px;padding:1px 7px;border-radius:20px;
-                                background:${row.vanilleType === 'verte' ? 'rgba(152,144,168,.18)' : 'rgba(152,144,168,.10)'};
-                                color:${row.vanilleType === 'verte' ? '#4caf50' : '#6750a4'};
+                                background:${row.vanilleType === 'verte' ? 'rgba(0,230,118,.15)' : 'rgba(0,150,255,.15)'};
+                                color:${row.vanilleType === 'verte' ? 'rgb(0,200,100)' : 'rgb(0,150,255)'};
                                 font-weight:600;white-space:nowrap;">
                                 ${row.vanilleType === 'verte' ? 'Verte' : 'Préparée'}
                             </span>
