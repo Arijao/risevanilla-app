@@ -528,7 +528,7 @@ function openQualityDetailModal() {
             return chip;
         };
 
-        chipsEl.appendChild(makeChip('Total poids', grandTotal.toFixed(2) + ' kg', primary));
+        chipsEl.appendChild(makeChip('Total poids', grandTotal.toFixed(2) + ' kg', 'var(--md-sys-color-primary)'));
         chipsEl.appendChild(makeChip('Qualités', rows.length + ' types'));
         chipsEl.appendChild(makeChip('Réceptions', rows.reduce((s,r)=>s+r.count,0) + ' entrées'));
         if (rows.length > 0) {
