@@ -35,7 +35,7 @@ function _logoHeader(docType, docNum) {
  */
 function _logoHeaderThermal() {
     return '<div style="text-align:center;margin-bottom:4px;">'
-         + '<img src="' + _LOGO_B64 + '" style="width:14mm;height:14mm;object-fit:contain;">'
+         + '<img src="' + _LOGO_B64 + '" style="width:12mm;height:12mm;object-fit:contain;">'
          + '</div>';
 }
 
@@ -476,7 +476,8 @@ body {
 .info-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
 .info-table td { padding: 2px 0; vertical-align: top; line-height: 1.6; }
 .info-table td.lbl { width: 50%; }
-.info-table td.val { text-align: right; font-weight: 700; }
+.info-table td.val       { text-align: right; font-weight: 700; }
+.info-table td.val-normal { text-align: right; font-weight: 400; }
 
 /* Section titre */
 .section-ttl { font-weight: 700; margin: 4px 0 3px; }
@@ -556,8 +557,8 @@ body {
     <hr class="sep-dash">
 
     <table class="info-table">
-        <tr><td class="lbl">N&#176; Recu:</td><td class="val">${recNum}</td></tr>
-        <tr><td class="lbl">Date:</td><td class="val">${dateStr}</td></tr>
+        <tr><td class="lbl">N&#176; Recu:</td><td class="val-normal">${recNum}</td></tr>
+        <tr><td class="lbl">Date:</td><td class="val-normal">${dateStr}</td></tr>
         <tr><td class="lbl">Collecteur:</td><td class="val">${colName}</td></tr>
     </table>
 
