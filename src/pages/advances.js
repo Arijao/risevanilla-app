@@ -468,6 +468,7 @@ function printAdvanceTicket(advanceId) {
 
     /* ── En-tête ── */
     .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4mm; margin-bottom: 3mm; }
+    .header .logo-img  { width: 18mm; height: 18mm; object-fit: contain; display: block; margin: 0 auto 2mm; }
     .header .logo-line { font-size: 14px; font-weight: bold; letter-spacing: 2px; }
     .header .subtitle  { font-size: 9px; color: #333; margin-top: 1mm; }
     .ref-badge { display: inline-block; border: 1px solid #000; padding: 1mm 3mm;
@@ -529,6 +530,7 @@ function printAdvanceTicket(advanceId) {
 
 <!-- En-tête -->
 <div class="header">
+    <img src="${_LOGO_B64_ADV}" alt="RISEVANILLA" class="logo-img">
     <div class="logo-line">RISEVANILLA</div>
     <div class="subtitle">Gestion de Collecte de Vanille</div>
     <div style="margin-top:2mm;">
