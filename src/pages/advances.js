@@ -792,6 +792,80 @@ function updateRemboursementsTable() {
     }
 }
 
+// ── Signature Pad — Paiement Solde Créditeur (pad dédié) ─────
+let _cpSigCanvas  = null;
+let _cpSigCtx     = null;
+let _cpSigDrawing = false;
+let _cpSigHasData = false;
+
+function _initCpSignaturePad() {
+    _cpSigCanvas = document.getElementById('cp-signature-canvas');
+    if (!_cpSigCanvas) return;
+
+    const rect = _cpSigCanvas.getBoundingClientRect();
+    _cpSigCanvas.width  = rect.width  || 476;
+    _cpSigCanvas.height = rect.height || 160;
+
+    _cpSigCtx = _cpSigCanvas.getContext('2d');
+    _cpSigCtx.strokeStyle = '#1a1a2e';
+    _cpSigCtx.lineWidth   = 2.5;
+    _cpSigCtx.lineCap     = 'round';
+    _cpSigCtx.lineJoin    = 'round';
+    _cpSigHasData = false;
+
+    // Cloner pour purger les anciens listeners
+    const fresh = _cpSigCanvas.cloneNode(true);
+    _cpSigCanvas.parentNode.replaceChild(fresh, _cpSigCanvas);
+    _cpSigCanvas = fresh;
+    _cpSigCtx    = _cpSigCanvas.getContext('2d');
+    _cpSigCtx.strokeStyle = '#1a1a2e';
+    _cpSigCtx.lineWidth   = 2.5;
+    _cpSigCtx.lineCap     = 'round';
+    _cpSigCtx.lineJoin    = 'round';
+
+    function _pos(e) {
+        const r = _cpSigCanvas.getBoundingClientRect();
+        const scaleX = _cpSigCanvas.width  / r.width;
+        const scaleY = _cpSigCanvas.height / r.height;
+        const src = e.touches ? e.touches[0] : e;
+        return { x: (src.clientX - r.left) * scaleX, y: (src.clientY - r.top) * scaleY };
+    }
+    function _start(e) {
+        e.preventDefault();
+        _cpSigDrawing = true;
+        _cpSigHasData = true;
+        const { x, y } = _pos(e);
+        _cpSigCtx.beginPath();
+        _cpSigCtx.moveTo(x, y);
+        const ph = document.getElementById('cp-signature-placeholder');
+        if (ph) ph.style.display = 'none';
+    }
+    function _move(e) {
+        e.preventDefault();
+        if (!_cpSigDrawing) return;
+        const { x, y } = _pos(e);
+        _cpSigCtx.lineTo(x, y);
+        _cpSigCtx.stroke();
+    }
+    function _end(e) { e.preventDefault(); _cpSigDrawing = false; }
+
+    _cpSigCanvas.addEventListener('mousedown',  _start);
+    _cpSigCanvas.addEventListener('mousemove',  _move);
+    _cpSigCanvas.addEventListener('mouseup',    _end);
+    _cpSigCanvas.addEventListener('mouseleave', _end);
+    _cpSigCanvas.addEventListener('touchstart', _start, { passive: false });
+    _cpSigCanvas.addEventListener('touchmove',  _move,  { passive: false });
+    _cpSigCanvas.addEventListener('touchend',   _end,   { passive: false });
+}
+
+function clearCpSignaturePad() {
+    if (!_cpSigCanvas || !_cpSigCtx) return;
+    _cpSigCtx.clearRect(0, 0, _cpSigCanvas.width, _cpSigCanvas.height);
+    _cpSigHasData = false;
+    const ph = document.getElementById('cp-signature-placeholder');
+    if (ph) ph.style.display = '';
+}
+
 // ── Paiements Solde Créditeur ─────────────────────────────────
 
 function payCollectorCredit(collectorId) {
@@ -815,15 +889,39 @@ function payCollectorCredit(collectorId) {
     if (amtEl)  amtEl.value  = '';
     if (noteEl) noteEl.value = '';
 
+    // Indicateur de solde créditeur + données du bouton "Payer tout"
+    const fillBtn   = document.getElementById('cp-fill-total-btn');
+    const creditInfo = document.getElementById('cp-credit-info');
+    if (fillBtn) {
+        fillBtn.dataset.credit = balance;
+        fillBtn.disabled = false;
+    }
+    if (creditInfo) {
+        creditInfo.style.display = 'block';
+        creditInfo.innerHTML = `Solde créditeur : <strong>${balance.toLocaleString('fr-MG')} Ar</strong>
+            <span style="opacity:.7;">— saisie partielle autorisée</span>`;
+    }
+
+    // Réinitialiser le pad de signature
+    _cpSigHasData = false;
+    const ph = document.getElementById('cp-signature-placeholder');
+    if (ph) ph.style.display = '';
+
     openModal('credit-payment-modal');
+    // Init pad après ouverture (canvas doit être visible)
+    setTimeout(_initCpSignaturePad, 80);
 }
 
+/** Remplit le champ montant avec la totalité du solde créditeur */
 function setCreditPaymentToFullBalance() {
-    const collectorId = parseInt(document.getElementById('credit-payment-collector-id')?.value);
-    if (!collectorId) return;
-    const balance = calculateCollectorBalance(collectorId);
+    const fillBtn = document.getElementById('cp-fill-total-btn');
     const amtEl   = document.getElementById('credit-payment-amount');
-    if (amtEl) amtEl.value = Math.abs(balance).toLocaleString('fr-MG');
+    if (!fillBtn || !amtEl) return;
+    const credit = parseFloat(fillBtn.dataset.credit || 0);
+    if (credit > 0) {
+        amtEl.value = credit.toLocaleString('fr-MG');
+        amtEl.focus();
+    }
 }
 
 function formatCreditPaymentAmount(input) {
@@ -844,10 +942,37 @@ function submitCreditPayment(event) {
         return;
     }
 
-    const data = { collectorId, amount, date, note, createdAt: new Date().toISOString() };
+    // Validation : montant ne peut pas dépasser le solde créditeur
+    const balance = typeof calculateCollectorBalance === 'function'
+        ? calculateCollectorBalance(collectorId) : 0;
+    const credit = balance > 0 ? balance : 0;
+    if (credit > 0 && amount > credit) {
+        showToast(
+            `Montant (${amount.toLocaleString('fr-MG')} Ar) supérieur au solde créditeur (${credit.toLocaleString('fr-MG')} Ar)`,
+            'error', 4000
+        );
+        return;
+    }
+
+    // Signature obligatoire
+    if (!_cpSigHasData) {
+        showToast('Veuillez apposer la signature du collecteur avant de valider.', 'error');
+        // Scroll vers la zone signature
+        const sigSection = document.getElementById('cp-signature-canvas');
+        if (sigSection) sigSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+
+    const signatureData = _cpSigCanvas ? _cpSigCanvas.toDataURL('image/png') : null;
+    const data = {
+        collectorId, amount, date, note,
+        signatureData,
+        confirmedAt: new Date().toISOString(),
+        createdAt:   new Date().toISOString()
+    };
     saveToDB('paiements', data, () => {
         closeModal('credit-payment-modal');
-        showToast('Paiement enregistré!', 'success');
+        showToast('✅ Paiement enregistré et signé !', 'success');
     });
 }
 
