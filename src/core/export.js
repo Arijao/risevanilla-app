@@ -512,9 +512,9 @@ body {
 }
 .qr-ref { font-size: 10px; text-align: center; margin: 4px 0 6px; line-height: 1.5; }
 
-/* Signature — espace généreux */
+/* Signature — espace pour apposer la signature */
 .sig-section { margin: 8px 0 4px; }
-.sig-label   { font-size: 11px; text-align: center; margin-bottom: 16px; line-height: 1.6; }
+.sig-label   { font-size: 11px; text-align: center; margin-top: 22mm; margin-bottom: 4px; line-height: 1.6; }
 .sig-line    { border-top: 1px solid #000; width: 52mm; margin: 0 auto; }
 
 /* Pied de page */
