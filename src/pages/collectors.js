@@ -391,9 +391,17 @@ function exportCollectorReport(collectorId) {
         <tr class="total"><td colspan="2">TOTAL</td><td>${formatCurrency(totalRemb)}</td></tr>
     </tbody></table>` : '<p>Aucun remboursement.</p>'}
     <h2>💸 Paiements de Solde</h2>
-    ${paiements.length ? `<table><thead><tr><th>Date</th><th>Note</th><th>Montant</th></tr></thead><tbody>
-        ${paiements.map(p=>`<tr><td>${formatDate(p.date)}</td><td>${p.note||''}</td><td>${formatCurrency(p.amount)}</td></tr>`).join('')}
-        <tr class="total"><td colspan="2">TOTAL</td><td>${formatCurrency(totalPai)}</td></tr>
+    ${paiements.length ? `<table><thead><tr><th>Date</th><th>Note</th><th>Montant</th><th>Signature</th></tr></thead><tbody>
+        ${paiements.map(p=>`<tr>
+            <td>${formatDate(p.date)}</td>
+            <td>${p.note||''}</td>
+            <td>${formatCurrency(p.amount)}</td>
+            <td style="text-align:center;">${p.signatureData
+                ? `<img src="${p.signatureData}" style="max-width:140px;max-height:60px;border:1px solid #ddd;border-radius:4px;padding:3px;background:#fff;">`
+                : `<span style="font-size:11px;color:#c62828;font-style:italic;">Non signé</span>`
+            }</td>
+        </tr>`).join('')}
+        <tr class="total"><td colspan="3">TOTAL</td><td>${formatCurrency(totalPai)}</td></tr>
     </tbody></table>` : '<p>Aucun paiement.'}
     <script>window.onload=()=>window.print();</script></body></html>`;
 

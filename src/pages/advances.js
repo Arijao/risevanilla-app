@@ -989,6 +989,64 @@ async function deletePaiement(id) {
     deleteFromDB('paiements', id, () => showToast('Paiement supprimé.', 'warning'));
 }
 
+/** Affiche la signature d'un paiement dans un mini-modal */
+function viewPaiementSignature(paiementId) {
+    const p = (appData.paiements || []).find(x => x.id === paiementId);
+    if (!p || !p.signatureData) { showToast('Signature introuvable.', 'error'); return; }
+    const collector = (appData.collectors || []).find(c => c.id === p.collectorId);
+
+    const modalId = 'paiement-sig-preview-modal';
+    let modal = document.getElementById(modalId);
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = modalId;
+        document.body.appendChild(modal);
+    }
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:420px;width:95%;">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <span class="material-icons" style="color:#2e7b32;">verified</span>
+                    Signature — Paiement confirmé
+                </h3>
+                <button class="close-btn" onclick="closeModal('${modalId}')">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div style="padding:20px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;
+                            font-size:13px;margin-bottom:16px;
+                            padding:12px;border-radius:10px;
+                            background:var(--md-sys-color-surface-variant);">
+                    <div><span style="opacity:.7;">Collecteur</span><br>
+                         <strong>${collector ? collector.name : '—'}</strong></div>
+                    <div><span style="opacity:.7;">Date</span><br>
+                         <strong>${formatDate(p.date)}</strong></div>
+                    <div><span style="opacity:.7;">Montant payé</span><br>
+                         <strong style="color:var(--md-sys-color-primary);">${formatCurrency(p.amount)}</strong></div>
+                    <div><span style="opacity:.7;">Note</span><br>
+                         <strong>${p.note || '—'}</strong></div>
+                </div>
+                <div style="font-size:12px;color:var(--md-sys-color-on-surface-variant);
+                            margin-bottom:8px;font-weight:500;">
+                    Signature du collecteur :
+                </div>
+                <div style="border:1px solid var(--md-sys-color-outline-variant);
+                            border-radius:10px;background:#fff;padding:8px;text-align:center;">
+                    <img src="${p.signatureData}" alt="Signature"
+                         style="max-width:100%;max-height:140px;object-fit:contain;">
+                </div>
+                ${p.confirmedAt ? `<div style="font-size:11px;opacity:.6;margin-top:8px;text-align:right;">
+                    Signé le ${new Date(p.confirmedAt).toLocaleString('fr-MG')}</div>` : ''}
+            </div>
+            <div style="padding:0 20px 16px;display:flex;justify-content:flex-end;">
+                <button class="btn btn-outline" onclick="closeModal('${modalId}')">Fermer</button>
+            </div>
+        </div>`;
+    openModal(modalId);
+}
+
 function updatePaiementsTable() {
     const tbody = document.getElementById('paiements-table');
     if (!tbody) return;
@@ -999,7 +1057,7 @@ function updatePaiementsTable() {
 
     if (!paiements.length) {
         tbody.innerHTML = `
-            <tr><td colspan="5" class="empty-state">
+            <tr><td colspan="6" class="empty-state">
                 <div class="material-icons">payments</div>
                 <div>Aucun paiement pour ${currentYear}</div>
             </td></tr>`;
@@ -1011,11 +1069,26 @@ function updatePaiementsTable() {
         const collector = (appData.collectors || []).find(c => c.id === p.collectorId);
         const row = document.createElement('tr');
         const _q = document.getElementById('global-search-input')?.value?.trim() || '';
+        const sigBadge = p.signatureData
+            ? `<span title="Paiement signé — cliquer pour voir la signature"
+                     onclick="viewPaiementSignature(${p.id})"
+                     style="display:inline-flex;align-items:center;gap:3px;cursor:pointer;
+                            padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;
+                            background:rgba(46,125,50,.12);color:#2e7b32;border:1px solid rgba(46,125,50,.3);">
+                 <span class="material-icons" style="font-size:13px;">verified</span>Signé
+               </span>`
+            : `<span title="Aucune signature enregistrée"
+                     style="display:inline-flex;align-items:center;gap:3px;
+                            padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;
+                            background:rgba(198,40,40,.10);color:#c62828;border:1px solid rgba(198,40,40,.25);">
+                 <span class="material-icons" style="font-size:13px;">warning_amber</span>Non signé
+               </span>`;
         row.innerHTML = `
             <td data-label="Date">${formatDate(p.date)}</td>
             <td data-label="Collecteur"></td>
             <td data-label="Montant Payé">${formatCurrency(p.amount)}</td>
             <td data-label="Note">${RiseVanillaSearch.highlightText(p.note || '—', _q)}</td>
+            <td data-label="Signature">${sigBadge}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-danger" onclick="deletePaiement(${p.id})" title="Supprimer">
                     <span class="material-icons">delete</span>
