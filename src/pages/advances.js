@@ -617,6 +617,30 @@ function openRemboursementModal(collectorId, remboursementId = null) {
         const due = balance < 0 ? Math.abs(balance) : 0;
         const amtEl = document.getElementById('remboursement-amount');
         if (amtEl) amtEl.value = due > 0 ? due.toLocaleString('fr-MG') : '';
+
+        // Stocker le montant dû pour validation + afficher l'indicateur
+        const btn     = document.getElementById('remb-fill-total-btn');
+        const dueInfo = document.getElementById('remboursement-due-info');
+        if (btn) {
+            btn.dataset.due = due;
+            btn.disabled    = due <= 0;
+        }
+        if (dueInfo) {
+            if (due > 0) {
+                dueInfo.style.display = 'block';
+                dueInfo.innerHTML = `Solde dû : <strong>${due.toLocaleString('fr-MG')} Ar</strong>
+                    <span style="opacity:.7;">— saisie partielle autorisée</span>`;
+            } else {
+                dueInfo.style.display = 'block';
+                dueInfo.innerHTML = `<span style="color:var(--md-sys-color-primary);">✓ Aucune dette — collecteur équilibré ou créditeur</span>`;
+            }
+        }
+    } else {
+        // En mode édition : masquer l'indicateur et le bouton totalité
+        const btn     = document.getElementById('remb-fill-total-btn');
+        const dueInfo = document.getElementById('remboursement-due-info');
+        if (btn) { btn.dataset.due = 0; btn.style.display = 'none'; }
+        if (dueInfo) dueInfo.style.display = 'none';
     }
 
     if (remboursementId) {
@@ -632,6 +656,18 @@ function openRemboursementModal(collectorId, remboursementId = null) {
     }
 
     openModal('remboursement-modal');
+}
+
+/** Remplit le champ montant avec la totalité du solde dû */
+function fillTotalRemboursement() {
+    const btn   = document.getElementById('remb-fill-total-btn');
+    const amtEl = document.getElementById('remboursement-amount');
+    if (!btn || !amtEl) return;
+    const due = parseFloat(btn.dataset.due || 0);
+    if (due > 0) {
+        amtEl.value = due.toLocaleString('fr-MG');
+        amtEl.focus();
+    }
 }
 
 function openRemboursementModalToEdit(remboursementId) {
@@ -651,6 +687,20 @@ function saveRemboursement(event) {
     if (!date || !collectorId || !amount) {
         showToast('Veuillez remplir tous les champs obligatoires', 'error');
         return;
+    }
+
+    // Validation : montant ne peut pas dépasser le solde dû (nouveau remboursement uniquement)
+    if (!editIdEl?.value) {
+        const balance = typeof calculateCollectorBalance === 'function'
+            ? calculateCollectorBalance(collectorId) : 0;
+        const due = balance < 0 ? Math.abs(balance) : 0;
+        if (due > 0 && amount > due) {
+            showToast(
+                `Montant (${amount.toLocaleString('fr-MG')} Ar) supérieur au solde dû (${due.toLocaleString('fr-MG')} Ar)`,
+                'error', 4000
+            );
+            return;
+        }
     }
 
     const data = { collectorId, amount, date, note, createdAt: new Date().toISOString() };
