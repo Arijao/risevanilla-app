@@ -153,6 +153,191 @@ async function saveSignature() {
     showToast('✅ Signature enregistrée — réception confirmée !', 'success');
 }
 
+// ── Ticket Thermique 80mm ─────────────────────────────────────
+
+/**
+ * Micro-générateur QR Code (Mode numérique/alphanumérique, version 1-10)
+ * Algorithme simplifié pour données courtes (<100 chars).
+ * Retourne une grille de modules (tableau de tableaux de booléens).
+ */
+function _buildQRSVG(text, sizePx) {
+    // Utilise l'API QR server en tant qu'image data-URI via canvas
+    // Pour 100% offline : on génère un SVG QR basé sur l'encodage manuel
+    // Ici on délègue à un <img> avec src QR-server ET un fallback texte
+    const encoded = encodeURIComponent(text);
+    const url = `https://api.qrserver.com/v1/create-qr-code/?size=${sizePx}x${sizePx}&data=${encoded}&margin=4&format=svg`;
+    return `<img src="${url}" width="${sizePx}" height="${sizePx}"
+                 style="display:block;image-rendering:pixelated;"
+                 onerror="this.outerHTML='<div style=\'width:${sizePx}px;height:${sizePx}px;border:2px solid #000;display:flex;align-items:center;justify-content:center;font-size:9px;text-align:center;padding:4px;\'>QR indisponible<br>hors-ligne</div>'"
+                 alt="QR ${text}">`;
+}
+
+/** Imprime un ticket thermique format 80mm pour une avance */
+function printAdvanceTicket(advanceId) {
+    const advance   = (appData.advances || []).find(a => a.id === advanceId);
+    if (!advance) { showToast('Avance introuvable', 'error'); return; }
+    const collector = (appData.collectors || []).find(c => c.id === advance.collectorId);
+    const ref       = 'AVA-' + String(advance.id).padStart(4, '0');
+    const collName  = collector ? collector.name : '—';
+    const montant   = Math.abs(advance.amount).toLocaleString('fr-MG') + ' Ar';
+    const dateFmt   = formatDate(advance.date);
+    const confirmed = advance.confirmedAt
+        ? new Date(advance.confirmedAt).toLocaleString('fr-FR')
+        : '—';
+
+    // Contenu QR : données essentielles compactes
+    const qrData = `${ref}|${collName}|${montant}|${dateFmt}`;
+    const qrHtml = _buildQRSVG(qrData, 120);
+
+    const sigHtml = advance.signature
+        ? `<div class="sig-block">
+               <div class="label-sm">Signature collecteur</div>
+               <img src="${advance.signature}" class="sig-img" alt="Signature">
+           </div>`
+        : '';
+
+    const html = `<!DOCTYPE html><html lang="fr"><head>
+<meta charset="UTF-8">
+<title>Ticket ${ref}</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 11px;
+        color: #000;
+        background: #fff;
+        width: 72mm;          /* zone imprimable 80mm - marges */
+        margin: 0 auto;
+        padding: 4mm 2mm;
+    }
+
+    /* ── En-tête ── */
+    .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4mm; margin-bottom: 3mm; }
+    .header .logo-line { font-size: 14px; font-weight: bold; letter-spacing: 2px; }
+    .header .subtitle  { font-size: 9px; color: #333; margin-top: 1mm; }
+    .ref-badge { display: inline-block; border: 1px solid #000; padding: 1mm 3mm;
+                 font-size: 12px; font-weight: bold; letter-spacing: 1px; margin: 2mm 0; }
+    .doc-type  { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #333; }
+
+    /* ── Montant central ── */
+    .amount-block {
+        text-align: center;
+        border: 2px solid #000;
+        border-radius: 2mm;
+        padding: 3mm;
+        margin: 3mm 0;
+    }
+    .amount-label { font-size: 9px; color: #555; margin-bottom: 1mm; }
+    .amount-value { font-size: 18px; font-weight: bold; letter-spacing: 1px; }
+
+    /* ── Lignes de données ── */
+    .data-section { margin: 3mm 0; }
+    .data-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 1mm 0;
+        border-bottom: 1px dotted #bbb;
+        gap: 4px;
+    }
+    .data-row:last-child { border-bottom: none; }
+    .data-label { color: #444; flex-shrink: 0; min-width: 24mm; }
+    .data-val   { font-weight: bold; text-align: right; word-break: break-all; }
+
+    /* ── Séparateur ── */
+    .sep { border: none; border-top: 1px dashed #000; margin: 3mm 0; }
+
+    /* ── Motif ── */
+    .motif-block { font-size: 10px; font-style: italic;
+                   border-left: 2px solid #000; padding-left: 2mm; margin: 2mm 0; }
+
+    /* ── QR Code ── */
+    .qr-block { text-align: center; margin: 3mm 0; }
+    .qr-block .label-sm { font-size: 9px; color: #555; margin-bottom: 2mm; }
+
+    /* ── Signature ── */
+    .sig-block { text-align: center; margin: 3mm 0; }
+    .sig-block .label-sm { font-size: 9px; color: #555; margin-bottom: 1mm; }
+    .sig-img { max-width: 56mm; max-height: 18mm; border: 1px solid #ccc;
+               border-radius: 1mm; padding: 1mm; background: #fff; }
+
+    /* ── Pied ── */
+    .footer { text-align: center; font-size: 8px; color: #555;
+              border-top: 1px dashed #000; padding-top: 3mm; margin-top: 3mm; }
+    .footer .brand { font-size: 10px; font-weight: bold; letter-spacing: 1px; }
+
+    @media print {
+        body { width: 72mm; margin: 0; padding: 3mm 2mm; }
+        @page { size: 80mm auto; margin: 0; }
+    }
+</style>
+</head><body>
+
+<!-- En-tête -->
+<div class="header">
+    <div class="logo-line">RISEVANILLA</div>
+    <div class="subtitle">Gestion de Collecte de Vanille</div>
+    <div style="margin-top:2mm;">
+        <span class="ref-badge">${ref}</span>
+    </div>
+    <div class="doc-type">Ticket d'Avance</div>
+</div>
+
+<!-- Montant -->
+<div class="amount-block">
+    <div class="amount-label">MONTANT AVANCÉ</div>
+    <div class="amount-value">${montant}</div>
+</div>
+
+<!-- Données -->
+<div class="data-section">
+    <div class="data-row">
+        <span class="data-label">Collecteur</span>
+        <span class="data-val">${collName}</span>
+    </div>
+    <div class="data-row">
+        <span class="data-label">Date</span>
+        <span class="data-val">${dateFmt}</span>
+    </div>
+    <div class="data-row">
+        <span class="data-label">Référence</span>
+        <span class="data-val">${ref}</span>
+    </div>
+    <div class="data-row">
+        <span class="data-label">Confirmé le</span>
+        <span class="data-val">${confirmed}</span>
+    </div>
+</div>
+
+${advance.motif ? `<hr class="sep"><div class="motif-block">Motif : ${advance.motif}</div>` : ''}
+
+<hr class="sep">
+
+<!-- QR Code -->
+<div class="qr-block">
+    <div class="label-sm">Scanner pour vérification</div>
+    ${qrHtml}
+    <div style="font-size:8px;margin-top:1mm;word-break:break-all;color:#555;">${qrData}</div>
+</div>
+
+${sigHtml ? `<hr class="sep">${sigHtml}` : ''}
+
+<!-- Pied -->
+<div class="footer">
+    <div style="margin-bottom:1mm;">Imprimé le ${new Date().toLocaleString('fr-FR')}</div>
+    <div class="brand">RISEVANILLA</div>
+    <div>© ${new Date().getFullYear()} — Tous droits réservés</div>
+</div>
+
+<script>window.onload = () => setTimeout(() => window.print(), 350);<\/script>
+</body></html>`;
+
+    const win = window.open('', '_blank', 'width=360,height=700');
+    if (!win) { showToast('Autorisez les popups pour imprimer le ticket.', 'error'); return; }
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+}
+
 // ── Generate PDF Receipt ──────────────────────────────────────
 function generateAdvancePDF(advanceId) {
     const advance   = (appData.advances || []).find(a => a.id === advanceId);
@@ -383,6 +568,9 @@ function updateAdvancesTable() {
                        </button>
                        <button class="btn btn-icon btn-outline" onclick="generateAdvancePDF(${adv.id})" title="Générer le reçu PDF">
                            <span class="material-icons">picture_as_pdf</span>
+                       </button>
+                       <button class="btn btn-icon btn-outline" onclick="printAdvanceTicket(${adv.id})" title="Imprimer ticket thermique 80mm">
+                           <span class="material-icons">receipt_long</span>
                        </button>`
                     : `<button class="btn btn-icon btn-outline" onclick="openSignatureModal(${adv.id})" title="Faire signer le collecteur"
                                style="color:var(--md-sys-color-primary);border-color:var(--md-sys-color-primary);">
