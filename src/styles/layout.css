@@ -93,11 +93,10 @@
                 -webkit-overflow-scrolling: touch;
             }
 
-            .logo-icon {
+            .logo-img {
                 width: 36px !important;
                 height: 36px !important;
-                border-radius: 10px !important;
-                padding: 4px !important;
+                border-radius: 12px !important;
             }
 
             .company-name {
@@ -511,7 +510,7 @@
             .sidebar.collapsed {
                 width: 80px;
             }
-            .sidebar.collapsed .logo-icon {
+            .sidebar.collapsed .logo-img {
                 width: 40px;
                 height: 40px;
             }
@@ -577,26 +576,16 @@
             margin-bottom: 8px;
         }
 
-        .logo-icon {
-            width: 52px;
-            height: 52px;
-            background: transparent;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            border: 1.5px solid rgba(255, 255, 255, 0.13);
-            box-shadow: 0 0 0 0 transparent;
-            overflow: hidden;
-            padding: 5px;
-        }
+        /* .logo-icon — supprimé, le cadrage est géré directement par .logo-img */
 
         .logo-img {
-            width: 100%;
-            height: 100%;
+            width: 52px;
+            height: 52px;
             object-fit: contain;
             display: block;
+            border-radius: 16px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+            flex-shrink: 0;
         }
 
         .company-name {
@@ -800,11 +789,10 @@
                 -webkit-overflow-scrolling: touch;
             }
 
-            .logo-icon {
+            .logo-img {
                 width: 36px !important;
                 height: 36px !important;
-                border-radius: 10px !important;
-                padding: 4px !important;
+                border-radius: 12px !important;
             }
 
             .company-name {
