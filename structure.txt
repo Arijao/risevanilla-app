@@ -12,8 +12,10 @@
 │   │       ├── fa-regular-400.woff2
 │   │       └── fa-solid-900.woff2
 │   ├── icon.css
+│   ├── material-icons-outlined-regular.woff2
 │   ├── material-icons-outlined-v110-latin-regular.woff2
 │   ├── material-icons-v145-latin-regular.woff2
+│   ├── material-icons-v145-regular.woff2
 │   ├── material-symbols-outlined-v325-latin-regular.woff2
 │   ├── roboto-condensed-v31-latin-300italic.woff2
 │   ├── roboto-condensed-v31-latin-300.woff2
@@ -42,6 +44,8 @@
 │   │   ├── table.js
 │   │   └── toast.js
 │   ├── core
+│   │   ├── backup.js
+│   │   ├── dashboard-drag.js
 │   │   ├── db.js
 │   │   ├── export.js
 │   │   ├── router.js
@@ -66,4 +70,4 @@
 ├── structure.txt
 └── sw.js
 
-10 directories, 57 files
+10 directories, 61 files

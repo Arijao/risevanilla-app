@@ -5,7 +5,14 @@
 
 'use strict';
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+
+    // ── Auth PIN — doit être la toute première initialisation ─
+    // Si un PIN est configuré : affiche l'écran de verrouillage
+    // et attend que l'utilisateur soit authentifié avant de continuer.
+    if (typeof initAuth === 'function') {
+        await initAuth();
+    }
 
     // ── Core Init ─────────────────────────────────────────────
     initDB();
@@ -73,6 +80,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // ── Online/Offline indicators ─────────────────────────────
     window.addEventListener('online',  () => showToast('Connecté à Internet', 'success', 2000));
     window.addEventListener('offline', () => showToast('📵 Mode Hors-ligne — données enregistrées localement', 'info', 3000));
+
+    // ── Auth hooks (wrappers actions sensibles + bouton lock) ─
+    if (typeof _initAuthHooks === 'function') {
+        _initAuthHooks();
+    }
 
     console.log('✅ RISEVANILLA Application initialisée.');
 });

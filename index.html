@@ -214,6 +214,9 @@
                     </div>
                 </div>
                 <div class="header-actions">
+                    <button id="rv-lock-btn" class="btn btn-icon" title="Verrouiller la session" aria-label="Verrouiller" style="display:none;">
+                        <span class="material-icons" aria-hidden="true">lock</span>
+                    </button>
                     <button class="theme-toggle" id="theme-toggle" aria-label="Manova ny lohahevitra (maizina/mazava)">
                         <span class="material-icons" aria-hidden="true">dark_mode</span>
                     </button>
@@ -844,6 +847,12 @@
                             <button class="btn btn-danger" onclick="resetData()"><span class="material-icons">delete_forever</span> Remise à Zéro</button>
                         </div>
                     </div>
+
+                    <!-- ── Sécurité PIN ─────────────────────────────── -->
+                    <div class="form-group">
+                        <div id="rv-pin-settings-panel"></div>
+                    </div>
+                    <!-- ── / Sécurité PIN ──────────────────────────── -->
                 </div>
                 <div class="data-table" style="margin-top: 32px;">
                     <div class="table-header">
@@ -1589,6 +1598,7 @@
     </div>
 
     <!-- ===== APP SCRIPTS ===== -->
+    <script src="src/core/auth.js"></script>
     <script src="src/core/search.js"></script>
     <script src="src/core/search-analytics.js"></script>
     <script src="src/core/state.js"></script>
