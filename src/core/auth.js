@@ -830,7 +830,7 @@ function _showSetupScreen() {
 
                 // Afficher le code de secours admin une seule fois
                 if (rescueCode) {
-                    setTimeout(() => _showNewRescueCodeModal(rescueCode), 400);
+                    setTimeout(() => _showNewRescueCodeModal(rescueCode), 400); // Pas de callback ici, car le flux normal continue
                 }
             } catch (e) {
                 _showSetupError('Erreur lors de la création du PIN. Réessayez.');
