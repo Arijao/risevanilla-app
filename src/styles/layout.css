@@ -94,8 +94,10 @@
             }
 
             .logo-icon {
-                width: 32px !important;
-                height: 32px !important;
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 10px !important;
+                padding: 4px !important;
             }
 
             .company-name {
@@ -576,14 +578,28 @@
         }
 
         .logo-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--md-sys-color-primary), var(--md-sys-color-tertiary));
-            border-radius: 12px;
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--md-sys-color-on-primary);
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.30),
+                0 1px 2px rgba(0, 0, 0, 0.20),
+                inset 0 1px 0 rgba(255, 255, 255, 0.10);
+            overflow: hidden;
+            padding: 6px;
+        }
+
+        .logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
         }
 
         .company-name {
@@ -788,8 +804,10 @@
             }
 
             .logo-icon {
-                width: 32px !important;
-                height: 32px !important;
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 10px !important;
+                padding: 4px !important;
             }
 
             .company-name {
