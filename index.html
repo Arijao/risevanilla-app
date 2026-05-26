@@ -241,8 +241,8 @@
                     </div>
                 </div>
 
-                <div class="stats-grid">
-                    <div class="stat-card">
+                <div class="stats-grid" id="stats-grid-draggable">
+                    <div class="stat-card" data-card-id="card-advances">
                         <div class="stat-header">
                             <div>
                                 <div class="stat-value" id="total-advances">0 Ar</div>
@@ -260,7 +260,7 @@
                             <div class="progress-fill" id="advances-progress" style="width: 100%;"></div>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" data-card-id="card-expenses">
                         <div class="stat-header">
                             <div>
                                 <div class="stat-value" id="total-expenses">0 Ar</div>
@@ -278,7 +278,7 @@
                             <div class="progress-fill" id="expenses-progress" style="width: 100%; background: var(--md-sys-color-secondary);"></div>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" data-card-id="card-vanilla-weight">
                         <div class="stat-header">
                             <div style="flex:1;">
                                 <div class="stat-value" id="total-vanilla-weight">0 kg</div>
@@ -311,7 +311,7 @@
                             <div class="progress-fill" id="vanilla-progress" style="width: 0%;"></div>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" data-card-id="card-vanilla-value">
                         <div class="stat-header">
                             <div>
                                 <div class="stat-value" id="total-vanilla-value">0 Ar</div>
@@ -330,7 +330,7 @@
                         </div>
                     </div>
                     <!-- CARTE 1 : Avances non récupérées (Avances − Valeur vanille) -->
-                    <div class="stat-card debiteur" id="avances-non-recuperees-card">
+                    <div class="stat-card debiteur" id="avances-non-recuperees-card" data-card-id="card-dettes">
                         <div class="stat-header">
                             <div>
                                 <div class="stat-value" id="avances-non-recuperees-value">0 Ar</div>
@@ -350,7 +350,7 @@
                     </div>
 
                     <!-- CARTE 4 : Paiements effectués -->
-                    <div class="stat-card" id="total-paiements-card">
+                    <div class="stat-card" id="total-paiements-card" data-card-id="card-paiements">
                         <div class="stat-header">
                             <div>
                                 <div class="stat-value" id="total-paiements-value">0 Ar</div>
@@ -370,7 +370,7 @@
                     </div>
 
                     <!-- CARTE 2 : Solde financier global (Vanille − Avances − Dépenses − Paiements) -->
-                    <div class="stat-card solde-global-card equilibre" id="solde-financier-card">
+                    <div class="stat-card solde-global-card equilibre" id="solde-financier-card" data-card-id="card-solde">
                         <div class="stat-header">
                             <div>
                                 <div class="stat-value" id="solde-financier-value">0 Ar</div>
@@ -1599,6 +1599,7 @@
     <script src="src/components/form.js"></script>
     <script src="src/components/table.js"></script>
     <script src="src/pages/dashboard.js"></script>
+    <script src="src/core/dashboard-drag.js"></script>
     <script src="src/pages/collectors.js"></script>
     <script src="src/pages/advances.js"></script>
     <script src="src/pages/receptions.js"></script>
