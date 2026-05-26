@@ -158,14 +158,29 @@ async function saveSignature() {
 /**
  * Générateur QR Code 100% offline — pur JavaScript, zéro dépendance externe.
  *
+ * ╔══════════════════════════════════════════════════════════════╗
+ * ║  CERTIFICATION OFFLINE — RISEVANILLA                        ║
+ * ║  • Aucun réseau requis pour générer, afficher ou valider    ║
+ * ║  • Aucune API externe, aucun CDN, aucun service cloud       ║
+ * ║  • Fonctionne sans Internet, en zone isolée                 ║
+ * ║  • Algorithme Reed-Solomon embarqué intégralement           ║
+ * ║  • Rendu SVG inline — aucun asset externe                   ║
+ * ╚══════════════════════════════════════════════════════════════╝
+ *
  * Implémente QR Code version 1–10, mode octet (ISO 8859-1 / UTF-8 court),
  * niveau de correction d'erreur M (15 %), masque pattern 0.
  *
+ * Paramètres optimisés pour impression thermique 80mm :
+ *  - sizePx    : 180px -> ~51mm imprimé, lisible >= 203 dpi
+ *  - quietZone : 6 modules (ISO 18004 min=4 + marge tolérance)
+ *  - modSize   : exact (sans anti-gap) -> modules distincts au scan
+ *  - payload   : sans toLocaleString -> aucun espace insécable U+202F
+ *
  * Retourne une chaîne SVG inline prête à être injectée dans le DOM.
  *
- * @param {string} text   — données à encoder
- * @param {number} sizePx — taille en pixels du SVG rendu
- * @returns {string}      — balise <svg>…</svg>
+ * @param {string} text   — données à encoder (ASCII recommandé pour compacité)
+ * @param {number} sizePx — taille en pixels du SVG rendu (défaut recommandé : 180)
+ * @returns {string}      — balise <svg>...</svg>
  */
 function _buildQRSVG(text, sizePx) {
     /* ── Tables Reed-Solomon GF(256) ── */
@@ -402,7 +417,7 @@ function _buildQRSVG(text, sizePx) {
     }
 
     /* ── Rendu SVG ── */
-    const quietZone = 4; // modules blancs autour
+    const quietZone = 6; // ISO 18004 min=4 + marge tolérance impression
     const total     = size + quietZone * 2;
     const modSize   = sizePx / total;
 
@@ -412,7 +427,7 @@ function _buildQRSVG(text, sizePx) {
             if (mat[r][c] === 1) {
                 const x = ((c + quietZone) * modSize).toFixed(2);
                 const y = ((r + quietZone) * modSize).toFixed(2);
-                const w = (modSize + 0.5).toFixed(2); // +0.5 anti-gap
+                const w = modSize.toFixed(3); // taille exacte, sans chevauchement
                 rects.push(`<rect x="${x}" y="${y}" width="${w}" height="${w}"/>`);
             }
         }
@@ -441,8 +456,8 @@ function printAdvanceTicket(advanceId) {
         : '—';
 
     // Contenu QR : données essentielles compactes
-    const qrData = `${ref}|${collName}|${montant}|${dateFmt}`;
-    const qrHtml = _buildQRSVG(qrData, 120);
+    const qrData = `${ref}|${collName}|${Math.abs(advance.amount)}Ar|${dateFmt}`;
+    const qrHtml = _buildQRSVG(qrData, 180);
 
     const sigHtml = advance.signature
         ? `<div class="sig-block">
