@@ -3,7 +3,8 @@
  * RISEVANILLA - Gestion de Collecte de Vanille
  * ============================================================ */
 
-        :root {
+/* ── Thème clair (light) — activé uniquement si data-theme="light" ── */
+        [data-theme="light"] {
             --md-sys-color-primary: #9890A8;
             --md-sys-color-on-primary: #F0EDF4;
             --md-sys-color-primary-container: #D8D2E2;
@@ -40,6 +41,8 @@
             --md-sys-color-surface-tint: #9890A8;
         }
 
+/* ── Thème sombre (dark) — DÉFAUT de l'application ── */
+        :root,
         [data-theme="dark"] {
             --md-sys-color-primary: #D8D2E2; /* Givre */
             --md-sys-color-on-primary: #504858;
@@ -61,14 +64,14 @@
             --md-sys-color-on-success: #1b5e20;
             --md-sys-color-success-container: #2e7d32;
             --md-sys-color-on-success-container: #e8f5e8;
-            --md-sys-color-background: #504858; /* Gris sombre */
+            --md-sys-color-background: #2D2B33; /* Fond sombre profond */
             --md-sys-color-on-background: #F0EDF4;
-            --md-sys-color-surface: #5D5566;
+            --md-sys-color-surface: #3A3742;
             --md-sys-color-on-surface: #F0EDF4;
-            --md-sys-color-surface-variant: #6A6677;
+            --md-sys-color-surface-variant: #4A4755;
             --md-sys-color-on-surface-variant: #D8D2E2;
             --md-sys-color-outline: #9890A8;
-            --md-sys-color-outline-variant: #6A6677;
+            --md-sys-color-outline-variant: #5A5766;
             --md-sys-color-shadow: #000000;
             --md-sys-color-scrim: #000000;
             --md-sys-color-inverse-surface: #F0EDF4;

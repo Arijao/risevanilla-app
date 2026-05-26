@@ -13,13 +13,34 @@
 
 /* ── Clés localStorage ──────────────────────────────────────── */
 const AUTH_KEY          = 'rv_auth_v1';       // { hash, salt, iterations }
-const AUTH_LOCK_KEY     = 'rv_auth_lock';     // { until, attempts }
+const AUTH_LOCK_KEY     = 'rv_auth_lock';     // { until, attempts, permanent, firstFailAt }
+const AUTH_RESCUE_KEY   = 'rv_auth_rescue';   // { hash, salt, iterations } — code de secours admin
 
 /* ── Config ─────────────────────────────────────────────────── */
 const AUTH_PBKDF2_ITER  = 100000;
-const AUTH_MAX_ATTEMPTS = 5;
-const AUTH_LOCK_MS      = 5 * 60 * 1000;     // 5 minutes blocage
 const AUTH_SESSION_MS   = 30 * 60 * 1000;    // 30 minutes session
+
+/* ── Table de progression des blocages (anti-brute-force) ──────
+ * Tentatives 1-3  : avertissement seulement, aucun délai
+ * Tentative 4     : blocage 30 secondes
+ * Tentative 5     : blocage 5 minutes
+ * Tentative 6     : blocage 30 minutes
+ * Tentative 7-9   : blocage 24 heures + alerte rouge critique
+ * Tentative 10+   : verrouillage PERMANENT — récupération admin uniquement
+ * ─────────────────────────────────────────────────────────────── */
+const AUTH_LOCKOUT_SCHEDULE = [
+    { from: 1,  to: 3,  lockMs: 0,                   level: 'warning'  },
+    { from: 4,  to: 4,  lockMs: 30 * 1000,            level: 'moderate' },
+    { from: 5,  to: 5,  lockMs: 5  * 60 * 1000,       level: 'serious'  },
+    { from: 6,  to: 6,  lockMs: 30 * 60 * 1000,       level: 'severe'   },
+    { from: 7,  to: 9,  lockMs: 24 * 60 * 60 * 1000,  level: 'critical' },
+    { from: 10, to: Infinity, lockMs: Infinity,        level: 'permanent'},
+];
+
+function _getLockSchedule(attempts) {
+    return AUTH_LOCKOUT_SCHEDULE.find(s => attempts >= s.from && attempts <= s.to)
+        || AUTH_LOCKOUT_SCHEDULE[AUTH_LOCKOUT_SCHEDULE.length - 1];
+}
 
 /* ── État session (mémoire uniquement, jamais persisté) ─────── */
 const _authState = {
@@ -146,12 +167,12 @@ function _expireSession() {
 }
 
 /* ════════════════════════════════════════════════════════════
- * ANTI-BRUTEFORCE
+ * ANTI-BRUTEFORCE — Logique progressive
  * ════════════════════════════════════════════════════════════ */
 
 function _getLockRecord() {
-    try { return JSON.parse(localStorage.getItem(AUTH_LOCK_KEY)) || { attempts: 0, until: 0 }; }
-    catch { return { attempts: 0, until: 0 }; }
+    try { return JSON.parse(localStorage.getItem(AUTH_LOCK_KEY)) || { attempts: 0, until: 0, permanent: false, firstFailAt: 0 }; }
+    catch { return { attempts: 0, until: 0, permanent: false, firstFailAt: 0 }; }
 }
 
 function _saveLockRecord(rec) {
@@ -164,7 +185,13 @@ function _clearLockRecord() {
 
 function _isLocked() {
     const rec = _getLockRecord();
+    if (rec.permanent) return true;
     return rec.until > Date.now();
+}
+
+function _isPermanentlyLocked() {
+    const rec = _getLockRecord();
+    return !!rec.permanent;
 }
 
 function _lockUntil() {
@@ -172,19 +199,77 @@ function _lockUntil() {
     return rec.until || 0;
 }
 
+/**
+ * Enregistre une tentative échouée et applique le blocage correspondant.
+ * Retourne le lock record mis à jour.
+ */
 function _registerFailedAttempt() {
     const rec = _getLockRecord();
     rec.attempts = (rec.attempts || 0) + 1;
-    if (rec.attempts >= AUTH_MAX_ATTEMPTS) {
-        rec.until = Date.now() + AUTH_LOCK_MS;
+    if (!rec.firstFailAt) rec.firstFailAt = Date.now();
+
+    const schedule = _getLockSchedule(rec.attempts);
+
+    if (schedule.level === 'permanent') {
+        rec.permanent = true;
+        rec.until     = Infinity;
+    } else if (schedule.lockMs > 0) {
+        rec.until = Date.now() + schedule.lockMs;
+        rec.permanent = false;
+    } else {
+        rec.until = 0;
+        rec.permanent = false;
     }
+    rec.level = schedule.level;
     _saveLockRecord(rec);
     return rec;
 }
 
+/** Tentatives restantes avant le prochain palier de blocage */
 function _remainingAttempts() {
     const rec = _getLockRecord();
-    return Math.max(0, AUTH_MAX_ATTEMPTS - (rec.attempts || 0));
+    const att = rec.attempts || 0;
+    // Prochain palier avec blocage
+    const nextLock = AUTH_LOCKOUT_SCHEDULE.find(s => s.lockMs > 0 && s.from > att);
+    if (!nextLock) return 0;
+    return nextLock.from - att;
+}
+
+/* ── Code de secours administrateur ────────────────────────── */
+
+/**
+ * Génère et stocke un code de secours admin (6 chiffres aléatoires).
+ * Retourne le code en clair une seule fois pour affichage.
+ * Appelé lors de la première création du PIN.
+ */
+async function _generateRescueCode() {
+    // Générer 6 chiffres aléatoires
+    const arr   = crypto.getRandomValues(new Uint8Array(6));
+    const code  = Array.from(arr).map(b => (b % 10).toString()).join('');
+    const hashed = await _hashPIN(code);
+    localStorage.setItem(AUTH_RESCUE_KEY, JSON.stringify(hashed));
+    return code; // retourné UNE SEULE FOIS pour affichage admin
+}
+
+async function _verifyRescueCode(code) {
+    try {
+        const stored = JSON.parse(localStorage.getItem(AUTH_RESCUE_KEY));
+        if (!stored) return false;
+        const result = await _hashPIN(code, stored.salt);
+        return result.hash === stored.hash;
+    } catch { return false; }
+}
+
+/** Réinitialise le verrouillage après vérification du code de secours */
+async function _recoverWithAdminCode(code) {
+    const ok = await _verifyRescueCode(code);
+    if (!ok) return false;
+    _clearLockRecord();
+    // Invalider le PIN existant : forcer re-création
+    localStorage.removeItem(AUTH_KEY);
+    // Régénérer un nouveau code de secours
+    const newCode = await _generateRescueCode();
+    return { success: true, newRescueCode: newCode };
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -199,33 +284,75 @@ function _showLockScreen(opts = {}) {
     const isInline     = !!opts.inline;
     const onSuccess    = opts.onSuccess || null;
     const onCancel     = opts.onCancel  || null;
-    const isBootScreen = !isInline && !_authState._resolveInit === false;
+
+    // ── Verrouillage permanent ────────────────────────────────
+    if (_isPermanentlyLocked()) {
+        _showPermanentLockScreen(opts);
+        return;
+    }
 
     _lockOverlay = document.createElement('div');
     _lockOverlay.id = 'rv-auth-overlay';
 
     const locked   = _isLocked();
     const lockEnd  = _lockUntil();
-    const attempts = _remainingAttempts();
+    const rec      = _getLockRecord();
+    const attempts = rec.attempts || 0;
+    const level    = rec.level || 'warning';
+    const rem      = _remainingAttempts();
+
+    // Message contextuel selon le niveau
+    let hintHtml = '';
+    if (!locked && attempts > 0) {
+        if (level === 'warning' || attempts < 4) {
+            const tentLabel = rem === 1 ? 'tentative' : 'tentatives';
+            hintHtml = `<div class="rv-auth-hint rv-auth-hint--${level}">
+                <span class="material-icons" style="font-size:13px;">warning_amber</span>
+                ${rem} ${tentLabel} restante${rem > 1 ? 's' : ''} avant blocage temporaire
+            </div>`;
+        }
+    }
+
+    // Badge niveau de menace pour tentatives 4+
+    let threatBadge = '';
+    if (attempts >= 7 && !locked) {
+        threatBadge = `<div class="rv-auth-threat-badge rv-auth-threat--critical">
+            <span class="material-icons">gpp_bad</span>
+            ALERTE SÉCURITÉ — Prochain échec : verrouillage 24h
+        </div>`;
+    } else if (attempts >= 4 && !locked) {
+        const lockNames = { moderate:'30 secondes', serious:'5 minutes', severe:'30 minutes' };
+        const nextSchedule = _getLockSchedule(attempts + 1);
+        const nextLockName = lockNames[nextSchedule?.level] || '';
+        if (nextLockName) {
+            threatBadge = `<div class="rv-auth-threat-badge rv-auth-threat--${nextSchedule.level}">
+                <span class="material-icons">shield</span>
+                Prochain échec : blocage ${nextLockName}
+            </div>`;
+        }
+    }
 
     _lockOverlay.innerHTML = `
-        <div class="rv-auth-card" role="dialog" aria-modal="true" aria-label="Authentification administrateur">
+        <div class="rv-auth-card rv-auth-dark${locked ? ' rv-auth-locked-state' : ''}${level === 'critical' ? ' rv-auth-critical-state' : ''}"
+             role="dialog" aria-modal="true" aria-label="Authentification administrateur">
+
             <div class="rv-auth-logo">
                 <img src="logo-risevanilla.svg" alt="RiseVanilla" onerror="this.style.display='none'">
             </div>
             <div class="rv-auth-title">
-                <span class="material-icons rv-auth-lock-icon">lock</span>
+                <span class="material-icons rv-auth-lock-icon">${locked ? 'lock_clock' : 'lock'}</span>
                 RISEVANILLA
             </div>
             <div class="rv-auth-subtitle">Entrez votre code PIN administrateur</div>
 
+            ${threatBadge}
             <div id="rv-auth-error" class="rv-auth-error" style="display:none;"></div>
 
             <div class="rv-auth-dots" id="rv-auth-dots" aria-hidden="true">
                 <span></span><span></span><span></span><span></span>
             </div>
 
-            <div class="rv-pin-pad" id="rv-pin-pad"${locked ? ' style="pointer-events:none;opacity:.4;"' : ''}>
+            <div class="rv-pin-pad" id="rv-pin-pad"${locked ? ' style="pointer-events:none;opacity:.35;"' : ''}>
                 ${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k => `
                     <button class="rv-pin-key${k==='' ? ' rv-pin-key--empty' : ''}${k==='⌫' ? ' rv-pin-key--del' : ''}"
                             data-key="${k}" ${k==='' ? 'disabled' : ''} aria-label="${k === '⌫' ? 'Effacer' : k}">
@@ -233,16 +360,34 @@ function _showLockScreen(opts = {}) {
                     </button>`).join('')}
             </div>
 
-            ${locked ? `<div class="rv-auth-lockout" id="rv-auth-lockout">
-                <span class="material-icons">timer</span>
-                <span id="rv-auth-countdown">Trop de tentatives — réessayez dans <strong id="rv-auth-timer"></strong></span>
+            ${locked ? `
+            <div class="rv-auth-lockout rv-auth-lockout--${level}" id="rv-auth-lockout">
+                <span class="material-icons">${level === 'critical' ? 'gpp_bad' : 'timer'}</span>
+                <span id="rv-auth-countdown">
+                    ${level === 'critical' ? 'ALERTE — Accès bloqué 24h. Réessayez dans' : 'Accès bloqué. Réessayez dans'}
+                    <strong id="rv-auth-timer"></strong>
+                </span>
             </div>` : ''}
 
-            ${attempts < AUTH_MAX_ATTEMPTS && !locked ? `
-                <div class="rv-auth-hint">${attempts} tentative${attempts > 1 ? 's' : ''} restante${attempts > 1 ? 's' : ''}</div>
-            ` : ''}
+            ${hintHtml}
 
             ${isInline ? `<button class="rv-auth-cancel-btn" id="rv-auth-cancel">Annuler</button>` : ''}
+
+            <button class="rv-auth-rescue-link" id="rv-auth-rescue-toggle" type="button">
+                <span class="material-icons" style="font-size:13px;">help_outline</span>
+                Code de secours administrateur
+            </button>
+            <div id="rv-auth-rescue-panel" class="rv-auth-rescue-panel" style="display:none;">
+                <div class="rv-auth-rescue-panel__label">Entrez le code de secours à 6 chiffres :</div>
+                <input type="text" id="rv-auth-rescue-input" class="rv-auth-rescue-input"
+                       maxlength="6" inputmode="numeric" pattern="[0-9]*"
+                       placeholder="• • • • • •" autocomplete="off">
+                <button class="rv-auth-rescue-btn" id="rv-auth-rescue-submit">
+                    <span class="material-icons" style="font-size:15px;">vpn_key</span>
+                    Valider le code
+                </button>
+                <div id="rv-auth-rescue-error" class="rv-auth-rescue-error" style="display:none;">Code incorrect.</div>
+            </div>
         </div>
     `;
 
@@ -250,7 +395,7 @@ function _showLockScreen(opts = {}) {
 
     // Focus trap
     const firstKey = _lockOverlay.querySelector('.rv-pin-key:not([disabled])');
-    if (firstKey) firstKey.focus();
+    if (firstKey && !locked) firstKey.focus();
 
     // Countdown si bloqué
     if (locked) _startCountdown(lockEnd, () => _showLockScreen(opts));
@@ -275,12 +420,143 @@ function _showLockScreen(opts = {}) {
         if (onCancel) onCancel(new Error('Annulé'));
     });
 
+    // Panel code de secours
+    const rescueToggle = _lockOverlay.querySelector('#rv-auth-rescue-toggle');
+    const rescuePanel  = _lockOverlay.querySelector('#rv-auth-rescue-panel');
+    if (rescueToggle && rescuePanel) {
+        rescueToggle.addEventListener('click', () => {
+            const open = rescuePanel.style.display !== 'none';
+            rescuePanel.style.display = open ? 'none' : 'block';
+            if (!open) rescuePanel.querySelector('#rv-auth-rescue-input')?.focus();
+        });
+    }
+
+    const rescueSubmit = _lockOverlay.querySelector('#rv-auth-rescue-submit');
+    if (rescueSubmit) {
+        rescueSubmit.addEventListener('click', () => _handleRescueSubmit(opts));
+    }
+    const rescueInput = _lockOverlay.querySelector('#rv-auth-rescue-input');
+    if (rescueInput) {
+        rescueInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') _handleRescueSubmit(opts);
+        });
+    }
+
     // Stocker les callbacks
     _lockOverlay._onSuccess = onSuccess;
     _lockOverlay._onCancel  = onCancel;
-
-    // PIN buffer
     _lockOverlay._pin = '';
+}
+
+/** Soumission du code de secours admin */
+async function _handleRescueSubmit(opts) {
+    const input  = document.getElementById('rv-auth-rescue-input');
+    const errEl  = document.getElementById('rv-auth-rescue-error');
+    const btn    = document.getElementById('rv-auth-rescue-submit');
+    if (!input) return;
+
+    const code = input.value.trim().replace(/\D/g, '');
+    if (code.length !== 6) {
+        if (errEl) { errEl.textContent = 'Le code doit comporter 6 chiffres.'; errEl.style.display = 'block'; }
+        return;
+    }
+
+    if (btn) btn.disabled = true;
+    const result = await _recoverWithAdminCode(code);
+
+    if (result && result.success) {
+        _removeLockScreen();
+        // Afficher le nouveau code de secours
+        _showNewRescueCodeModal(result.newRescueCode);
+        // Forcer setup nouveau PIN
+        _showSetupScreen();
+        showToast('🔓 Verrouillage levé. Créez un nouveau PIN.', 'success', 5000);
+    } else {
+        if (errEl) { errEl.textContent = 'Code de secours incorrect.'; errEl.style.display = 'block'; }
+        if (btn) btn.disabled = false;
+        input.value = '';
+        input.focus();
+    }
+}
+
+/** Écran de verrouillage permanent */
+function _showPermanentLockScreen(opts = {}) {
+    _lockOverlay = document.createElement('div');
+    _lockOverlay.id = 'rv-auth-overlay';
+
+    _lockOverlay.innerHTML = `
+        <div class="rv-auth-card rv-auth-dark rv-auth-permanent-card"
+             role="dialog" aria-modal="true" aria-label="Application verrouillée">
+            <div class="rv-auth-permanent-icon">
+                <span class="material-icons">lock_person</span>
+            </div>
+            <div class="rv-auth-title" style="color:#ffb4ab;">
+                <span class="material-icons" style="color:#ffb4ab;">security</span>
+                ACCÈS BLOQUÉ
+            </div>
+            <div class="rv-auth-permanent-desc">
+                Trop de tentatives incorrectes ont été détectées.<br>
+                L'application est <strong>verrouillée définitivement</strong>.<br>
+                Seul le code de secours administrateur permet la récupération.
+            </div>
+
+            <div class="rv-auth-rescue-panel rv-auth-rescue-panel--permanent" style="display:block;">
+                <div class="rv-auth-rescue-panel__label">Code de secours administrateur (6 chiffres) :</div>
+                <input type="text" id="rv-auth-rescue-input" class="rv-auth-rescue-input"
+                       maxlength="6" inputmode="numeric" pattern="[0-9]*"
+                       placeholder="• • • • • •" autocomplete="off">
+                <button class="rv-auth-rescue-btn" id="rv-auth-rescue-submit">
+                    <span class="material-icons" style="font-size:15px;">vpn_key</span>
+                    Déverrouiller
+                </button>
+                <div id="rv-auth-rescue-error" class="rv-auth-rescue-error" style="display:none;">Code incorrect.</div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(_lockOverlay);
+
+    _lockOverlay._keyHandler = e => { if (e.key === 'Enter') _handleRescueSubmit(opts); };
+    document.addEventListener('keydown', _lockOverlay._keyHandler);
+
+    _lockOverlay.querySelector('#rv-auth-rescue-submit')
+        ?.addEventListener('click', () => _handleRescueSubmit(opts));
+    _lockOverlay.querySelector('#rv-auth-rescue-input')
+        ?.addEventListener('keydown', e => { if (e.key === 'Enter') _handleRescueSubmit(opts); });
+
+    _lockOverlay._onSuccess = opts.onSuccess || null;
+    _lockOverlay._onCancel  = opts.onCancel  || null;
+
+    // Focus
+    setTimeout(() => _lockOverlay?.querySelector('#rv-auth-rescue-input')?.focus(), 100);
+}
+
+/** Modal affichant le nouveau code de secours après récupération */
+function _showNewRescueCodeModal(code) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position:fixed;inset:0;z-index:9999999;
+        background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;padding:16px;
+    `;
+    modal.innerHTML = `
+        <div style="background:#2D2B33;border:1px solid #5A5766;border-radius:20px;padding:28px 24px;
+                    max-width:340px;width:100%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.6);">
+            <span class="material-icons" style="font-size:40px;color:#a5d6a7;margin-bottom:12px;display:block;">vpn_key</span>
+            <div style="font-size:17px;font-weight:700;color:#F0EDF4;margin-bottom:8px;">Nouveau code de secours</div>
+            <div style="font-size:13px;color:#D8D2E2;margin-bottom:16px;line-height:1.5;">
+                Notez ce code en lieu sûr. Il ne sera <strong style="color:#ffb4ab;">plus affiché</strong>.
+            </div>
+            <div style="font-size:28px;font-weight:800;letter-spacing:10px;color:#a5d6a7;
+                        background:#3A3742;border-radius:12px;padding:12px 16px;margin-bottom:20px;
+                        font-family:monospace;">${code}</div>
+            <button onclick="this.closest('[style]').remove()"
+                    style="background:#D8D2E2;color:#504858;border:none;border-radius:20px;
+                           padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;">
+                J'ai noté ce code
+            </button>
+        </div>
+    `;
+    document.body.appendChild(modal);
 }
 
 let _pinBuffer = '';
@@ -351,28 +627,52 @@ async function _attemptUnlock(pin) {
         if (pad) pad.style.pointerEvents = '';
 
         const errEl = document.getElementById('rv-auth-error');
-        if (errEl) {
-            if (rec.until > Date.now()) {
-                errEl.textContent = `Compte bloqué pendant ${AUTH_LOCK_MS / 60000} min.`;
+        const level = rec.level || 'warning';
+
+        if (rec.permanent) {
+            // Verrouillage permanent immédiat
+            _showPermanentLockScreen({
+                onSuccess: _lockOverlay?._onSuccess,
+                onCancel:  _lockOverlay?._onCancel,
+                inline:    !!_lockOverlay?.querySelector('#rv-auth-cancel'),
+            });
+            return;
+        }
+
+        if (rec.until > Date.now()) {
+            // Blocage temporaire — reconstruire l'écran avec countdown
+            const onSuccessCb = _lockOverlay?._onSuccess;
+            const onCancelCb  = _lockOverlay?._onCancel;
+            const isInlineCb  = !!_lockOverlay?.querySelector('#rv-auth-cancel');
+            _showLockScreen({ onSuccess: onSuccessCb, onCancel: onCancelCb, inline: isInlineCb });
+        } else {
+            // Avertissement simple
+            if (errEl) {
+                const rem = _remainingAttempts();
+                let msg = `PIN incorrect.`;
+                if (rec.attempts === 3) {
+                    msg = `PIN incorrect. ⚠️ Prochain échec : blocage 30 secondes.`;
+                } else if (rec.attempts === 6) {
+                    msg = `PIN incorrect. ⚠️ Prochain échec : blocage 30 minutes.`;
+                } else if (rem > 0) {
+                    const tentLabel = rem === 1 ? 'tentative' : 'tentatives';
+                    msg = `PIN incorrect — ${rem} ${tentLabel} avant blocage.`;
+                } else {
+                    msg = `PIN incorrect.`;
+                }
+                errEl.textContent = msg;
                 errEl.style.display = 'block';
-                if (pad) { pad.style.pointerEvents = 'none'; pad.style.opacity = '.4'; }
-                _startCountdown(rec.until, () => _showLockScreen({
-                    onSuccess: _lockOverlay?._onSuccess,
-                    onCancel:  _lockOverlay?._onCancel,
-                    inline:    !!_lockOverlay?.querySelector('#rv-auth-cancel'),
-                }));
-            } else {
-                const rem = Math.max(0, AUTH_MAX_ATTEMPTS - rec.attempts);
-                errEl.textContent = `PIN incorrect. ${rem} tentative${rem > 1 ? 's' : ''} restante${rem > 1 ? 's' : ''}.`;
-                errEl.style.display = 'block';
+                errEl.className = `rv-auth-error rv-auth-error--${level}`;
+
                 const card = _lockOverlay?.querySelector('.rv-auth-card');
                 if (card) {
                     card.classList.add('rv-auth-shake');
                     setTimeout(() => card.classList.remove('rv-auth-shake'), 600);
                 }
-                // Effacer l'erreur après 2s
-                setTimeout(() => { if (errEl) errEl.style.display = 'none'; }, 2500);
+                // Effacer l'erreur après 3s
+                setTimeout(() => { if (errEl) errEl.style.display = 'none'; }, 3000);
             }
+            if (pad) pad.style.pointerEvents = '';
         }
     }
 }
@@ -412,7 +712,7 @@ function _showSetupScreen() {
     _lockOverlay.id = 'rv-auth-overlay';
 
     _lockOverlay.innerHTML = `
-        <div class="rv-auth-card rv-auth-setup-card" role="dialog" aria-modal="true" aria-label="Configuration du PIN administrateur">
+        <div class="rv-auth-card rv-auth-dark rv-auth-setup-card" role="dialog" aria-modal="true" aria-label="Configuration du PIN administrateur">
             <div class="rv-auth-logo">
                 <img src="logo-risevanilla.svg" alt="RiseVanilla" onerror="this.style.display='none'">
             </div>
@@ -502,6 +802,13 @@ function _showSetupScreen() {
             try {
                 const hashed = await _hashPIN(pin);
                 localStorage.setItem(AUTH_KEY, JSON.stringify(hashed));
+
+                // Générer le code de secours admin si pas encore existant
+                let rescueCode = null;
+                if (!localStorage.getItem(AUTH_RESCUE_KEY)) {
+                    rescueCode = await _generateRescueCode();
+                }
+
                 _startSession();
                 const card = _lockOverlay?.querySelector('.rv-auth-card');
                 if (card) {
@@ -512,6 +819,11 @@ function _showSetupScreen() {
                 _removeLockScreen();
                 if (resolveInit) { _authState._resolveInit = null; resolveInit(); }
                 showToast('🔐 Code PIN créé avec succès !', 'success', 3000);
+
+                // Afficher le code de secours admin une seule fois
+                if (rescueCode) {
+                    setTimeout(() => _showNewRescueCodeModal(rescueCode), 400);
+                }
             } catch (e) {
                 _showSetupError('Erreur lors de la création du PIN. Réessayez.');
                 _pinBuffer = ''; _updateDots(0);
@@ -613,7 +925,9 @@ function renderPinSettingsPanel() {
                         display:flex;gap:8px;align-items:flex-start;">
                 <span class="material-icons" style="font-size:15px;flex-shrink:0;margin-top:1px;">info</span>
                 <span>Le PIN protège : suppression de données, export/import, remise à zéro, et paramètres avancés.
-                La session expire après 30 min d'inactivité.</span>
+                La session expire après 30 min d'inactivité.<br>
+                <strong>Verrouillage progressif</strong> : 30s → 5min → 30min → 24h → permanent (10 tentatives).
+                Récupération via code de secours admin.</span>
             </div>
         </div>
     `;

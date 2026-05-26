@@ -18,6 +18,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     initDB();
     loadSettings();
     initYearDisplay();
+
+    // ── Dark mode par défaut (appliqué AVANT loadThemePreference) ──
+    // Si aucune préférence sauvegardée, on force le thème sombre.
+    if (!localStorage.getItem('rv_theme')) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('rv_theme', 'dark');
+    }
     loadThemePreference();
 
     // ── Système de sauvegarde automatique ─────────────────────

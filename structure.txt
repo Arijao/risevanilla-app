@@ -44,6 +44,7 @@
 │   │   ├── table.js
 │   │   └── toast.js
 │   ├── core
+│   │   ├── auth.js
 │   │   ├── backup.js
 │   │   ├── dashboard-drag.js
 │   │   ├── db.js
@@ -70,4 +71,4 @@
 ├── structure.txt
 └── sw.js
 
-10 directories, 61 files
+10 directories, 62 files
