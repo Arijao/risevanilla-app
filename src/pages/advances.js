@@ -245,8 +245,8 @@ function _buildQRSVG(text, sizePx) {
     const _VER_PARAMS = {
         1:  [26,  10, 1],  2:  [44,  16, 1],  3:  [70,  26, 1],
         4:  [100, 18, 2],  5:  [134, 24, 2],  6:  [172, 16, 4],
-        7:  [196, 18, 4],  8:  [242, 22, 2],  9:  [292, 22, 3],
-        10: [346, 26, 4]
+        7:  [196, 18, 4],  8:  [242, 44, 2],  9:  [292, 55, 2],
+        10: [346, 26, 5]
     };
     const [totalCW, ecPerBlock, numBlocks] = _VER_PARAMS[version];
     const totalEC    = ecPerBlock * numBlocks;
@@ -310,8 +310,8 @@ function _buildQRSVG(text, sizePx) {
     function _pushBitsF(val, n) {
         for (let i = n - 1; i >= 0; i--) finalBits.push((val >> i) & 1);
     }
-    // Bits restants (remainder)
-    const remainderBits = [0,7,7,7,7,7,0,0,0,0,7,0][version] || 0;
+    // Bits restants (remainder) — index = version (1-based), source ISO 18004 Table 1
+    const remainderBits = [0,0,7,7,7,7,7,0,0,0,0][version] || 0;
     for (let i = 0; i < remainderBits; i++) finalBits.push(0);
 
     /* ── Construction de la matrice ── */
@@ -374,7 +374,7 @@ function _buildQRSVG(text, sizePx) {
             .map((_, i) => [8, i < 6 ? i : i + 1]);
         // Vertical
         const vPos = [0,1,2,3,4,5,7,8,9,10,11,12,13,14,15]
-            .map((_, i) => [i < 6 ? i : i === 6 ? 7 : size - 15 + i, 8]);
+            .map((_, i) => [i < 6 ? i : i === 6 ? 7 : i === 7 ? 8 : size - 15 + i, 8]);
 
         for (let i = 0; i < 15; i++) {
             const b = FORMAT_BITS_M0[i];
