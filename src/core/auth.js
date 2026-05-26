@@ -467,10 +467,10 @@ async function _handleRescueSubmit(opts) {
     if (result && result.success) {
         _removeLockScreen();
         // Afficher le nouveau code de secours
-        _showNewRescueCodeModal(result.newRescueCode);
-        // Forcer setup nouveau PIN
-        _showSetupScreen();
-        showToast('🔓 Verrouillage levé. Créez un nouveau PIN.', 'success', 5000);
+        _showNewRescueCodeModal(result.newRescueCode, () => {
+            _showSetupScreen();
+            showToast('🔓 Verrouillage levé. Créez un nouveau PIN.', 'success', 5000);
+        });
     } else {
         if (errEl) { errEl.textContent = 'Code de secours incorrect.'; errEl.style.display = 'block'; }
         if (btn) btn.disabled = false;
@@ -532,7 +532,7 @@ function _showPermanentLockScreen(opts = {}) {
 }
 
 /** Modal affichant le nouveau code de secours après récupération */
-function _showNewRescueCodeModal(code) {
+function _showNewRescueCodeModal(code, onClose) {
     const modal = document.createElement('div');
     modal.style.cssText = `
         position:fixed;inset:0;z-index:9999999;
@@ -549,7 +549,7 @@ function _showNewRescueCodeModal(code) {
             <div style="font-size:28px;font-weight:800;letter-spacing:10px;color:#a5d6a7;
                         background:#3A3742;border-radius:12px;padding:12px 16px;margin-bottom:20px;
                         font-family:monospace;">${code}</div>
-            <button onclick="this.closest('[style]').remove()"
+            <button id="rv-rescue-modal-close-btn"
                     style="background:#D8D2E2;color:#504858;border:none;border-radius:20px;
                            padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;">
                 J'ai noté ce code
@@ -557,6 +557,14 @@ function _showNewRescueCodeModal(code) {
         </div>
     `;
     document.body.appendChild(modal);
+
+    const closeModal = () => {
+        modal.remove();
+        document.body.style.overflow = '';
+        if (typeof onClose === 'function') onClose();
+    };
+    document.body.style.overflow = 'hidden';
+    modal.querySelector('#rv-rescue-modal-close-btn').addEventListener('click', closeModal);
 }
 
 let _pinBuffer = '';
