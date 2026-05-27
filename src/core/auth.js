@@ -1003,12 +1003,8 @@ function wrapWithAuth(fnName) {
  * ════════════════════════════════════════════════════════════ */
 
 function _initAuthHooks() {
-    // Protéger les actions sensibles après que toutes les fonctions sont définies
-    setTimeout(() => {
-        wrapWithAuth('resetData');
-        wrapWithAuth('exportData');
-        wrapWithAuth('importData');
-    }, 0);
+    // Note : exportData / importData / resetData sont protégées directement
+    // dans db.js via requireAuth() — aucun wrap externe nécessaire ici.
 
     // Rendre le panneau settings PIN
     renderPinSettingsPanel();

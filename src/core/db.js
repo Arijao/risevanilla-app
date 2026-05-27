@@ -219,7 +219,19 @@ function deleteFromDB_Fallback(storeName, id) {
 }
 
 // ── Import / Export / Reset ──────────────────────────────────
-function exportData() {
+
+/**
+ * ── EXPORT ──
+ * Requiert le PIN admin avant tout téléchargement.
+ * requireAuth() résout immédiatement si la session est déjà active.
+ */
+async function exportData() {
+    // ── Vérification PIN ─────────────────────────────────────
+    if (typeof requireAuth === 'function') {
+        try { await requireAuth(); }
+        catch { return; } // Annulé ou PIN incorrect
+    }
+    // ── Action protégée ──────────────────────────────────────
     const dataToExport = {
         collectors: appData.collectors || [], advances: appData.advances || [],
         receptions: appData.receptions || [], deliveries: appData.deliveries || [],
@@ -235,11 +247,28 @@ function exportData() {
     showToast('Exportation terminée.', 'success');
 }
 
+/**
+ * ── IMPORT ──
+ * Stratégie : ouvrir le sélecteur de fichier immédiatement (geste utilisateur
+ * synchrone requis par Safari/iOS), puis demander le PIN au moment du traitement.
+ * Cela évite le blocage du picker tout en garantissant la vérification auth.
+ */
 function importData() {
-    const input  = Object.assign(document.createElement('input'), { type: 'file', accept: '.json' });
-    input.onchange = function(e) {
+    const input = Object.assign(document.createElement('input'), { type: 'file', accept: '.json' });
+    input.onchange = async function(e) {
         const file = e.target.files[0];
         if (!file) return;
+
+        // ── Vérification PIN ─────────────────────────────────
+        if (typeof requireAuth === 'function') {
+            try { await requireAuth(); }
+            catch {
+                showToast('Action annulée — code PIN requis.', 'warning', 3000);
+                return;
+            }
+        }
+
+        // ── Lecture et traitement du fichier ─────────────────
         const reader = new FileReader();
         reader.onload = async function(e) {
             try {
@@ -357,7 +386,22 @@ function importStoreData(storeName, items, callback) {
     tx.onerror = () => { if (callback) callback(); };
 }
 
+/**
+ * ── RESET ──
+ * Requiert le PIN admin en premier, avant même les confirmations modales.
+ * Empêche toute tentative d'effacement sans authentification.
+ */
 async function resetData() {
+    // ── Vérification PIN ─────────────────────────────────────
+    if (typeof requireAuth === 'function') {
+        try { await requireAuth(); }
+        catch {
+            showToast('Action annulée — code PIN requis.', 'warning', 3000);
+            return;
+        }
+    }
+
+    // ── Double confirmation (inchangée) ───────────────────────
     const ok1 = await confirmModal({
         title:       'Remise à zéro',
         message:     'Toutes les données (collecteurs, avances, réceptions, dépenses...) seront définitivement effacées. Cette action est irréversible.',
@@ -388,7 +432,7 @@ async function resetData() {
                 { name: 'Fohy',    description: 'Vanille plus courte',           vanilleType: 'verte' },
                 { name: 'Fendue',  description: 'Vanille fendue ou vaky',        vanilleType: 'verte' },
                 { name: 'Lo',      description: 'Vanille de qualité inférieure', vanilleType: 'verte' },
-                { name: 'Verte',   description: 'Vanille non préparée',          vanilleType: 'verte'    }
+                { name: 'Verte',   description: 'Vanille non préparée',          vanilleType: 'verte' }
             ];
             const tx = db.transaction('qualities', 'readwrite');
             const store = tx.objectStore('qualities');
