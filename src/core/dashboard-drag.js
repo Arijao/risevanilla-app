@@ -17,19 +17,19 @@
     const STORAGE_KEY      = 'risevanilla_cards_order';
     const GRID_ID          = 'stats-grid-draggable';
     const DRAG_THRESHOLD   = 6;   // px avant déclenchement drag
-    const GHOST_OFFSET_X   = 18;
-    const GHOST_OFFSET_Y   = 18;
     const LONG_PRESS_MS    = 180; // délai tactile
 
     /* ── État interne ───────────────────────────────────────── */
-    let grid          = null;
-    let dragCard      = null;
-    let ghostEl       = null;
-    let dropTarget    = null;
-    let startX        = 0;
-    let startY        = 0;
-    let isDragging    = false;
-    let pointerMoved  = false;
+    let grid           = null;
+    let dragCard       = null;
+    let ghostEl        = null;
+    let dropTarget     = null;
+    let startX         = 0;
+    let startY         = 0;
+    let grabOffsetX    = 0;   // offset du clic dans la card (X)
+    let grabOffsetY    = 0;   // offset du clic dans la card (Y)
+    let isDragging     = false;
+    let pointerMoved   = false;
     let longPressTimer = null;
 
     /* ── Initialisation ─────────────────────────────────────── */
@@ -63,7 +63,6 @@
     function resetOrder() {
         localStorage.removeItem(STORAGE_KEY);
         const cards = Array.from(grid.querySelectorAll('.stat-card[data-card-id]'));
-        // Trier par ordre défini dans le DOM original (data-card-id reflect HTML order)
         const defaultOrder = [
             'card-advances', 'card-expenses', 'card-vanilla-weight',
             'card-vanilla-value', 'card-dettes', 'card-paiements', 'card-solde'
@@ -77,6 +76,8 @@
             }
         });
         updateResetBtn();
+        // Rebind events après réorganisation DOM
+        bindEvents();
     }
 
     /* ── Persistance ────────────────────────────────────────── */
@@ -113,6 +114,8 @@
     function bindEvents() {
         const cards = grid.querySelectorAll('.stat-card[data-card-id]');
         cards.forEach(card => {
+            // Supprimer l'ancien listener avant d'en ajouter un nouveau (évite les doublons)
+            card.removeEventListener('pointerdown', onPointerDown);
             card.addEventListener('pointerdown', onPointerDown, { passive: false });
         });
     }
@@ -123,9 +126,13 @@
         if (e.button !== 0 && e.pointerType === 'mouse') return;
         if (e.target.closest('button, a, input, select, textarea')) return;
 
-        const card = e.currentTarget;
-        startX        = e.clientX;
-        startY        = e.clientY;
+        const card  = e.currentTarget;
+        const rect  = card.getBoundingClientRect();
+        startX      = e.clientX;
+        startY      = e.clientY;
+        // Offset exact du pointeur dans la card → ghost collera au point de grab
+        grabOffsetX = e.clientX - rect.left;
+        grabOffsetY = e.clientY - rect.top;
         pointerMoved  = false;
         isDragging    = false;
         dragCard      = card;
@@ -193,14 +200,30 @@
         }
 
         if (dropTarget) {
-            // Insérer avant ou après selon position
-            const targetRect = dropTarget.getBoundingClientRect();
-            const midX = targetRect.left + targetRect.width / 2;
-            const midY = targetRect.top  + targetRect.height / 2;
+            const targetRect   = dropTarget.getBoundingClientRect();
+            const dragCardRect = dragCard.getBoundingClientRect();
 
-            // Grille = plusieurs colonnes → comparer en 2D
-            // Si curseur est avant le centre horizontal ET vertical → insérer avant
-            const insertBefore = e.clientX < midX || e.clientY < midY;
+            // Détecter si la grille est en mode multi-colonnes
+            const gridRect    = grid.getBoundingClientRect();
+            const cards       = Array.from(grid.querySelectorAll('.stat-card[data-card-id]'));
+            const firstRect   = cards[0]?.getBoundingClientRect();
+            const secondRect  = cards[1]?.getBoundingClientRect();
+            const isMultiCol  = firstRect && secondRect && Math.abs(firstRect.top - secondRect.top) < 10;
+
+            let insertBefore;
+            if (isMultiCol) {
+                // Multi-colonnes → comparer centre vertical de la card cible
+                const midY = targetRect.top + targetRect.height / 2;
+                if (Math.abs(dragCardRect.top - targetRect.top) < 10) {
+                    // Même ligne → comparer X
+                    insertBefore = e.clientX < targetRect.left + targetRect.width / 2;
+                } else {
+                    insertBefore = e.clientY < midY;
+                }
+            } else {
+                // 1 colonne → comparer uniquement Y
+                insertBefore = e.clientY < targetRect.top + targetRect.height / 2;
+            }
 
             if (insertBefore) {
                 grid.insertBefore(dragCard, dropTarget);
@@ -215,6 +238,8 @@
             });
 
             saveOrder();
+            // Rebind après déplacement DOM
+            bindEvents();
         }
 
         cleanupDrag();
@@ -255,8 +280,9 @@
     /* ── Déplacer le ghost ──────────────────────────────────── */
     function moveGhost(cx, cy) {
         if (!ghostEl) return;
-        ghostEl.style.left = (cx - GHOST_OFFSET_X) + 'px';
-        ghostEl.style.top  = (cy - GHOST_OFFSET_Y) + 'px';
+        // Positionner le ghost exactement sous le point de grab (pas d'offset fixe)
+        ghostEl.style.left = (cx - grabOffsetX) + 'px';
+        ghostEl.style.top  = (cy - grabOffsetY) + 'px';
     }
 
     /* ── Nettoyer le drop target visuel ─────────────────────── */

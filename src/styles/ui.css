@@ -609,6 +609,153 @@
             transition: width 0.3s ease;
         }
 
+/* ============================================================
+ * DASHBOARD DRAG & DROP — Cards réorganisables
+ * ============================================================ */
+
+        /* Bouton "Réinitialiser l'ordre" — minimaliste, sans fond */
+        #cards-reset-order-btn {
+            display: none;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface-variant);
+            background: transparent;
+            border: none;
+            padding: 4px 6px;
+            cursor: pointer;
+            margin-left: auto;
+            margin-bottom: 8px;
+            opacity: 0.6;
+            transition: opacity 0.2s ease, color 0.2s ease;
+            outline: none;
+            box-shadow: none;
+        }
+
+        #cards-reset-order-btn:hover {
+            opacity: 1;
+            color: var(--md-sys-color-primary);
+            background: transparent;
+        }
+
+        #cards-reset-order-btn:focus-visible {
+            outline: 2px solid var(--md-sys-color-primary);
+            border-radius: 6px;
+        }
+
+        #cards-reset-order-btn.visible {
+            display: inline-flex;
+        }
+
+        /* Handle drag — point d'accroche discret */
+        .stat-card[data-card-id] {
+            cursor: grab;
+        }
+
+        .stat-card[data-card-id]:active {
+            cursor: grabbing;
+        }
+
+        .stat-card[data-card-id]::after {
+            content: '⠿';
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            font-size: 14px;
+            color: var(--md-sys-color-on-surface-variant);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 5;
+            line-height: 1;
+        }
+
+        .stat-card[data-card-id]:hover::after {
+            opacity: 0.4;
+        }
+
+        /* Card en cours de drag */
+        .stat-card.card-dragging {
+            opacity: 0.35;
+            transform: scale(0.97) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+            transition: opacity 0.15s ease, transform 0.15s ease !important;
+            pointer-events: none;
+            cursor: grabbing;
+        }
+
+        /* Ghost flottant */
+        .card-drag-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 99999;
+            border-radius: 16px;
+            box-shadow:
+                0 22px 56px rgba(0,0,0,0.38),
+                0 8px 20px rgba(0,0,0,0.22);
+            transform: rotate(1.8deg) scale(1.03);
+            opacity: 0.95;
+            overflow: hidden;
+            will-change: left, top;
+            /* Pas de transition sur left/top pour suivre le curseur en temps réel */
+        }
+
+        /* Drop target */
+        .stat-card.card-drop-target {
+            outline: 2px dashed var(--md-sys-color-primary);
+            outline-offset: 4px;
+            background: color-mix(in srgb, var(--md-sys-color-primary) 6%, var(--md-sys-color-surface)) !important;
+            transition: outline 0.12s ease, background 0.12s ease !important;
+        }
+
+        /* Animation entrée au chargement — staggered */
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(16px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .stat-card[data-card-id] {
+            animation: cardEntrance 0.36s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+
+        .stat-card[data-card-id]:nth-child(1) { animation-delay: 0.04s; }
+        .stat-card[data-card-id]:nth-child(2) { animation-delay: 0.09s; }
+        .stat-card[data-card-id]:nth-child(3) { animation-delay: 0.14s; }
+        .stat-card[data-card-id]:nth-child(4) { animation-delay: 0.19s; }
+        .stat-card[data-card-id]:nth-child(5) { animation-delay: 0.24s; }
+        .stat-card[data-card-id]:nth-child(6) { animation-delay: 0.29s; }
+        .stat-card[data-card-id]:nth-child(7) { animation-delay: 0.34s; }
+
+        /* Pop après repositionnement */
+        @keyframes cardRepositionPop {
+            0%   { transform: scale(0.96); }
+            55%  { transform: scale(1.025); }
+            100% { transform: scale(1); }
+        }
+
+        .stat-card.card-repositioning {
+            animation: cardRepositionPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+
+        /* Hover amélioré — non interférent avec drag */
+        .stat-card[data-card-id]:not(.card-dragging):not(.card-drop-target):hover {
+            transform: translateY(-6px) scale(1.012);
+            box-shadow:
+                0 12px 28px rgba(0,0,0,0.14),
+                0 4px 8px rgba(0,0,0,0.07);
+            transition:
+                transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.26s ease;
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .stat-card[data-card-id] { animation: none !important; }
+            .stat-card.card-repositioning { animation: none !important; }
+            .card-drag-ghost { transform: none !important; }
+        }
+
         .summary-insights {
             background-color: var(--md-sys-color-surface);
             border-radius: 20px;
