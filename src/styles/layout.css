@@ -96,7 +96,7 @@
             .logo-img {
                 width: 36px !important;
                 height: 36px !important;
-                border-radius: 12px !important;
+                border-radius: 50% !important;
             }
 
             .company-name {
@@ -357,7 +357,7 @@
 
             .data-table tr {
                 border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                border-radius: 12px !important;
+                border-radius: 50% !important;
                 margin-bottom: 12px !important;
                 padding: 12px !important;
                 background: rgba(80, 80, 80, 0.4) !important;
@@ -581,10 +581,10 @@
         .logo-img {
             width: 52px;
             height: 52px;
-            object-fit: contain;
+            object-fit: cover;
             display: block;
-            border-radius: 16px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+            border-radius: 50%;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.40);
             flex-shrink: 0;
         }
 
@@ -792,7 +792,7 @@
             .logo-img {
                 width: 36px !important;
                 height: 36px !important;
-                border-radius: 12px !important;
+                border-radius: 50% !important;
             }
 
             .company-name {
@@ -1641,7 +1641,7 @@
 
             .data-table tr {
                 border: 1px solid rgba(255, 255, 255, 0.1) !important;
-                border-radius: 12px !important;
+                border-radius: 50% !important;
                 margin-bottom: 12px !important;
                 padding: 12px !important;
                 background: rgba(80, 80, 80, 0.4) !important;
