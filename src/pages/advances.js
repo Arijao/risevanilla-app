@@ -26,10 +26,10 @@ function _sa(query, items, module) {
 }
 
 // ── Signature Pad State ───────────────────────────────────────
-let _sigCanvas   = null;
-let _sigCtx      = null;
-let _sigDrawing  = false;
-let _sigHasData  = false;
+let _sigCanvas = null;
+let _sigCtx = null;
+let _sigDrawing = false;
+let _sigHasData = false;
 
 // ── Signature Pad Init ────────────────────────────────────────
 function _initSignaturePad() {
@@ -38,29 +38,29 @@ function _initSignaturePad() {
 
     // Calibrer le canvas à sa taille CSS réelle (évite le flou)
     const rect = _sigCanvas.getBoundingClientRect();
-    _sigCanvas.width  = rect.width  || 476;
+    _sigCanvas.width = rect.width || 476;
     _sigCanvas.height = rect.height || 200;
 
     _sigCtx = _sigCanvas.getContext('2d');
     _sigCtx.strokeStyle = '#1a1a2e';
-    _sigCtx.lineWidth   = 2.5;
-    _sigCtx.lineCap     = 'round';
-    _sigCtx.lineJoin    = 'round';
+    _sigCtx.lineWidth = 2.5;
+    _sigCtx.lineCap = 'round';
+    _sigCtx.lineJoin = 'round';
     _sigHasData = false;
 
     // Nettoyer les anciens listeners en recréant le canvas clone
     const fresh = _sigCanvas.cloneNode(true);
     _sigCanvas.parentNode.replaceChild(fresh, _sigCanvas);
     _sigCanvas = fresh;
-    _sigCtx    = _sigCanvas.getContext('2d');
+    _sigCtx = _sigCanvas.getContext('2d');
     _sigCtx.strokeStyle = '#1a1a2e';
-    _sigCtx.lineWidth   = 2.5;
-    _sigCtx.lineCap     = 'round';
-    _sigCtx.lineJoin    = 'round';
+    _sigCtx.lineWidth = 2.5;
+    _sigCtx.lineCap = 'round';
+    _sigCtx.lineJoin = 'round';
 
     function _pos(e) {
         const r = _sigCanvas.getBoundingClientRect();
-        const scaleX = _sigCanvas.width  / r.width;
+        const scaleX = _sigCanvas.width / r.width;
         const scaleY = _sigCanvas.height / r.height;
         const src = e.touches ? e.touches[0] : e;
         return { x: (src.clientX - r.left) * scaleX, y: (src.clientY - r.top) * scaleY };
@@ -86,13 +86,13 @@ function _initSignaturePad() {
     }
     function _end(e) { e.preventDefault(); _sigDrawing = false; }
 
-    _sigCanvas.addEventListener('mousedown',  _start);
-    _sigCanvas.addEventListener('mousemove',  _move);
-    _sigCanvas.addEventListener('mouseup',    _end);
+    _sigCanvas.addEventListener('mousedown', _start);
+    _sigCanvas.addEventListener('mousemove', _move);
+    _sigCanvas.addEventListener('mouseup', _end);
     _sigCanvas.addEventListener('mouseleave', _end);
     _sigCanvas.addEventListener('touchstart', _start, { passive: false });
-    _sigCanvas.addEventListener('touchmove',  _move,  { passive: false });
-    _sigCanvas.addEventListener('touchend',   _end,   { passive: false });
+    _sigCanvas.addEventListener('touchmove', _move, { passive: false });
+    _sigCanvas.addEventListener('touchend', _end, { passive: false });
 }
 
 function clearSignaturePad() {
@@ -105,7 +105,7 @@ function clearSignaturePad() {
 
 // ── Open Signature Modal ──────────────────────────────────────
 function openSignatureModal(advanceId) {
-    const advance   = (appData.advances || []).find(a => a.id === advanceId);
+    const advance = (appData.advances || []).find(a => a.id === advanceId);
     if (!advance) { showToast('Avance introuvable', 'error'); return; }
     const collector = (appData.collectors || []).find(c => c.id === advance.collectorId);
 
@@ -113,7 +113,7 @@ function openSignatureModal(advanceId) {
     if (infoEl) {
         infoEl.innerHTML = `
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;">
-                <div>📋 <strong>Réf.</strong> AVA-${String(advance.id).padStart(4,'0')}</div>
+                <div>📋 <strong>Réf.</strong> AVA-${String(advance.id).padStart(4, '0')}</div>
                 <div>📅 <strong>Date :</strong> ${formatDate(advance.date)}</div>
                 <div>👤 <strong>Collecteur :</strong> ${collector ? collector.name : '—'}</div>
                 <div>💰 <strong>Montant :</strong> ${Math.abs(advance.amount).toLocaleString('fr-MG')} Ar</div>
@@ -136,7 +136,7 @@ async function saveSignature() {
     }
 
     const advanceId = parseInt(document.getElementById('signature-advance-id')?.value);
-    const advance   = (appData.advances || []).find(a => a.id === advanceId);
+    const advance = (appData.advances || []).find(a => a.id === advanceId);
     if (!advance) { showToast('Avance introuvable', 'error'); return; }
 
     // Extraire la signature en base64 (PNG transparent)
@@ -144,7 +144,7 @@ async function saveSignature() {
 
     // Construire l'objet avance mis à jour (put complet requis par IndexedDB)
     const updated = Object.assign({}, advance, {
-        signature:   signatureData,
+        signature: signatureData,
         confirmedAt: new Date().toISOString()
     });
 
@@ -159,13 +159,13 @@ async function saveSignature() {
 // Même bibliothèque éprouvée que le module Réceptions.
 /** Imprime un ticket thermique format 80mm pour une avance */
 function printAdvanceTicket(advanceId) {
-    const advance   = (appData.advances || []).find(a => a.id === advanceId);
+    const advance = (appData.advances || []).find(a => a.id === advanceId);
     if (!advance) { showToast('Avance introuvable', 'error'); return; }
     const collector = (appData.collectors || []).find(c => c.id === advance.collectorId);
-    const ref       = 'AVA-' + String(advance.id).padStart(4, '0');
-    const collName  = collector ? collector.name : '—';
-    const montant   = Math.abs(advance.amount).toLocaleString('fr-MG') + ' Ar';
-    const dateFmt   = formatDate(advance.date);
+    const ref = 'AVA-' + String(advance.id).padStart(4, '0');
+    const collName = collector ? collector.name : '—';
+    const montant = Math.abs(advance.amount).toLocaleString('fr-MG') + ' Ar';
+    const dateFmt = formatDate(advance.date);
     const confirmed = advance.confirmedAt
         ? new Date(advance.confirmedAt).toLocaleString('fr-FR')
         : '—';
@@ -174,6 +174,8 @@ function printAdvanceTicket(advanceId) {
     const motifLine = advance.motif ? `\nMotif : ${advance.motif}` : '';
     const qrData = `N\u00b0 : ${ref}\nCollecteur : ${collName}\nMontant Avance : ${Math.abs(advance.amount).toLocaleString('fr-MG')} Ar\nDate : ${dateFmt}${motifLine}`;
     const qrHtml = '<div id="qr-container"></div>';
+    // Chemin absolu vers le script QRCode — indispensable car le popup a l'URL about:blank
+    const _qrScriptSrc = window.location.href.replace(/[^/]+$/, '') + 'assets/qrcode.min.js';
 
     const sigHtml = advance.signature
         ? `<div class="sig-block">
@@ -185,7 +187,7 @@ function printAdvanceTicket(advanceId) {
     const html = `<!DOCTYPE html><html lang="fr"><head>
 <meta charset="UTF-8">
 <title>Ticket ${ref}</title>
-<script src="../assets/qrcode.min.js"><\/script>
+<script src="${_qrScriptSrc}"><\/script>
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -305,7 +307,6 @@ ${advance.motif ? `<hr class="sep"><div class="motif-block">Motif : ${advance.mo
 <div class="qr-block">
     <div class="label-sm">Scanner pour vérification</div>
     ${qrHtml}
-    <div style="font-size:8px;margin-top:2mm;color:#555;white-space:pre-line;line-height:1.5;">${qrData}</div>
 </div>
 
 ${sigHtml ? `<hr class="sep">${sigHtml}` : ''}
@@ -353,10 +354,10 @@ window.onload = function() {
 
 // ── Generate PDF Receipt ──────────────────────────────────────
 function generateAdvancePDF(advanceId) {
-    const advance   = (appData.advances || []).find(a => a.id === advanceId);
+    const advance = (appData.advances || []).find(a => a.id === advanceId);
     if (!advance) { showToast('Avance introuvable', 'error'); return; }
     const collector = (appData.collectors || []).find(c => c.id === advance.collectorId);
-    const ref       = 'AVA-' + String(advance.id).padStart(4, '0');
+    const ref = 'AVA-' + String(advance.id).padStart(4, '0');
     const confirmed = advance.confirmedAt
         ? new Date(advance.confirmedAt).toLocaleString('fr-FR')
         : '—';
@@ -473,9 +474,9 @@ function _populateAdvanceCollectorSelect() {
 /** Met à jour l'affichage du solde du collecteur dans le formulaire d'avance */
 function _updateAdvanceCollectorBalance() {
     const select = document.getElementById('advance-collector');
-    const info   = document.getElementById('advance-collector-balance-info');
-    const text   = document.getElementById('advance-balance-text');
-    const icon   = document.getElementById('advance-balance-icon');
+    const info = document.getElementById('advance-collector-balance-info');
+    const text = document.getElementById('advance-balance-text');
+    const icon = document.getElementById('advance-balance-icon');
     const amount = document.getElementById('advance-balance-amount');
 
     if (!select || !info || !text) return;
@@ -566,16 +567,16 @@ function updateAdvancesTable() {
             <td data-label="Motif">
                 <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                     ${adv.vanilleType === 'verte'
-                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(0, 230, 118, 0.15);color:#00e676;font-weight:700;border:1px solid rgba(0, 230, 118, 0.3);box-shadow: 0 0 8px rgba(0, 230, 118, 0.15);"><span class="material-icons" style="font-size:11px;">grass</span>Verte</span>`
-                        : adv.vanilleType === 'preparee'
-                        ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(152,144,168,.10);color:var(--md-sys-color-primary);font-weight:700;border:1px solid rgba(152,144,168,0.2);"><span class="material-icons" style="font-size:11px;">verified</span>Préparée</span>`
-                        : ''}
+                ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(0, 230, 118, 0.15);color:#00e676;font-weight:700;border:1px solid rgba(0, 230, 118, 0.3);box-shadow: 0 0 8px rgba(0, 230, 118, 0.15);"><span class="material-icons" style="font-size:11px;">grass</span>Verte</span>`
+                : adv.vanilleType === 'preparee'
+                    ? `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(152,144,168,.10);color:var(--md-sys-color-primary);font-weight:700;border:1px solid rgba(152,144,168,0.2);"><span class="material-icons" style="font-size:11px;">verified</span>Préparée</span>`
+                    : ''}
                     <span>${RiseVanillaSearch.highlightText(adv.motif || '—', _q)}</span>
                 </div>
             </td>
             <td class="actions-cell">
                 ${adv.signature
-                    ? `<button class="btn btn-icon" title="Réception confirmée ✓"
+                ? `<button class="btn btn-icon" title="Réception confirmée ✓"
                                style="color:#4caf50;cursor:default;" disabled>
                            <span class="material-icons">verified</span>
                        </button>
@@ -585,11 +586,11 @@ function updateAdvancesTable() {
                        <button class="btn btn-icon btn-outline" onclick="printAdvanceTicket(${adv.id})" title="Imprimer ticket thermique 80mm">
                            <span class="material-icons">receipt_long</span>
                        </button>`
-                    : `<button class="btn btn-icon btn-outline" onclick="openSignatureModal(${adv.id})" title="Faire signer le collecteur"
+                : `<button class="btn btn-icon btn-outline" onclick="openSignatureModal(${adv.id})" title="Faire signer le collecteur"
                                style="color:var(--md-sys-color-primary);border-color:var(--md-sys-color-primary);">
                            <span class="material-icons">draw</span>
                        </button>`
-                }
+            }
                 <button class="btn btn-icon btn-outline" onclick="openAdvanceModal(${adv.id})" title="Modifier">
                     <span class="material-icons">edit</span>
                 </button>
@@ -645,12 +646,12 @@ function _filterAdvancesData() {
     let data = getAdvancesForCurrentYear();
 
     const collectorFilter = document.getElementById('advance-filter-collector')?.value;
-    const startDate       = document.getElementById('advance-filter-start')?.value;
-    const endDate         = document.getElementById('advance-filter-end')?.value;
+    const startDate = document.getElementById('advance-filter-start')?.value;
+    const endDate = document.getElementById('advance-filter-end')?.value;
 
     if (collectorFilter) data = data.filter(a => String(a.collectorId) === String(collectorFilter));
-    if (startDate)       data = data.filter(a => a.date >= startDate);
-    if (endDate)         data = data.filter(a => a.date <= endDate);
+    if (startDate) data = data.filter(a => a.date >= startDate);
+    if (endDate) data = data.filter(a => a.date <= endDate);
 
     return data.sort((a, b) => b.date.localeCompare(a.date));
 }
@@ -674,9 +675,9 @@ function filterAdvancesByDate() {
 }
 
 function setDateFilter(period) {
-    const now   = new Date();
+    const now = new Date();
     const today = _todayISO();
-    let start   = today, end = today;
+    let start = today, end = today;
 
     if (period === 'week') {
         const d = new Date(now);
@@ -686,7 +687,7 @@ function setDateFilter(period) {
         start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
     } else if (period === 'year') {
         start = `${now.getFullYear()}-01-01`;
-        end   = `${now.getFullYear()}-12-31`;
+        end = `${now.getFullYear()}-12-31`;
     }
 
     const s = document.getElementById('advance-filter-start');
@@ -720,7 +721,7 @@ function openAdvanceModal(advanceId = null) {
 
     // Titre dynamique
     const titleEl = document.getElementById('advance-modal-title') ||
-                    form.closest('.modal')?.querySelector('.modal-title');
+        form.closest('.modal')?.querySelector('.modal-title');
     if (titleEl) titleEl.textContent = advanceId ? 'Modifier l\'Avance' : 'Nouvelle Avance';
 
     // Populate select collecteur
@@ -730,16 +731,16 @@ function openAdvanceModal(advanceId = null) {
     const dateEl = document.getElementById('advance-date');
     if (dateEl && !advanceId) dateEl.value = _todayISO();
 
-     if (advanceId) {
+    if (advanceId) {
         const advance = (appData.advances || []).find(a => a.id === advanceId);
         if (advance) {
             form.dataset.editId = advanceId;
-            document.getElementById('advance-date').value      = advance.date;
+            document.getElementById('advance-date').value = advance.date;
             document.getElementById('advance-collector').value = advance.collectorId;
             // Afficher le montant formaté
             const amtEl = document.getElementById('advance-amount');
             if (amtEl) amtEl.value = advance.amount.toLocaleString('fr-MG');
-            document.getElementById('advance-motif').value     = advance.motif || '';
+            document.getElementById('advance-motif').value = advance.motif || '';
             // Restituer vanilleType
             const typeEl = document.getElementById('advance-vanille-type');
             if (typeEl) typeEl.value = advance.vanilleType || '';
@@ -755,12 +756,12 @@ function openAdvanceModal(advanceId = null) {
 
 function saveAdvance(event) {
     if (event) event.preventDefault();
-    const form        = document.getElementById('advance-form');
-    const editId      = form?.dataset.editId;
-    const date        = document.getElementById('advance-date')?.value;
+    const form = document.getElementById('advance-form');
+    const editId = form?.dataset.editId;
+    const date = document.getElementById('advance-date')?.value;
     const collectorId = parseInt(document.getElementById('advance-collector')?.value);
-    const amount      = _parseAmount(document.getElementById('advance-amount')?.value);
-    const motif       = document.getElementById('advance-motif')?.value?.trim() || '';
+    const amount = _parseAmount(document.getElementById('advance-amount')?.value);
+    const motif = document.getElementById('advance-motif')?.value?.trim() || '';
 
     if (!date || !collectorId || !amount) {
         showToast('Veuillez remplir tous les champs obligatoires', 'error');
@@ -779,12 +780,12 @@ function saveAdvance(event) {
 
 async function deleteAdvance(id) {
     const ok = await confirmModal({
-        title:       'Supprimer l\'avance',
-        message:     'Cette action est irréversible. L\'avance sera définitivement supprimée.',
+        title: 'Supprimer l\'avance',
+        message: 'Cette action est irréversible. L\'avance sera définitivement supprimée.',
         confirmText: 'Supprimer',
-        cancelText:  'Annuler',
-        variant:     'danger',
-        icon:        'delete_forever'
+        cancelText: 'Annuler',
+        variant: 'danger',
+        icon: 'delete_forever'
     });
     if (!ok) return;
     deleteFromDB('advances', id, () => showToast('Avance supprimée.', 'warning'));
@@ -801,11 +802,11 @@ function openRemboursementModal(collectorId, remboursementId = null) {
     if (editIdEl) editIdEl.value = '';
 
     const collector = (appData.collectors || []).find(c => c.id === collectorId);
-    const nameEl    = document.getElementById('remboursement-collector-name');
-    const idEl      = document.getElementById('remboursement-collector-id');
-    const dateEl    = document.getElementById('remboursement-date');
+    const nameEl = document.getElementById('remboursement-collector-name');
+    const idEl = document.getElementById('remboursement-collector-id');
+    const dateEl = document.getElementById('remboursement-date');
 
-    if (idEl)   idEl.value   = collectorId;
+    if (idEl) idEl.value = collectorId;
     if (nameEl) nameEl.value = collector ? collector.name : '';
     if (dateEl) dateEl.value = _todayISO();
 
@@ -820,11 +821,11 @@ function openRemboursementModal(collectorId, remboursementId = null) {
         if (amtEl) amtEl.value = due > 0 ? due.toLocaleString('fr-MG') : '';
 
         // Stocker le montant dû pour validation + afficher l'indicateur
-        const btn     = document.getElementById('remb-fill-total-btn');
+        const btn = document.getElementById('remb-fill-total-btn');
         const dueInfo = document.getElementById('remboursement-due-info');
         if (btn) {
             btn.dataset.due = due;
-            btn.disabled    = due <= 0;
+            btn.disabled = due <= 0;
         }
         if (dueInfo) {
             if (due > 0) {
@@ -838,7 +839,7 @@ function openRemboursementModal(collectorId, remboursementId = null) {
         }
     } else {
         // En mode édition : masquer l'indicateur et le bouton totalité
-        const btn     = document.getElementById('remb-fill-total-btn');
+        const btn = document.getElementById('remb-fill-total-btn');
         const dueInfo = document.getElementById('remboursement-due-info');
         if (btn) { btn.dataset.due = 0; btn.style.display = 'none'; }
         if (dueInfo) dueInfo.style.display = 'none';
@@ -848,9 +849,9 @@ function openRemboursementModal(collectorId, remboursementId = null) {
         const remb = (appData.remboursements || []).find(r => r.id === remboursementId);
         if (remb) {
             if (editIdEl) editIdEl.value = remboursementId;
-            const amtEl  = document.getElementById('remboursement-amount');
+            const amtEl = document.getElementById('remboursement-amount');
             const noteEl = document.getElementById('remboursement-note');
-            if (amtEl)  amtEl.value  = remb.amount.toLocaleString('fr-MG');
+            if (amtEl) amtEl.value = remb.amount.toLocaleString('fr-MG');
             if (dateEl) dateEl.value = remb.date;
             if (noteEl) noteEl.value = remb.note || '';
         }
@@ -861,7 +862,7 @@ function openRemboursementModal(collectorId, remboursementId = null) {
 
 /** Remplit le champ montant avec la totalité du solde dû */
 function fillTotalRemboursement() {
-    const btn   = document.getElementById('remb-fill-total-btn');
+    const btn = document.getElementById('remb-fill-total-btn');
     const amtEl = document.getElementById('remboursement-amount');
     if (!btn || !amtEl) return;
     const due = parseFloat(btn.dataset.due || 0);
@@ -879,11 +880,11 @@ function openRemboursementModalToEdit(remboursementId) {
 function saveRemboursement(event) {
     if (event) event.preventDefault();
 
-    const editIdEl    = document.getElementById('remboursement-edit-id');
+    const editIdEl = document.getElementById('remboursement-edit-id');
     const collectorId = parseInt(document.getElementById('remboursement-collector-id')?.value);
-    const amount      = _parseAmount(document.getElementById('remboursement-amount')?.value);
-    const date        = document.getElementById('remboursement-date')?.value;
-    const note        = document.getElementById('remboursement-note')?.value?.trim() || '';
+    const amount = _parseAmount(document.getElementById('remboursement-amount')?.value);
+    const date = document.getElementById('remboursement-date')?.value;
+    const note = document.getElementById('remboursement-note')?.value?.trim() || '';
 
     if (!date || !collectorId || !amount) {
         showToast('Veuillez remplir tous les champs obligatoires', 'error');
@@ -915,12 +916,12 @@ function saveRemboursement(event) {
 
 async function deleteRemboursement(id) {
     const ok = await confirmModal({
-        title:       'Supprimer le remboursement',
-        message:     'Cette action est irréversible. Le remboursement sera définitivement supprimé.',
+        title: 'Supprimer le remboursement',
+        message: 'Cette action est irréversible. Le remboursement sera définitivement supprimé.',
         confirmText: 'Supprimer',
-        cancelText:  'Annuler',
-        variant:     'danger',
-        icon:        'delete_forever'
+        cancelText: 'Annuler',
+        variant: 'danger',
+        icon: 'delete_forever'
     });
     if (!ok) return;
     deleteFromDB('remboursements', id, () => showToast('Remboursement supprimé.', 'warning'));
@@ -994,8 +995,8 @@ function updateRemboursementsTable() {
 }
 
 // ── Signature Pad — Paiement Solde Créditeur (pad dédié) ─────
-let _cpSigCanvas  = null;
-let _cpSigCtx     = null;
+let _cpSigCanvas = null;
+let _cpSigCtx = null;
 let _cpSigDrawing = false;
 let _cpSigHasData = false;
 
@@ -1004,29 +1005,29 @@ function _initCpSignaturePad() {
     if (!_cpSigCanvas) return;
 
     const rect = _cpSigCanvas.getBoundingClientRect();
-    _cpSigCanvas.width  = rect.width  || 476;
+    _cpSigCanvas.width = rect.width || 476;
     _cpSigCanvas.height = rect.height || 160;
 
     _cpSigCtx = _cpSigCanvas.getContext('2d');
     _cpSigCtx.strokeStyle = '#1a1a2e';
-    _cpSigCtx.lineWidth   = 2.5;
-    _cpSigCtx.lineCap     = 'round';
-    _cpSigCtx.lineJoin    = 'round';
+    _cpSigCtx.lineWidth = 2.5;
+    _cpSigCtx.lineCap = 'round';
+    _cpSigCtx.lineJoin = 'round';
     _cpSigHasData = false;
 
     // Cloner pour purger les anciens listeners
     const fresh = _cpSigCanvas.cloneNode(true);
     _cpSigCanvas.parentNode.replaceChild(fresh, _cpSigCanvas);
     _cpSigCanvas = fresh;
-    _cpSigCtx    = _cpSigCanvas.getContext('2d');
+    _cpSigCtx = _cpSigCanvas.getContext('2d');
     _cpSigCtx.strokeStyle = '#1a1a2e';
-    _cpSigCtx.lineWidth   = 2.5;
-    _cpSigCtx.lineCap     = 'round';
-    _cpSigCtx.lineJoin    = 'round';
+    _cpSigCtx.lineWidth = 2.5;
+    _cpSigCtx.lineCap = 'round';
+    _cpSigCtx.lineJoin = 'round';
 
     function _pos(e) {
         const r = _cpSigCanvas.getBoundingClientRect();
-        const scaleX = _cpSigCanvas.width  / r.width;
+        const scaleX = _cpSigCanvas.width / r.width;
         const scaleY = _cpSigCanvas.height / r.height;
         const src = e.touches ? e.touches[0] : e;
         return { x: (src.clientX - r.left) * scaleX, y: (src.clientY - r.top) * scaleY };
@@ -1050,13 +1051,13 @@ function _initCpSignaturePad() {
     }
     function _end(e) { e.preventDefault(); _cpSigDrawing = false; }
 
-    _cpSigCanvas.addEventListener('mousedown',  _start);
-    _cpSigCanvas.addEventListener('mousemove',  _move);
-    _cpSigCanvas.addEventListener('mouseup',    _end);
+    _cpSigCanvas.addEventListener('mousedown', _start);
+    _cpSigCanvas.addEventListener('mousemove', _move);
+    _cpSigCanvas.addEventListener('mouseup', _end);
     _cpSigCanvas.addEventListener('mouseleave', _end);
     _cpSigCanvas.addEventListener('touchstart', _start, { passive: false });
-    _cpSigCanvas.addEventListener('touchmove',  _move,  { passive: false });
-    _cpSigCanvas.addEventListener('touchend',   _end,   { passive: false });
+    _cpSigCanvas.addEventListener('touchmove', _move, { passive: false });
+    _cpSigCanvas.addEventListener('touchend', _end, { passive: false });
 }
 
 function clearCpSignaturePad() {
@@ -1071,27 +1072,27 @@ function clearCpSignaturePad() {
 
 function payCollectorCredit(collectorId) {
     const collector = (appData.collectors || []).find(c => c.id === collectorId);
-    const balance   = calculateCollectorBalance(collectorId);
+    const balance = calculateCollectorBalance(collectorId);
     if (balance <= 0) {
         showToast('Ce collecteur n\'a pas de solde créditeur.', 'error');
         return;
     }
-    const nameEl   = document.getElementById('credit-payment-collector-name');
-    const idEl     = document.getElementById('credit-payment-collector-id');
-    const balEl    = document.getElementById('credit-payment-balance');
-    const dateEl   = document.getElementById('credit-payment-date');
-    const amtEl    = document.getElementById('credit-payment-amount');
-    const noteEl   = document.getElementById('credit-payment-note');
+    const nameEl = document.getElementById('credit-payment-collector-name');
+    const idEl = document.getElementById('credit-payment-collector-id');
+    const balEl = document.getElementById('credit-payment-balance');
+    const dateEl = document.getElementById('credit-payment-date');
+    const amtEl = document.getElementById('credit-payment-amount');
+    const noteEl = document.getElementById('credit-payment-note');
 
-    if (idEl)   idEl.value   = collectorId;
+    if (idEl) idEl.value = collectorId;
     if (nameEl) nameEl.value = collector ? collector.name : '';
-    if (balEl)  balEl.value  = formatCurrency(balance);
+    if (balEl) balEl.value = formatCurrency(balance);
     if (dateEl) dateEl.value = _todayISO();
-    if (amtEl)  amtEl.value  = '';
+    if (amtEl) amtEl.value = '';
     if (noteEl) noteEl.value = '';
 
     // Indicateur de solde créditeur + données du bouton "Payer tout"
-    const fillBtn   = document.getElementById('cp-fill-total-btn');
+    const fillBtn = document.getElementById('cp-fill-total-btn');
     const creditInfo = document.getElementById('cp-credit-info');
     if (fillBtn) {
         fillBtn.dataset.credit = balance;
@@ -1116,7 +1117,7 @@ function payCollectorCredit(collectorId) {
 /** Remplit le champ montant avec la totalité du solde créditeur */
 function setCreditPaymentToFullBalance() {
     const fillBtn = document.getElementById('cp-fill-total-btn');
-    const amtEl   = document.getElementById('credit-payment-amount');
+    const amtEl = document.getElementById('credit-payment-amount');
     if (!fillBtn || !amtEl) return;
     const credit = parseFloat(fillBtn.dataset.credit || 0);
     if (credit > 0) {
@@ -1134,9 +1135,9 @@ function formatCreditPaymentAmount(input) {
 function submitCreditPayment(event) {
     if (event) event.preventDefault();
     const collectorId = parseInt(document.getElementById('credit-payment-collector-id')?.value);
-    const amount      = _parseAmount(document.getElementById('credit-payment-amount')?.value);
-    const date        = document.getElementById('credit-payment-date')?.value;
-    const note        = document.getElementById('credit-payment-note')?.value?.trim() || '';
+    const amount = _parseAmount(document.getElementById('credit-payment-amount')?.value);
+    const date = document.getElementById('credit-payment-date')?.value;
+    const note = document.getElementById('credit-payment-note')?.value?.trim() || '';
 
     if (!date || !collectorId || !amount) {
         showToast('Veuillez remplir tous les champs obligatoires', 'error');
@@ -1169,7 +1170,7 @@ function submitCreditPayment(event) {
         collectorId, amount, date, note,
         signatureData,
         confirmedAt: new Date().toISOString(),
-        createdAt:   new Date().toISOString()
+        createdAt: new Date().toISOString()
     };
     saveToDB('paiements', data, () => {
         closeModal('credit-payment-modal');
@@ -1179,12 +1180,12 @@ function submitCreditPayment(event) {
 
 async function deletePaiement(id) {
     const ok = await confirmModal({
-        title:       'Supprimer le paiement',
-        message:     'Cette action est irréversible. Le paiement de solde sera définitivement supprimé.',
+        title: 'Supprimer le paiement',
+        message: 'Cette action est irréversible. Le paiement de solde sera définitivement supprimé.',
         confirmText: 'Supprimer',
-        cancelText:  'Annuler',
-        variant:     'danger',
-        icon:        'delete_forever'
+        cancelText: 'Annuler',
+        variant: 'danger',
+        icon: 'delete_forever'
     });
     if (!ok) return;
     deleteFromDB('paiements', id, () => showToast('Paiement supprimé.', 'warning'));
