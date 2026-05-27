@@ -411,7 +411,7 @@ function generateReceiptThermal(receptionId) {
 <html lang="fr"><head>
 <meta charset="UTF-8">
 <title>Reçu ${recNum} — RISEVANILLA</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+<script src="../assets/qrcode.min.js"><\/script>
 <style>
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

@@ -155,293 +155,8 @@ async function saveSignature() {
 
 // ── Ticket Thermique 80mm ─────────────────────────────────────
 
-/**
- * Générateur QR Code 100% offline — pur JavaScript, zéro dépendance externe.
- *
- * ╔══════════════════════════════════════════════════════════════╗
- * ║  CERTIFICATION OFFLINE — RISEVANILLA                        ║
- * ║  • Aucun réseau requis pour générer, afficher ou valider    ║
- * ║  • Aucune API externe, aucun CDN, aucun service cloud       ║
- * ║  • Fonctionne sans Internet, en zone isolée                 ║
- * ║  • Algorithme Reed-Solomon embarqué intégralement           ║
- * ║  • Rendu SVG inline — aucun asset externe                   ║
- * ╚══════════════════════════════════════════════════════════════╝
- *
- * Implémente QR Code version 1–10, mode octet (ISO 8859-1 / UTF-8 court),
- * niveau de correction d'erreur M (15 %), masque pattern 0.
- *
- * Paramètres optimisés pour impression thermique 80mm :
- *  - sizePx    : 180px -> ~51mm imprimé, lisible >= 203 dpi
- *  - quietZone : 6 modules (ISO 18004 min=4 + marge tolérance)
- *  - modSize   : exact (sans anti-gap) -> modules distincts au scan
- *  - payload   : sans toLocaleString -> aucun espace insécable U+202F
- *
- * Retourne une chaîne SVG inline prête à être injectée dans le DOM.
- *
- * @param {string} text   — données à encoder (ASCII recommandé pour compacité)
- * @param {number} sizePx — taille en pixels du SVG rendu (défaut recommandé : 180)
- * @returns {string}      — balise <svg>...</svg>
- */
-function _buildQRSVG(text, sizePx) {
-    /* ── Tables Reed-Solomon GF(256) ── */
-    const _GF_EXP = new Uint8Array(512);
-    const _GF_LOG = new Uint8Array(256);
-    (function _initGF() {
-        let x = 1;
-        for (let i = 0; i < 255; i++) {
-            _GF_EXP[i] = x;
-            _GF_LOG[x] = i;
-            x <<= 1;
-            if (x & 0x100) x ^= 0x11d;
-        }
-        for (let i = 255; i < 512; i++) _GF_EXP[i] = _GF_EXP[i - 255];
-    })();
-
-    function _gfMul(a, b) {
-        if (a === 0 || b === 0) return 0;
-        return _GF_EXP[(_GF_LOG[a] + _GF_LOG[b]) % 255];
-    }
-
-    function _rsGen(nEC) {
-        let g = [1];
-        for (let i = 0; i < nEC; i++) {
-            const ng = new Array(g.length + 1).fill(0);
-            for (let j = 0; j < g.length; j++) {
-                ng[j]     ^= _gfMul(g[j], _GF_EXP[i]);
-                ng[j + 1] ^= g[j];
-            }
-            g = ng;
-        }
-        return g;
-    }
-
-    function _rsEncode(data, nEC) {
-        const gen = _rsGen(nEC);
-        const msg = [...data, ...new Array(nEC).fill(0)];
-        for (let i = 0; i < data.length; i++) {
-            const c = msg[i];
-            if (c !== 0) {
-                for (let j = 0; j < gen.length; j++) {
-                    msg[i + j] ^= _gfMul(gen[j], c);
-                }
-            }
-        }
-        return msg.slice(data.length);
-    }
-
-    /* ── Sélection de version (niveau M) ── */
-    // Capacités octet niveau M par version 1-10
-    const _CAP_M = [16,28,44,64,86,108,124,154,182,216];
-    const bytes  = unescape(encodeURIComponent(text)); // UTF-8 bytes as string
-    const dataLen = bytes.length;
-    let version = 1;
-    for (let v = 1; v <= 10; v++) {
-        if (dataLen <= _CAP_M[v - 1]) { version = v; break; }
-        if (v === 10) version = 10; // troncature silencieuse
-    }
-
-    /* ── Paramètres par version (niveau M) ── */
-    // [totalCodewords, ecCodewordsPerBlock, blocks]
-    const _VER_PARAMS = {
-        1:  [26,  10, 1],  2:  [44,  16, 1],  3:  [70,  26, 1],
-        4:  [100, 18, 2],  5:  [134, 24, 2],  6:  [172, 16, 4],
-        7:  [196, 18, 4],  8:  [242, 44, 2],  9:  [292, 55, 2],
-        10: [346, 26, 5]
-    };
-    const [totalCW, ecPerBlock, numBlocks] = _VER_PARAMS[version];
-    const totalEC    = ecPerBlock * numBlocks;
-    const totalData  = totalCW - totalEC;
-
-    /* ── Construction du flux de données ── */
-    const bits = [];
-    function _pushBits(val, n) {
-        for (let i = n - 1; i >= 0; i--) bits.push((val >> i) & 1);
-    }
-
-    _pushBits(0b0100, 4);                 // mode octet
-    _pushBits(dataLen, version < 10 ? 8 : 16); // longueur
-    for (let i = 0; i < dataLen; i++) _pushBits(bytes.charCodeAt(i), 8);
-
-    // Terminateur + alignement octet
-    for (let i = 0; i < 4 && bits.length < totalData * 8; i++) bits.push(0);
-    while (bits.length % 8) bits.push(0);
-
-    // Rembourrage
-    const PAD = [0xEC, 0x11];
-    let pi = 0;
-    while (bits.length < totalData * 8) {
-        _pushBits(PAD[pi++ % 2], 8);
-    }
-
-    // Octets de données
-    const dataBytes = [];
-    for (let i = 0; i < bits.length; i += 8) {
-        let b = 0;
-        for (let j = 0; j < 8; j++) b = (b << 1) | (bits[i + j] || 0);
-        dataBytes.push(b);
-    }
-
-    /* ── Entrelacement blocs ── */
-    const blockSize   = Math.floor(totalData / numBlocks);
-    const largeBlocks = totalData % numBlocks;
-    const blocks = [], ecBlocks = [];
-
-    let offset = 0;
-    for (let b = 0; b < numBlocks; b++) {
-        const sz  = blockSize + (b < numBlocks - largeBlocks ? 0 : 1);
-        const blk = dataBytes.slice(offset, offset + sz);
-        blocks.push(blk);
-        ecBlocks.push(_rsEncode(blk, ecPerBlock));
-        offset += sz;
-    }
-
-    const interleaved = [];
-    const maxBlkSz = Math.max(...blocks.map(b => b.length));
-    for (let i = 0; i < maxBlkSz; i++)
-        for (let b = 0; b < numBlocks; b++)
-            if (i < blocks[b].length) interleaved.push(blocks[b][i]);
-    for (let i = 0; i < ecPerBlock; i++)
-        for (let b = 0; b < numBlocks; b++)
-            interleaved.push(ecBlocks[b][i]);
-
-    // Flux final de bits
-    const finalBits = [];
-    for (const byte of interleaved) _pushBitsF(byte, 8);
-    function _pushBitsF(val, n) {
-        for (let i = n - 1; i >= 0; i--) finalBits.push((val >> i) & 1);
-    }
-    // Bits restants (remainder) — index = version (1-based), source ISO 18004 Table 1
-    const remainderBits = [0,0,7,7,7,7,7,0,0,0,0][version] || 0;
-    for (let i = 0; i < remainderBits; i++) finalBits.push(0);
-
-    /* ── Construction de la matrice ── */
-    const size = version * 4 + 17;
-    const mat  = Array.from({ length: size }, () => new Array(size).fill(null)); // null=libre
-    const func = Array.from({ length: size }, () => new Array(size).fill(false));
-
-    function _setModule(r, c, v) {
-        if (r >= 0 && r < size && c >= 0 && c < size) { mat[r][c] = v; func[r][c] = true; }
-    }
-
-    // Finder patterns
-    function _finder(row, col) {
-        for (let r = -1; r <= 7; r++)
-            for (let c = -1; c <= 7; c++) {
-                const dr = row + r, dc = col + c;
-                if (dr >= 0 && dr < size && dc >= 0 && dc < size) {
-                    const v = r >= 0 && r <= 6 && c >= 0 && c <= 6
-                        ? (r === 0 || r === 6 || c === 0 || c === 6
-                            ? 1 : (r >= 2 && r <= 4 && c >= 2 && c <= 4 ? 1 : 0))
-                        : 0;
-                    _setModule(dr, dc, v);
-                }
-            }
-    }
-    _finder(0, 0); _finder(0, size - 7); _finder(size - 7, 0);
-
-    // Timing patterns
-    for (let i = 8; i < size - 8; i++) {
-        _setModule(6, i, i % 2 === 0 ? 1 : 0);
-        _setModule(i, 6, i % 2 === 0 ? 1 : 0);
-    }
-
-    // Dark module
-    _setModule(4 * version + 9, 8, 1);
-
-    // Alignment patterns (version >= 2)
-    const _ALIGN_POS = {
-        2:[6,18], 3:[6,22], 4:[6,26], 5:[6,30],
-        6:[6,34], 7:[6,22,38], 8:[6,24,42], 9:[6,28,46], 10:[6,26,46]
-    };
-    const alignPos = version >= 2 ? _ALIGN_POS[version] : [];
-    for (const ar of alignPos) {
-        for (const ac of alignPos) {
-            if (func[ar][ac]) continue;
-            for (let r = -2; r <= 2; r++)
-                for (let c = -2; c <= 2; c++) {
-                    const v = (r === -2 || r === 2 || c === -2 || c === 2)
-                        ? 1 : (r === 0 && c === 0 ? 1 : 0);
-                    _setModule(ar + r, ac + c, v);
-                }
-        }
-    }
-
-    // Format info (niveau M, masque 0) — bits pré-calculés
-    const FORMAT_BITS_M0 = [1,0,1,0,1,0,0,0,0,0,1,0,0,1,0];
-    function _placeFormat() {
-        // Horizontal (autour finder TL)
-        const hPos = [0,1,2,3,4,5,7,8,9,10,11,12,13,14,15]
-            .map((_, i) => [8, i < 6 ? i : i + 1]);
-        // Vertical
-        const vPos = [0,1,2,3,4,5,7,8,9,10,11,12,13,14,15]
-            .map((_, i) => [i < 6 ? i : i === 6 ? 7 : i === 7 ? 8 : size - 15 + i, 8]);
-
-        for (let i = 0; i < 15; i++) {
-            const b = FORMAT_BITS_M0[i];
-            // TL horizontal
-            mat[hPos[i][0]][hPos[i][1]] = b;
-            func[hPos[i][0]][hPos[i][1]] = true;
-            // TL vertical
-            mat[vPos[i][0]][vPos[i][1]] = b;
-            func[vPos[i][0]][vPos[i][1]] = true;
-        }
-        // Copies dans coins TR et BL
-        for (let i = 0; i < 8; i++) {
-            mat[8][size - 1 - i] = FORMAT_BITS_M0[i];
-            func[8][size - 1 - i] = true;
-        }
-        for (let i = 0; i < 7; i++) {
-            mat[size - 7 + i][8] = FORMAT_BITS_M0[14 - i];
-            func[size - 7 + i][8] = true;
-        }
-    }
-    _placeFormat();
-
-    /* ── Placement des données ── */
-    let bitIdx = 0;
-    let goingUp = true;
-    for (let right = size - 1; right >= 1; right -= 2) {
-        if (right === 6) right = 5;
-        for (let vert = 0; vert < size; vert++) {
-            const row = goingUp ? (size - 1 - vert) : vert;
-            for (let lr = 0; lr < 2; lr++) {
-                const col = right - lr;
-                if (!func[row][col]) {
-                    const bit = bitIdx < finalBits.length ? finalBits[bitIdx++] : 0;
-                    // Masque 0 : (row + col) % 2 === 0
-                    mat[row][col] = (row + col) % 2 === 0 ? bit ^ 1 : bit;
-                }
-            }
-        }
-        goingUp = !goingUp;
-    }
-
-    /* ── Rendu SVG ── */
-    const quietZone = 6; // ISO 18004 min=4 + marge tolérance impression
-    const total     = size + quietZone * 2;
-    const modSize   = sizePx / total;
-
-    const rects = [];
-    for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-            if (mat[r][c] === 1) {
-                const x = ((c + quietZone) * modSize).toFixed(2);
-                const y = ((r + quietZone) * modSize).toFixed(2);
-                const w = modSize.toFixed(3); // taille exacte, sans chevauchement
-                rects.push(`<rect x="${x}" y="${y}" width="${w}" height="${w}"/>`);
-            }
-        }
-    }
-
-    return `<svg xmlns="http://www.w3.org/2000/svg"
-         width="${sizePx}" height="${sizePx}"
-         viewBox="0 0 ${sizePx} ${sizePx}"
-         style="display:block;shape-rendering:crispEdges;">
-    <rect width="${sizePx}" height="${sizePx}" fill="#fff"/>
-    <g fill="#000">${rects.join('')}</g>
-</svg>`;
-}
-
+// QR Code généré par QRCode.js (assets/qrcode.min.js) — 100% offline
+// Même bibliothèque éprouvée que le module Réceptions.
 /** Imprime un ticket thermique format 80mm pour une avance */
 function printAdvanceTicket(advanceId) {
     const advance   = (appData.advances || []).find(a => a.id === advanceId);
@@ -455,9 +170,9 @@ function printAdvanceTicket(advanceId) {
         ? new Date(advance.confirmedAt).toLocaleString('fr-FR')
         : '—';
 
-    // Contenu QR : données essentielles compactes
-    const qrData = `${ref}|${collName}|${Math.abs(advance.amount)}Ar|${dateFmt}`;
-    const qrHtml = _buildQRSVG(qrData, 180);
+    // Contenu QR — identique au format Réceptions pour compatibilité scanner
+    const qrData = `N=${ref}|C=${collName}|M=${advance.motif||''}|V=${Math.abs(advance.amount)}Ar|D=${dateFmt}`;
+    const qrHtml = '<div id="qr-container"></div>';
 
     const sigHtml = advance.signature
         ? `<div class="sig-block">
@@ -469,6 +184,7 @@ function printAdvanceTicket(advanceId) {
     const html = `<!DOCTYPE html><html lang="fr"><head>
 <meta charset="UTF-8">
 <title>Ticket ${ref}</title>
+<script src="../assets/qrcode.min.js"><\/script>
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -600,7 +316,31 @@ ${sigHtml ? `<hr class="sep">${sigHtml}` : ''}
     <div>© ${new Date().getFullYear()} — Tous droits réservés</div>
 </div>
 
-<script>window.onload = () => setTimeout(() => window.print(), 350);<\/script>
+<script>
+function buildQR() {
+    var el = document.getElementById('qr-container');
+    if (!el) return;
+    new QRCode(el, {
+        text:         ${JSON.stringify(qrData)},
+        width:        160,
+        height:       160,
+        colorDark:    '#000000',
+        colorLight:   '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+    });
+}
+function init() {
+    if (typeof QRCode !== 'undefined') {
+        buildQR();
+    } else {
+        setTimeout(init, 80);
+    }
+}
+window.onload = function() {
+    init();
+    setTimeout(function() { window.print(); }, 700);
+};
+<\/script>
 </body></html>`;
 
     const win = window.open('', '_blank', 'width=360,height=700');
