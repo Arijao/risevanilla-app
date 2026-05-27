@@ -170,8 +170,9 @@ function printAdvanceTicket(advanceId) {
         ? new Date(advance.confirmedAt).toLocaleString('fr-FR')
         : '—';
 
-    // Contenu QR — identique au format Réceptions pour compatibilité scanner
-    const qrData = `N=${ref}|C=${collName}|M=${advance.motif||''}|V=${Math.abs(advance.amount)}Ar|D=${dateFmt}`;
+    // Contenu QR — format multiligne lisible par les scanners standards
+    const motifLine = advance.motif ? `\nMotif : ${advance.motif}` : '';
+    const qrData = `N\u00b0 : ${ref}\nCollecteur : ${collName}\nMontant Avance : ${Math.abs(advance.amount).toLocaleString('fr-MG')} Ar\nDate : ${dateFmt}${motifLine}`;
     const qrHtml = '<div id="qr-container"></div>';
 
     const sigHtml = advance.signature
@@ -304,7 +305,7 @@ ${advance.motif ? `<hr class="sep"><div class="motif-block">Motif : ${advance.mo
 <div class="qr-block">
     <div class="label-sm">Scanner pour vérification</div>
     ${qrHtml}
-    <div style="font-size:8px;margin-top:1mm;word-break:break-all;color:#555;">${qrData}</div>
+    <div style="font-size:8px;margin-top:2mm;color:#555;white-space:pre-line;line-height:1.5;">${qrData}</div>
 </div>
 
 ${sigHtml ? `<hr class="sep">${sigHtml}` : ''}
