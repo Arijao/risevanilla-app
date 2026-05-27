@@ -173,9 +173,34 @@ function printAdvanceTicket(advanceId) {
     // Contenu QR — format multiligne lisible par les scanners standards
     const motifLine = advance.motif ? `\nMotif : ${advance.motif}` : '';
     const qrData = `N\u00b0 : ${ref}\nCollecteur : ${collName}\nMontant Avance : ${Math.abs(advance.amount).toLocaleString('fr-MG')} Ar\nDate : ${dateFmt}${motifLine}`;
-    const qrHtml = '<div id="qr-container"></div>';
-    // Chemin absolu vers le script QRCode — indispensable car le popup a l'URL about:blank
-    const _qrScriptSrc = window.location.href.replace(/[^/]+$/, '') + 'assets/qrcode.min.js';
+
+    // Génération QR dans la fenêtre parente (QRCode.js déjà chargée ici)
+    // → on extrait une data:URL base64 → injectée directement dans le popup
+    // Cette approche évite tout problème de chemin/timing dans le popup about:blank
+    let _qrDataUrl = '';
+    try {
+        const _tmpDiv = document.createElement('div');
+        _tmpDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;visibility:hidden;';
+        document.body.appendChild(_tmpDiv);
+        new QRCode(_tmpDiv, {
+            text: qrData,
+            width: 180,
+            height: 180,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+        const _canvas = _tmpDiv.querySelector('canvas');
+        const _img = _tmpDiv.querySelector('img');
+        if (_canvas) {
+            _qrDataUrl = _canvas.toDataURL('image/png');
+        } else if (_img && _img.src) {
+            _qrDataUrl = _img.src;
+        }
+        document.body.removeChild(_tmpDiv);
+    } catch (e) {
+        console.warn('[RiseVanilla] Génération QR échouée :', e);
+    }
 
     const sigHtml = advance.signature
         ? `<div class="sig-block">
@@ -187,7 +212,6 @@ function printAdvanceTicket(advanceId) {
     const html = `<!DOCTYPE html><html lang="fr"><head>
 <meta charset="UTF-8">
 <title>Ticket ${ref}</title>
-<script src="${_qrScriptSrc}"><\/script>
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -306,7 +330,10 @@ ${advance.motif ? `<hr class="sep"><div class="motif-block">Motif : ${advance.mo
 <!-- QR Code -->
 <div class="qr-block">
     <div class="label-sm">Scanner pour vérification</div>
-    ${qrHtml}
+    ${_qrDataUrl
+            ? `<img src="${_qrDataUrl}" width="180" height="180" alt="QR Code" style="display:block;margin:0 auto;image-rendering:pixelated;">`
+            : '<div style="font-size:9px;color:#999;padding:8mm 0;">QR Code non disponible</div>'
+        }
 </div>
 
 ${sigHtml ? `<hr class="sep">${sigHtml}` : ''}
@@ -319,28 +346,8 @@ ${sigHtml ? `<hr class="sep">${sigHtml}` : ''}
 </div>
 
 <script>
-function buildQR() {
-    var el = document.getElementById('qr-container');
-    if (!el) return;
-    new QRCode(el, {
-        text:         ${JSON.stringify(qrData)},
-        width:        160,
-        height:       160,
-        colorDark:    '#000000',
-        colorLight:   '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-    });
-}
-function init() {
-    if (typeof QRCode !== 'undefined') {
-        buildQR();
-    } else {
-        setTimeout(init, 80);
-    }
-}
 window.onload = function() {
-    init();
-    setTimeout(function() { window.print(); }, 700);
+    setTimeout(function() { window.print(); }, 400);
 };
 <\/script>
 </body></html>`;
