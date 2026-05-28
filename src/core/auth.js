@@ -349,7 +349,7 @@ function _showLockScreen(opts = {}) {
             <div id="rv-auth-error" class="rv-auth-error" style="display:none;"></div>
 
             <div class="rv-auth-dots" id="rv-auth-dots" aria-hidden="true">
-                <span></span><span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
             </div>
 
             <div class="rv-pin-pad" id="rv-pin-pad"${locked ? ' style="pointer-events:none;opacity:.35;"' : ''}>
@@ -570,12 +570,12 @@ function _showNewRescueCodeModal(code, onClose) {
 let _pinBuffer = '';
 
 function _pinAppend(digit) {
-    if (_pinBuffer.length >= 6) return;
+    if (_pinBuffer.length >= 4) return;
     _pinBuffer += digit;
     _updateDots(_pinBuffer.length);
 
-    if (_pinBuffer.length === 6) {
-        // Déclencher vérif uniquement quand les 6 chiffres sont saisis
+    if (_pinBuffer.length === 4) {
+        // Déclencher vérif dès les 4 chiffres saisis
         _attemptUnlock(_pinBuffer);
     }
 }
@@ -726,14 +726,14 @@ function _showSetupScreen() {
             </div>
             <div class="rv-auth-title">Bienvenue sur RISEVANILLA</div>
             <div class="rv-auth-subtitle rv-auth-setup-sub">
-                Créez un code PIN à 4–6 chiffres pour sécuriser l'accès administrateur.
+                Créez un code PIN à 4 chiffres pour sécuriser l'accès administrateur.
             </div>
 
             <div id="rv-setup-step" class="rv-setup-step-label">① Choisissez votre PIN</div>
             <div id="rv-auth-error" class="rv-auth-error" style="display:none;"></div>
 
             <div class="rv-auth-dots" id="rv-auth-dots" aria-hidden="true">
-                <span></span><span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
             </div>
 
             <div class="rv-pin-pad" id="rv-pin-pad">
@@ -780,7 +780,7 @@ function _showSetupScreen() {
         const state = _lockOverlay._setupState;
         if (state.step === 1) {
             if (pin.length < 4) {
-                _showSetupError('Le PIN doit comporter au moins 4 chiffres.');
+                _showSetupError('Le PIN doit comporter 4 chiffres.');
                 return;
             }
             state.first = pin;
@@ -803,7 +803,7 @@ function _showSetupScreen() {
                 const stepEl = document.getElementById('rv-setup-step');
                 if (stepEl) stepEl.textContent = '① Choisissez votre PIN';
                 const sub = _lockOverlay.querySelector('.rv-auth-setup-sub');
-                if (sub) sub.textContent = 'Créez un code PIN à 4–6 chiffres.';
+                if (sub) sub.textContent = 'Créez un code PIN à 4 chiffres.';
                 return;
             }
             // Sauvegarder
@@ -840,7 +840,7 @@ function _showSetupScreen() {
     };
 
     confirmBtn.addEventListener('click', () => {
-        if (_pinBuffer.length >= 6) _lockOverlay._setupPinHandler(_pinBuffer);
+        if (_pinBuffer.length >= 4) _lockOverlay._setupPinHandler(_pinBuffer);
     });
 }
 
@@ -849,7 +849,7 @@ const _origAttemptUnlock = _attemptUnlock;
 
 // Patch _pinAppend pour le setup : déclencher _setupPinHandler si dispo
 function _pinAppend(digit) {
-    if (_pinBuffer.length >= 6) return;
+    if (_pinBuffer.length >= 4) return;
     _pinBuffer += digit;
     _updateDots(_pinBuffer.length);
 
@@ -858,8 +858,8 @@ function _pinAppend(digit) {
         confirmBtn.disabled = _pinBuffer.length < 4;
     }
 
-    // Mode unlock normal (exactement 6 chiffres et pas en mode setup)
-    if (!_lockOverlay?._setupPinHandler && _pinBuffer.length === 6) {
+    // Mode unlock normal (exactement 4 chiffres et pas en mode setup)
+    if (!_lockOverlay?._setupPinHandler && _pinBuffer.length === 4) {
         _attemptUnlock(_pinBuffer);
     }
 }
