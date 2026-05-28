@@ -420,14 +420,38 @@ function _showLockScreen(opts = {}) {
         if (onCancel) onCancel(new Error('Annulé'));
     });
 
-    // Panel code de secours
-    const rescueToggle = _lockOverlay.querySelector('#rv-auth-rescue-toggle');
-    const rescuePanel  = _lockOverlay.querySelector('#rv-auth-rescue-panel');
+    // Panel code de secours — bascule complète de l'interface
+    const rescueToggle  = _lockOverlay.querySelector('#rv-auth-rescue-toggle');
+    const rescuePanel   = _lockOverlay.querySelector('#rv-auth-rescue-panel');
+    const pinPad        = _lockOverlay.querySelector('#rv-pin-pad');
+    const dotsEl        = _lockOverlay.querySelector('#rv-auth-dots');
+    const subtitleEl    = _lockOverlay.querySelector('.rv-auth-subtitle');
+    const errorEl       = _lockOverlay.querySelector('#rv-auth-error');
+
     if (rescueToggle && rescuePanel) {
         rescueToggle.addEventListener('click', () => {
             const open = rescuePanel.style.display !== 'none';
-            rescuePanel.style.display = open ? 'none' : 'block';
-            if (!open) rescuePanel.querySelector('#rv-auth-rescue-input')?.focus();
+            if (!open) {
+                // Entrée mode secours : masquer pavé PIN + dots, basculer sous-titre
+                if (pinPad)     pinPad.style.display     = 'none';
+                if (dotsEl)     dotsEl.style.display     = 'none';
+                if (errorEl)    errorEl.style.display    = 'none';
+                if (subtitleEl) subtitleEl.textContent   = 'Code de secours administrateur (6 chiffres)';
+                rescueToggle.innerHTML = '<span class="material-icons" style="font-size:13px;">lock</span>\u00a0Retour au PIN';
+                rescuePanel.style.display = 'block';
+                const inp = rescuePanel.querySelector('#rv-auth-rescue-input');
+                if (inp) { inp.value = ''; inp.focus(); }
+                _lockOverlay._rescueMode = true;
+            } else {
+                // Retour mode PIN : restaurer le pavé
+                if (pinPad)     pinPad.style.display     = '';
+                if (dotsEl)     dotsEl.style.display     = '';
+                if (subtitleEl) subtitleEl.textContent   = 'Entrez votre code PIN administrateur';
+                rescueToggle.innerHTML = '<span class="material-icons" style="font-size:13px;">help_outline</span>\u00a0Code de secours administrateur';
+                rescuePanel.style.display = 'none';
+                _lockOverlay._rescueMode = false;
+                _lockOverlay.querySelector('.rv-pin-key:not([disabled])')?.focus();
+            }
         });
     }
 
@@ -588,6 +612,9 @@ function _pinDelete() {
 
 function _handleKeyboard(e) {
     if (!_lockOverlay) return;
+    // Ne pas intercepter les chiffres si le panel de secours est actif
+    // (l'input texte du panel gère lui-même la saisie)
+    if (_lockOverlay._rescueMode) return;
     if (/^[0-9]$/.test(e.key)) _pinAppend(e.key);
     else if (e.key === 'Backspace') _pinDelete();
     else if (e.key === 'Escape') {
