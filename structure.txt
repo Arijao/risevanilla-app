@@ -1,6 +1,7 @@
 .
 ├── assets
 │   ├── chart.min.js
+│   ├── qrcode.min.js
 │   └── xlsx.full.min.js
 ├── CHANGELOG.md
 ├── DOCUMENTATION_TECHNIQUE_RECHERCHE.md
@@ -71,4 +72,4 @@
 ├── structure.txt
 └── sw.js
 
-10 directories, 62 files
+10 directories, 63 files

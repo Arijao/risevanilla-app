@@ -170,18 +170,24 @@ function printAdvanceTicket(advanceId) {
         ? new Date(advance.confirmedAt).toLocaleString('fr-FR')
         : '—';
 
-    // Contenu QR — format multiligne lisible par les scanners standards
+    // Contenu QR — format multiligne lisible après scan (retours à la ligne réels)
+    // Format : N° / Collecteur / Motif (dynamique) / Montant
     const motifLine = advance.motif ? `\nMotif : ${advance.motif}` : '';
-    const qrData = `N\u00b0 : ${ref}\nCollecteur : ${collName}\nMontant Avance : ${Math.abs(advance.amount).toLocaleString('fr-MG')} Ar\nDate : ${dateFmt}${motifLine}`;
+    const qrData = `N\u00b0 : ${ref}\nCollecteur : ${collName}${motifLine}\nMontant : ${Math.abs(advance.amount).toLocaleString('fr-MG')} Ar`;
 
-    // Génération QR dans la fenêtre parente (QRCode.js déjà chargée ici)
-    // → on extrait une data:URL base64 → injectée directement dans le popup
-    // Cette approche évite tout problème de chemin/timing dans le popup about:blank
-    let _qrDataUrl = '';
+    // ── Génération QR — même système que le module Réceptions ──────────────
+    // Règles critiques pour une génération stable et offline :
+    //  1. Le conteneur DOIT être visible (opacity:0, pas visibility:hidden)
+    //     → visibility:hidden empêche toDataURL() de lire le canvas sur Chrome/Android
+    //  2. toDataURL() DOIT être appelé dans un setTimeout (après le paint du canvas)
+    //     → new QRCode() est synchrone mais makeImage() est asynchrone sur certains moteurs
+    //  3. Le popup est ouvert DANS le callback pour garantir que le QR est prêt
+    // ───────────────────────────────────────────────────────────────────────
+    const _tmpDiv = document.createElement('div');
+    _tmpDiv.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none;z-index:-1;';
+    document.body.appendChild(_tmpDiv);
+
     try {
-        const _tmpDiv = document.createElement('div');
-        _tmpDiv.style.cssText = 'position:absolute;left:-9999px;top:-9999px;visibility:hidden;';
-        document.body.appendChild(_tmpDiv);
         new QRCode(_tmpDiv, {
             text: qrData,
             width: 180,
@@ -190,18 +196,12 @@ function printAdvanceTicket(advanceId) {
             colorLight: '#ffffff',
             correctLevel: QRCode.CorrectLevel.M
         });
-        const _canvas = _tmpDiv.querySelector('canvas');
-        const _img = _tmpDiv.querySelector('img');
-        if (_canvas) {
-            _qrDataUrl = _canvas.toDataURL('image/png');
-        } else if (_img && _img.src) {
-            _qrDataUrl = _img.src;
-        }
-        document.body.removeChild(_tmpDiv);
     } catch (e) {
         console.warn('[RiseVanilla] Génération QR échouée :', e);
+        document.body.removeChild(_tmpDiv);
     }
 
+    // Signature HTML (calculée ici, avant le setTimeout, pour capture dans la closure)
     const sigHtml = advance.signature
         ? `<div class="sig-block">
                <div class="label-sm">Signature collecteur</div>
@@ -209,6 +209,31 @@ function printAdvanceTicket(advanceId) {
            </div>`
         : '';
 
+    // Délai minimal pour laisser le moteur peindre le canvas avant toDataURL()
+    setTimeout(function () {
+        let _qrDataUrl = '';
+        try {
+            const _canvas = _tmpDiv.querySelector('canvas');
+            const _img    = _tmpDiv.querySelector('img');
+            if (_canvas && _canvas.width > 0) {
+                _qrDataUrl = _canvas.toDataURL('image/png');
+            } else if (_img && _img.src && _img.src.startsWith('data:')) {
+                _qrDataUrl = _img.src;
+            }
+        } catch (e) {
+            console.warn('[RiseVanilla] toDataURL QR échoué :', e);
+        }
+        if (document.body.contains(_tmpDiv)) document.body.removeChild(_tmpDiv);
+
+        _openAdvanceTicketPopup(advance, ref, collName, montant, dateFmt, confirmed, sigHtml, _qrDataUrl);
+    }, 120);
+}
+
+// ── Fonction interne : construit et ouvre le popup ticket ─────
+// Appelée dans le callback setTimeout après génération du QR.
+// Séparée de printAdvanceTicket() pour garantir que _qrDataUrl
+// est toujours prêt avant la construction du HTML du popup.
+function _openAdvanceTicketPopup(advance, ref, collName, montant, dateFmt, confirmed, sigHtml, _qrDataUrl) {
     const html = `<!DOCTYPE html><html lang="fr"><head>
 <meta charset="UTF-8">
 <title>Ticket ${ref}</title>
