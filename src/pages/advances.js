@@ -155,8 +155,9 @@ async function saveSignature() {
 
 // ── Ticket Thermique 80mm ─────────────────────────────────────
 
-// QR Code généré par QRCode.js (assets/qrcode.min.js) — 100% offline
-// Même bibliothèque éprouvée que le module Réceptions.
+// ── Ticket Thermique 80mm — système QR identique au module Réception ──────────
+// Architecture : qrcode.min.js est chargé DANS le popup (comme dans export.js),
+// le QR est généré dans son propre DOM après window.onload — jamais dans la fenêtre parente.
 /** Imprime un ticket thermique format 80mm pour une avance */
 function printAdvanceTicket(advanceId) {
     const advance = (appData.advances || []).find(a => a.id === advanceId);
@@ -170,218 +171,173 @@ function printAdvanceTicket(advanceId) {
         ? new Date(advance.confirmedAt).toLocaleString('fr-FR')
         : '—';
 
-    // Contenu QR — format multiligne lisible après scan (retours à la ligne réels)
-    // Format : N° / Collecteur / Motif (dynamique) / Montant
-    const motifLine = advance.motif ? `\nMotif : ${advance.motif}` : '';
-    const qrData = `N\u00b0 : ${ref}\nCollecteur : ${collName}${motifLine}\nMontant : ${Math.abs(advance.amount).toLocaleString('fr-MG')} Ar`;
+    // Contenu QR — format multiligne avec vrais retours à la ligne après scan
+    // Format : N° / Collecteur / Motif (dynamique, omis si absent) / Montant
+    const motifLine = advance.motif ? '\nMotif : ' + advance.motif : '';
+    const qrPayload = 'N\u00b0 : ' + ref
+        + '\nCollecteur : ' + collName
+        + motifLine
+        + '\nMontant : ' + Math.abs(advance.amount).toLocaleString('fr-MG') + ' Ar';
 
-    // ── Génération QR — même système que le module Réceptions ──────────────
-    // Règles critiques pour une génération stable et offline :
-    //  1. Le conteneur DOIT être visible (opacity:0, pas visibility:hidden)
-    //     → visibility:hidden empêche toDataURL() de lire le canvas sur Chrome/Android
-    //  2. toDataURL() DOIT être appelé dans un setTimeout (après le paint du canvas)
-    //     → new QRCode() est synchrone mais makeImage() est asynchrone sur certains moteurs
-    //  3. Le popup est ouvert DANS le callback pour garantir que le QR est prêt
-    // ───────────────────────────────────────────────────────────────────────
-    const _tmpDiv = document.createElement('div');
-    _tmpDiv.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none;z-index:-1;';
-    document.body.appendChild(_tmpDiv);
-
-    try {
-        new QRCode(_tmpDiv, {
-            text: qrData,
-            width: 180,
-            height: 180,
-            colorDark: '#000000',
-            colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.M
-        });
-    } catch (e) {
-        console.warn('[RiseVanilla] Génération QR échouée :', e);
-        document.body.removeChild(_tmpDiv);
-    }
-
-    // Signature HTML (calculée ici, avant le setTimeout, pour capture dans la closure)
+    // Signature HTML — calculée ici (base64 déjà disponible dans la fenêtre parente)
     const sigHtml = advance.signature
-        ? `<div class="sig-block">
-               <div class="label-sm">Signature collecteur</div>
-               <img src="${advance.signature}" class="sig-img" alt="Signature">
-           </div>`
+        ? '<hr class="sep">'
+          + '<div class="sig-block">'
+          + '<div class="label-sm">Signature collecteur</div>'
+          + '<img src="' + advance.signature + '" class="sig-img" alt="Signature">'
+          + '</div>'
         : '';
 
-    // Délai minimal pour laisser le moteur peindre le canvas avant toDataURL()
-    setTimeout(function () {
-        let _qrDataUrl = '';
-        try {
-            const _canvas = _tmpDiv.querySelector('canvas');
-            const _img    = _tmpDiv.querySelector('img');
-            if (_canvas && _canvas.width > 0) {
-                _qrDataUrl = _canvas.toDataURL('image/png');
-            } else if (_img && _img.src && _img.src.startsWith('data:')) {
-                _qrDataUrl = _img.src;
-            }
-        } catch (e) {
-            console.warn('[RiseVanilla] toDataURL QR échoué :', e);
-        }
-        if (document.body.contains(_tmpDiv)) document.body.removeChild(_tmpDiv);
-
-        _openAdvanceTicketPopup(advance, ref, collName, montant, dateFmt, confirmed, sigHtml, _qrDataUrl);
-    }, 120);
-}
-
-// ── Fonction interne : construit et ouvre le popup ticket ─────
-// Appelée dans le callback setTimeout après génération du QR.
-// Séparée de printAdvanceTicket() pour garantir que _qrDataUrl
-// est toujours prêt avant la construction du HTML du popup.
-function _openAdvanceTicketPopup(advance, ref, collName, montant, dateFmt, confirmed, sigHtml, _qrDataUrl) {
-    const html = `<!DOCTYPE html><html lang="fr"><head>
-<meta charset="UTF-8">
-<title>Ticket ${ref}</title>
-<style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 11px;
-        color: #000;
-        background: #fff;
-        width: 72mm;          /* zone imprimable 80mm - marges */
-        margin: 0 auto;
-        padding: 4mm 2mm;
-    }
-
-    /* ── En-tête ── */
-    .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4mm; margin-bottom: 3mm; }
-    .header .logo-img  { width: 12mm; height: 12mm; object-fit: contain; display: block; margin: 0 auto 2mm; }
-    .header .logo-line { font-size: 14px; font-weight: bold; letter-spacing: 2px; }
-    .header .subtitle  { font-size: 9px; color: #333; margin-top: 1mm; }
-    .ref-badge { display: inline-block; border: 1px solid #000; padding: 1mm 3mm;
-                 font-size: 12px; font-weight: bold; letter-spacing: 1px; margin: 2mm 0; }
-    .doc-type  { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #333; }
-
-    /* ── Montant central ── */
-    .amount-block {
-        text-align: center;
-        border: 2px solid #000;
-        border-radius: 2mm;
-        padding: 3mm;
-        margin: 3mm 0;
-    }
-    .amount-label { font-size: 9px; color: #555; margin-bottom: 1mm; }
-    .amount-value { font-size: 18px; font-weight: bold; letter-spacing: 1px; }
-
-    /* ── Lignes de données ── */
-    .data-section { margin: 3mm 0; }
-    .data-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 1mm 0;
-        border-bottom: 1px dotted #bbb;
-        gap: 4px;
-    }
-    .data-row:last-child { border-bottom: none; }
-    .data-label { color: #444; flex-shrink: 0; min-width: 24mm; }
-    .data-val   { font-weight: bold; text-align: right; word-break: break-all; }
-
-    /* ── Séparateur ── */
-    .sep { border: none; border-top: 1px dashed #000; margin: 3mm 0; }
-
-    /* ── Motif ── */
-    .motif-block { font-size: 10px; font-style: italic;
-                   border-left: 2px solid #000; padding-left: 2mm; margin: 2mm 0; }
-
-    /* ── QR Code ── */
-    .qr-block { text-align: center; margin: 3mm 0; }
-    .qr-block .label-sm { font-size: 9px; color: #555; margin-bottom: 2mm; }
-
-    /* ── Signature ── */
-    .sig-block { text-align: center; margin: 3mm 0; }
-    .sig-block .label-sm { font-size: 9px; color: #555; margin-bottom: 1mm; }
-    .sig-img { max-width: 56mm; max-height: 18mm; border: 1px solid #ccc;
-               border-radius: 1mm; padding: 1mm; background: #fff; }
-
-    /* ── Pied ── */
-    .footer { text-align: center; font-size: 8px; color: #555;
-              border-top: 1px dashed #000; padding-top: 3mm; margin-top: 3mm; }
-    .footer .brand { font-size: 10px; font-weight: bold; letter-spacing: 1px; }
-
-    @media print {
-        body { width: 72mm; margin: 0; padding: 3mm 2mm; }
-        @page { size: 80mm auto; margin: 0; }
-    }
-</style>
-</head><body>
-
-<!-- En-tête -->
-<div class="header">
-    <img src="${_LOGO_B64_ADV}" alt="RISEVANILLA" class="logo-img">
-    <div class="logo-line">RISEVANILLA</div>
-    <div class="subtitle">Gestion de Collecte de Vanille</div>
-    <div style="margin-top:2mm;">
-        <span class="ref-badge">${ref}</span>
-    </div>
-    <div class="doc-type">Ticket d'Avance</div>
-</div>
-
-<!-- Montant -->
-<div class="amount-block">
-    <div class="amount-label">MONTANT AVANCÉ</div>
-    <div class="amount-value">${montant}</div>
-</div>
-
-<!-- Données -->
-<div class="data-section">
-    <div class="data-row">
-        <span class="data-label">Collecteur</span>
-        <span class="data-val">${collName}</span>
-    </div>
-    <div class="data-row">
-        <span class="data-label">Date</span>
-        <span class="data-val">${dateFmt}</span>
-    </div>
-    <div class="data-row">
-        <span class="data-label">Référence</span>
-        <span class="data-val">${ref}</span>
-    </div>
-    <div class="data-row">
-        <span class="data-label">Confirmé le</span>
-        <span class="data-val">${confirmed}</span>
-    </div>
-</div>
-
-${advance.motif ? `<hr class="sep"><div class="motif-block">Motif : ${advance.motif}</div>` : ''}
-
-<hr class="sep">
-
-<!-- QR Code -->
-<div class="qr-block">
-    <div class="label-sm">Scanner pour vérification</div>
-    ${_qrDataUrl
-            ? `<img src="${_qrDataUrl}" width="180" height="180" alt="QR Code" style="display:block;margin:0 auto;image-rendering:pixelated;">`
-            : '<div style="font-size:9px;color:#999;padding:8mm 0;">QR Code non disponible</div>'
-        }
-</div>
-
-${sigHtml ? `<hr class="sep">${sigHtml}` : ''}
-
-<!-- Pied -->
-<div class="footer">
-    <div style="margin-bottom:1mm;">Imprimé le ${new Date().toLocaleString('fr-FR')}</div>
-    <div class="brand">RISEVANILLA</div>
-    <div>© ${new Date().getFullYear()} — Tous droits réservés</div>
-</div>
-
-<script>
-window.onload = function() {
-    setTimeout(function() { window.print(); }, 400);
-};
-<\/script>
-</body></html>`;
-
-    const win = window.open('', '_blank', 'width=360,height=700');
+    // ── Ouvre le popup (même stratégie que generateReceiptThermal dans export.js) ──
+    const win = window.open('', '_blank');
     if (!win) { showToast('Autorisez les popups pour imprimer le ticket.', 'error'); return; }
+
+    const html = '<!DOCTYPE html>'
+        + '<html lang="fr"><head>'
+        + '<meta charset="UTF-8">'
+        + '<title>Ticket ' + ref + '</title>'
+        // ── qrcode.min.js chargé dans le popup — identique au module Réception ──
+        // La lib s'exécute dans son propre contexte DOM, évite tout problème
+        // de visibilité / timing de la fenêtre parente.
+        + '<script src="../assets/qrcode.min.js"><\\/script>'
+        + '<style>'
+        + '*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }'
+        + 'html { background: #e0e0e0; min-height: 100%; }'
+        + 'body {'
+        + '    background: #e0e0e0;'
+        + '    display: flex; flex-direction: column; align-items: center;'
+        + '    padding: 20px 0 40px;'
+        + '    font-family: \'Courier New\', Courier, monospace;'
+        + '    font-size: 11px; color: #000; line-height: 1.6;'
+        + '}'
+        + '.toolbar { width: 80mm; display: flex; gap: 8px; margin-bottom: 12px; }'
+        + '.toolbar button { flex: 1; padding: 7px 0; border: none; border-radius: 6px;'
+        + '    font-family: Arial, sans-serif; font-size: 13px; cursor: pointer; font-weight: 600; }'
+        + '.btn-print { background: #1a1a1a; color: #fff; }'
+        + '.btn-close { background: #ccc; color: #333; }'
+        + '#ticket {'
+        + '    width: 80mm; background: #fff;'
+        + '    padding: 4mm 4mm 6mm;'
+        + '    line-height: 1.6;'
+        + '    box-shadow: 0 2px 12px rgba(0,0,0,.25);'
+        + '}'
+        + '.header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 4mm; margin-bottom: 3mm; }'
+        + '.logo-img  { width: 12mm; height: 12mm; object-fit: contain; display: block; margin: 0 auto 2mm; }'
+        + '.logo-line { font-size: 14px; font-weight: bold; letter-spacing: 2px; }'
+        + '.subtitle  { font-size: 9px; color: #333; margin-top: 1mm; }'
+        + '.ref-badge { display: inline-block; border: 1px solid #000; padding: 1mm 3mm;'
+        + '             font-size: 12px; font-weight: bold; letter-spacing: 1px; margin: 2mm 0; }'
+        + '.doc-type  { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #333; }'
+        + '.amount-block { text-align: center; border: 2px solid #000; border-radius: 2mm;'
+        + '                padding: 3mm; margin: 3mm 0; }'
+        + '.amount-label { font-size: 9px; color: #555; margin-bottom: 1mm; }'
+        + '.amount-value { font-size: 18px; font-weight: bold; letter-spacing: 1px; }'
+        + '.data-section { margin: 3mm 0; }'
+        + '.data-row { display: flex; justify-content: space-between; padding: 1mm 0;'
+        + '            border-bottom: 1px dotted #bbb; gap: 4px; }'
+        + '.data-row:last-child { border-bottom: none; }'
+        + '.data-label { color: #444; flex-shrink: 0; min-width: 24mm; }'
+        + '.data-val   { font-weight: bold; text-align: right; word-break: break-all; }'
+        + '.sep { border: none; border-top: 1px dashed #000; margin: 3mm 0; }'
+        + '.motif-block { font-size: 10px; font-style: italic;'
+        + '               border-left: 2px solid #000; padding-left: 2mm; margin: 2mm 0; }'
+        + '.qr-wrap { text-align: center; margin: 8px 0 3px; line-height: 0; }'
+        + '#qr-container { display: inline-block; }'
+        + '#qr-container canvas, #qr-container img {'
+        + '    width: 30mm !important; height: 30mm !important;'
+        + '    image-rendering: pixelated; display: block;'
+        + '}'
+        + '.qr-label { font-size: 9px; color: #555; margin-bottom: 2mm; text-align: center; }'
+        + '.sig-block { text-align: center; margin: 3mm 0; }'
+        + '.label-sm  { font-size: 9px; color: #555; margin-bottom: 1mm; }'
+        + '.sig-img { max-width: 56mm; max-height: 18mm; border: 1px solid #ccc;'
+        + '           border-radius: 1mm; padding: 1mm; background: #fff; }'
+        + '.footer { text-align: center; font-size: 8px; color: #555;'
+        + '          border-top: 1px dashed #000; padding-top: 3mm; margin-top: 3mm; }'
+        + '.footer .brand { font-size: 10px; font-weight: bold; letter-spacing: 1px; }'
+        + '@media print {'
+        + '    @page { size: 80mm auto; margin: 0; }'
+        + '    html  { background: #fff !important; }'
+        + '    body  { background: #fff !important; display: block !important; padding: 0 !important; }'
+        + '    .toolbar { display: none !important; }'
+        + '    #ticket { width: 80mm !important; box-shadow: none !important; padding: 3mm 3mm 5mm !important; }'
+        + '}'
+        + '</style>'
+        + '</head><body>'
+
+        + '<div class="toolbar">'
+        + '<button class="btn-print" onclick="window.print()">&#128438; Imprimer</button>'
+        + '<button class="btn-close" onclick="window.close()">&#10005; Fermer</button>'
+        + '</div>'
+
+        + '<div id="ticket">'
+
+        + '<div class="header">'
+        + '<img src="' + _LOGO_B64_ADV + '" alt="RISEVANILLA" class="logo-img">'
+        + '<div class="logo-line">RISEVANILLA</div>'
+        + '<div class="subtitle">Gestion de Collecte de Vanille</div>'
+        + '<div style="margin-top:2mm;"><span class="ref-badge">' + ref + '</span></div>'
+        + '<div class="doc-type">Ticket d\'Avance</div>'
+        + '</div>'
+
+        + '<div class="amount-block">'
+        + '<div class="amount-label">MONTANT AVANCÉ</div>'
+        + '<div class="amount-value">' + montant + '</div>'
+        + '</div>'
+
+        + '<div class="data-section">'
+        + '<div class="data-row"><span class="data-label">Collecteur</span><span class="data-val">' + collName + '</span></div>'
+        + '<div class="data-row"><span class="data-label">Date</span><span class="data-val">' + dateFmt + '</span></div>'
+        + '<div class="data-row"><span class="data-label">Référence</span><span class="data-val">' + ref + '</span></div>'
+        + '<div class="data-row"><span class="data-label">Confirmé le</span><span class="data-val">' + confirmed + '</span></div>'
+        + '</div>'
+
+        + (advance.motif ? '<hr class="sep"><div class="motif-block">Motif : ' + advance.motif + '</div>' : '')
+
+        + '<hr class="sep">'
+        + '<div class="qr-label">Scanner pour vérification</div>'
+        + '<div class="qr-wrap"><div id="qr-container"></div></div>'
+
+        + sigHtml
+
+        + '<div class="footer">'
+        + '<div style="margin-bottom:1mm;">Imprim\u00e9 le ' + new Date().toLocaleString('fr-FR') + '</div>'
+        + '<div class="brand">RISEVANILLA</div>'
+        + '<div>&copy; ' + new Date().getFullYear() + ' \u2014 Tous droits r\u00e9serv\u00e9s</div>'
+        + '</div>'
+
+        + '</div>'  // #ticket
+
+        // ── Script identique à generateReceiptThermal (export.js) ──────────────
+        // buildQR()  : génère le QR dans le DOM du popup (lib chargée dans ce contexte)
+        // init()     : retry toutes les 80ms si la lib n'est pas encore prête
+        // window.onload : appelle init() puis lance l'impression après 700ms
+        + '<script>'
+        + 'function buildQR() {'
+        + '    var el = document.getElementById("qr-container");'
+        + '    if (!el) return;'
+        + '    new QRCode(el, {'
+        + '        text:         ' + JSON.stringify(qrPayload) + ','
+        + '        width:        114,'
+        + '        height:       114,'
+        + '        colorDark:    "#000000",'
+        + '        colorLight:   "#ffffff",'
+        + '        correctLevel: QRCode.CorrectLevel.M'
+        + '    });'
+        + '}'
+        + 'function init() {'
+        + '    if (typeof QRCode !== "undefined") { buildQR(); }'
+        + '    else { setTimeout(init, 80); }'
+        + '}'
+        + 'window.onload = function() {'
+        + '    init();'
+        + '    setTimeout(function() { window.print(); }, 700);'
+        + '};'
+        + '<\/script>'
+        + '</body></html>';
+
     win.document.write(html);
     win.document.close();
-    win.focus();
 }
 
 // ── Generate PDF Receipt ──────────────────────────────────────
