@@ -4514,7 +4514,7 @@
 @keyframes rv-threat-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
 /* Dots indicateurs */
-.rv-auth-dots { display: flex; gap: 14px; margin: 6px 0 4px; }
+.rv-auth-dots { display: flex; gap: 10px; margin: 6px 0 4px; }
 
 .rv-auth-dots span {
     width: 14px; height: 14px; border-radius: 50%;

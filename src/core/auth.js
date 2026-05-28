@@ -349,7 +349,7 @@ function _showLockScreen(opts = {}) {
             <div id="rv-auth-error" class="rv-auth-error" style="display:none;"></div>
 
             <div class="rv-auth-dots" id="rv-auth-dots" aria-hidden="true">
-                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span><span></span>
             </div>
 
             <div class="rv-pin-pad" id="rv-pin-pad"${locked ? ' style="pointer-events:none;opacity:.35;"' : ''}>
@@ -574,8 +574,8 @@ function _pinAppend(digit) {
     _pinBuffer += digit;
     _updateDots(_pinBuffer.length);
 
-    if (_pinBuffer.length >= 4) {
-        // Déclencher vérif après min 4 chiffres
+    if (_pinBuffer.length === 6) {
+        // Déclencher vérif uniquement quand les 6 chiffres sont saisis
         _attemptUnlock(_pinBuffer);
     }
 }
@@ -733,7 +733,7 @@ function _showSetupScreen() {
             <div id="rv-auth-error" class="rv-auth-error" style="display:none;"></div>
 
             <div class="rv-auth-dots" id="rv-auth-dots" aria-hidden="true">
-                <span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span><span></span>
             </div>
 
             <div class="rv-pin-pad" id="rv-pin-pad">
@@ -770,7 +770,7 @@ function _showSetupScreen() {
     const _origAppend = window._pinAppend;
     _lockOverlay._setupState = { step: 1, first: '' };
 
-    const confirmBtn = _lockOverlay.querySelector('#rv-setup-confirm');
+    const confirmBtn = document.getElementById('rv-setup-confirm');
 
     // Override: écouter les dots pour détecter pin complet
     const origPinAppend = _pinAppend.toString();
@@ -840,7 +840,7 @@ function _showSetupScreen() {
     };
 
     confirmBtn.addEventListener('click', () => {
-        if (_pinBuffer.length >= 4) _lockOverlay._setupPinHandler(_pinBuffer);
+        if (_pinBuffer.length >= 6) _lockOverlay._setupPinHandler(_pinBuffer);
     });
 }
 
@@ -858,8 +858,8 @@ function _pinAppend(digit) {
         confirmBtn.disabled = _pinBuffer.length < 4;
     }
 
-    // Mode unlock normal (≥4 chiffres et pas en mode setup)
-    if (!_lockOverlay?._setupPinHandler && _pinBuffer.length >= 4) {
+    // Mode unlock normal (exactement 6 chiffres et pas en mode setup)
+    if (!_lockOverlay?._setupPinHandler && _pinBuffer.length === 6) {
         _attemptUnlock(_pinBuffer);
     }
 }
