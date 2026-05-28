@@ -164,35 +164,31 @@ function printAdvanceTicket(advanceId) {
     if (!advance) { showToast('Avance introuvable', 'error'); return; }
     const collector = (appData.collectors || []).find(c => c.id === advance.collectorId);
     const ref      = 'AVA-' + String(advance.id).padStart(4, '0');
-    const collName = collector ? collector.name : '\u2014';
+    const collName = collector ? collector.name : '-';
     const montant  = Math.abs(advance.amount).toLocaleString('fr-MG') + ' Ar';
     const dateFmt  = formatDate(advance.date);
     const confirmed = advance.confirmedAt
         ? new Date(advance.confirmedAt).toLocaleString('fr-FR')
-        : '\u2014';
+        : '-';
 
-    // Contenu QR \u2014 format multiligne avec vrais retours \u00e0 la ligne apr\u00e8s scan
-    // Format attendu apr\u00e8s scan :
-    //   N\u00b0 : AVA-00001
-    //   Collecteur : Nom
-    //   Motif : ... (omis si absent)
-    //   Montant : 12 600 000 Ar
+    // Payload QR — format multiligne lisible après scan (identique à generateReceiptThermal)
+    // Vrais \n encodés via JSON.stringify — compatibles tous scanners/Google Lens
     const motifLine = advance.motif ? '\nMotif : ' + advance.motif : '';
-    const qrPayload = 'N\u00b0 : ' + ref
+    const qrPayload = 'N : ' + ref
         + '\nCollecteur : ' + collName
         + motifLine
         + '\nMontant : ' + Math.abs(advance.amount).toLocaleString('fr-MG') + ' Ar';
 
-    // Signature HTML \u2014 calcul\u00e9e ici (base64 d\u00e9j\u00e0 disponible dans la fen\u00eatre parente)
+    // Blocs HTML — construits dans la fenêtre parente (base64 signature déjà disponible)
     const sigHtml = advance.signature
         ? `<hr class="sep"><div class="sig-block"><div class="label-sm">Signature collecteur</div><img src="${advance.signature}" class="sig-img" alt="Signature"></div>`
         : '';
 
     const motifBlock = advance.motif
-        ? `<hr class="sep"><div class="motif-block">Motif\u00a0: ${advance.motif}</div>`
+        ? `<hr class="sep"><div class="motif-block">Motif : ${advance.motif}</div>`
         : '';
 
-    // \u2500\u2500 Ouvre le popup \u2014 strat\u00e9gie identique \u00e0 generateReceiptThermal (export.js) \u2500\u2500
+    // ── Ouvre le popup — stratégie identique à generateReceiptThermal (export.js) ──
     const w = window.open('', '_blank');
     if (!w) { showToast('Autorisez les popups pour imprimer le ticket.', 'error'); return; }
 
@@ -201,10 +197,13 @@ function printAdvanceTicket(advanceId) {
     const year    = new Date().getFullYear();
     const qrJson  = JSON.stringify(qrPayload);
 
+    // ── Ouvrir le document avant d'écrire (évite about:blank sur Chrome récent) ──
+    w.document.open();
+
     const html = `<!DOCTYPE html>
 <html lang="fr"><head>
 <meta charset="UTF-8">
-<title>Ticket ${ref} \u2014 RISEVANILLA</title>
+<title>Ticket ${ref} - RISEVANILLA</title>
 <script src="../assets/qrcode.min.js"><\/script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -274,7 +273,7 @@ body {
 </head><body>
 
 <div class="toolbar">
-    <button class="btn-print" onclick="window.print()">&#128438; Imprimer</button>
+    <button class="btn-print" onclick="doPrint()">&#128438; Imprimer</button>
     <button class="btn-close" onclick="window.close()">&#10005; Fermer</button>
 </div>
 
@@ -328,6 +327,9 @@ function buildQR() {
         colorLight:   '#ffffff',
         correctLevel: QRCode.CorrectLevel.M
     });
+}
+function doPrint() {
+    window.print();
 }
 function init() {
     if (typeof QRCode !== 'undefined') {
