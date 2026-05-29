@@ -178,10 +178,24 @@ function printAdvanceTicket(advanceId) {
     const dateFmt  = formatDate(advance.date);
     const confirmed = advance.confirmedAt
         ? new Date(advance.confirmedAt).toLocaleString('fr-FR') : '—';
-    const motifPart = advance.motif ? '|M=' + advance.motif : '';
-    const qrPayload = 'N=' + ref + '|C=' + colName
-        + '|A=' + Math.abs(advance.amount) + 'Ar'
-        + '|D=' + dateFmt + motifPart;
+    // ── Helper : normalise les accents pour compatibilité scanner ──
+    // Certains lecteurs QR affichent l'UTF-8 en Latin-1 → accents corrompus.
+    // On supprime les diacritiques dans le payload QR uniquement ;
+    // les données originales en base restent intactes.
+    function _ascii(str) {
+        return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    // ── Payload QR — multiligne, ASCII-safe ─────────────────────
+    // Séparateurs \n → affichage sur plusieurs lignes dans tous les scanners.
+    const _montantQr = Math.abs(advance.amount).toLocaleString('fr-MG') + ' Ar';
+    let qrPayload = 'N\u00b0: ' + ref
+        + '\nCollecteur : ' + _ascii(colName)
+        + '\nAvance : '     + _montantQr
+        + '\nDate : '       + dateFmt;
+    if (advance.motif) {
+        qrPayload += '\nMotif : ' + _ascii(advance.motif);
+    }
 
     // ── Génère le SVG QR dans un div caché du DOM parent ───────
     function _buildQrSvg() {
