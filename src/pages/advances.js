@@ -209,17 +209,22 @@ function printAdvanceTicket(advanceId) {
                 colorDark: '#000000', colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.M
             });
-            const el = tmp.querySelector('svg');
-            if (el) {
-                el.setAttribute('width', '30mm');
-                el.setAttribute('height', '30mm');
-                el.style.cssText = 'width:30mm;height:30mm;display:block;';
-                svg = tmp.innerHTML;
+            // Récupérer le SVG via innerHTML (évite les problèmes de namespace
+            // avec querySelector('svg') dans certains navigateurs mobiles).
+            // Le renderer SVG appende toujours le <svg> comme premier enfant de tmp.
+            let raw = tmp.innerHTML || '';
+            if (raw.indexOf('<svg') !== -1) {
+                // Fixer les dimensions : remplacer width/height 100% par 30mm
+                raw = raw.replace(/(<svg[^>]*?)\s*width="[^"]*"/,  '$1 width="30mm"');
+                raw = raw.replace(/(<svg[^>]*?)\s*height="[^"]*"/, '$1 height="30mm"');
+                // Ajouter style display:block pour centrage
+                raw = raw.replace('<svg ', '<svg style="display:block;margin:0 auto;" ');
+                svg = raw;
             }
         } catch(e) {
             console.warn('[RISEVANILLA] QR error:', e);
         } finally {
-            document.body.removeChild(tmp);
+            if (tmp.parentNode) { document.body.removeChild(tmp); }
         }
         return svg;
     }
