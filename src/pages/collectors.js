@@ -170,9 +170,14 @@ function showCollectorDetails(collectorId) {
                     ${collector.photo ? `
                     <div style="flex-shrink:0;">
                         <img src="${collector.photo}" alt="${collector.name}"
+                             onclick="openPhotoPreviewModal(this.src, this.alt)"
+                             title="Cliquer pour agrandir"
                              style="width:80px;height:80px;border-radius:12px;object-fit:cover;
                                     border:3px solid rgba(240,237,244,0.35);
-                                    box-shadow:0 4px 16px rgba(0,0,0,0.25);">
+                                    box-shadow:0 4px 16px rgba(0,0,0,0.25);
+                                    cursor:pointer;transition:transform 0.2s ease,box-shadow 0.2s ease;"
+                             onmouseover="this.style.transform='scale(1.08)';this.style.boxShadow='0 8px 28px rgba(0,0,0,0.38)'"
+                             onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'">
                     </div>` : ''}
                     <div style="flex:1;min-width:0;">
                         <h4 style="margin-bottom:16px;font-size:18px;display:flex;align-items:center;gap:8px;"><span class="material-icons">account_circle</span> Informations</h4>
@@ -295,6 +300,70 @@ function _renderCollectorDocsTab(collector) {
 
 function _detailDocPreview(doc) {
     _openDocPreviewModal(doc);
+}
+
+// ── Photo Preview Modal ───────────────────────────────────────
+/**
+ * openPhotoPreviewModal(src, name)
+ * Ouvre un lightbox pour visualiser l'avatar du collecteur en grand.
+ * Fermeture : clic sur le backdrop, bouton ×, ou touche Échap.
+ */
+function openPhotoPreviewModal(src, name) {
+    // Créer l'overlay une seule fois
+    let overlay = document.getElementById('photo-preview-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'photo-preview-overlay';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-label', 'Aperçu photo');
+        overlay.innerHTML = `
+            <div class="photo-preview-box">
+                <button class="photo-preview-close" id="photo-preview-close-btn" aria-label="Fermer l'aperçu">
+                    <span class="material-icons">close</span>
+                </button>
+                <img id="photo-preview-img" src="" alt="" class="photo-preview-img">
+                <p id="photo-preview-name" class="photo-preview-name"></p>
+            </div>`;
+        document.body.appendChild(overlay);
+
+        // Fermeture au clic sur le backdrop
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) closePhotoPreviewModal();
+        });
+        // Fermeture via le bouton ×
+        document.getElementById('photo-preview-close-btn')
+            .addEventListener('click', closePhotoPreviewModal);
+    }
+
+    // Injecter le contenu
+    document.getElementById('photo-preview-img').src = src;
+    document.getElementById('photo-preview-img').alt = name || '';
+    document.getElementById('photo-preview-name').textContent = name || '';
+
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Fermeture via Échap
+    overlay._escHandler = function(e) { if (e.key === 'Escape') closePhotoPreviewModal(); };
+    document.addEventListener('keydown', overlay._escHandler);
+
+    // Focus sur le bouton fermer pour l'accessibilité
+    setTimeout(() => {
+        const btn = document.getElementById('photo-preview-close-btn');
+        if (btn) btn.focus();
+    }, 80);
+}
+
+function closePhotoPreviewModal() {
+    const overlay = document.getElementById('photo-preview-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+    if (overlay._escHandler) {
+        document.removeEventListener('keydown', overlay._escHandler);
+        delete overlay._escHandler;
+    }
 }
 
 function exportCollectorReport(collectorId) {
