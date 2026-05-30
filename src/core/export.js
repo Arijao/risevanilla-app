@@ -384,12 +384,21 @@ function generateReceiptThermal(receptionId) {
     const colName = collector?.name || 'N/A';
     const dateStr = formatDate(base.date);
 
-    // Payload QR — compact, lisible par tout scanner standard
-    const qrPayload = 'N=' + recNum
-        + '|C=' + colName
-        + '|P=' + totalNet.toFixed(2) + 'kg'
-        + '|V=' + Math.round(totalVal) + 'Ar'
-        + '|D=' + dateStr;
+    // ── Payload QR — multiligne, ASCII-safe (cohérent avec advances.js) ────────
+    // • Séparateurs \n → affichage sur plusieurs lignes dans tous les scanners
+    // • _ascii() supprime les diacritiques → évite la corruption UTF-8 sur vieux lecteurs
+    // • Espaces insécables fr-MG (U+00A0, U+202F) → espaces ASCII normaux
+    function _ascii(s) {
+        return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+    const _poidsQr  = totalNet.toFixed(1) + ' Kg';
+    const _valeurQr = Math.round(totalVal).toLocaleString('fr-MG')
+                          .replace(/[\u00a0\u202f]/g, ' ') + ' Ar';
+    let qrPayload = 'No: ' + recNum
+        + '\nCollecteur : ' + _ascii(colName)
+        + '\nPoids : '      + _poidsQr
+        + '\nValeur : '     + _valeurQr
+        + '\nDate : '       + dateStr;
 
     const detailLines = dayRecs.map(r =>
         `<tr><td>Vanille ${r.quality}</td><td class="right bold">${r.netWeight.toFixed(2)} kg</td></tr>`
@@ -500,17 +509,18 @@ body {
 }
 .total-box .val:last-child { margin-bottom: 0; }
 
-/* QR code */
-.qr-wrap      { text-align: center; margin: 8px 0 3px; line-height: 0; }
+/* QR code — taille réduite, compatible renderer SVG et canvas */
+.qr-wrap      { text-align: center; margin: 6px 0 2px; line-height: 0; }
 #qr-container { display: inline-block; }
 #qr-container canvas,
-#qr-container img {
-    width: 30mm !important;
-    height: 30mm !important;
+#qr-container img,
+#qr-container svg {
+    width: 24mm !important;
+    height: 24mm !important;
     image-rendering: pixelated;
     display: block;
 }
-.qr-ref { font-size: 10px; text-align: center; margin: 4px 0 6px; line-height: 1.5; }
+.qr-ref { font-size: 10px; text-align: center; margin: 3px 0 5px; line-height: 1.5; }
 
 /* Signature — espace pour apposer la signature */
 .sig-section { margin: 8px 0 4px; }
@@ -603,11 +613,12 @@ function buildQR() {
     if (!el) return;
     new QRCode(el, {
         text:         ${JSON.stringify(qrPayload)},
-        width:        114,
-        height:       114,
+        width:        90,
+        height:       90,
+        typeNumber:   0,
         colorDark:    '#000000',
         colorLight:   '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
+        correctLevel: QRCode.CorrectLevel.L
     });
 }
 
