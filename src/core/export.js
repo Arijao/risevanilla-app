@@ -384,22 +384,23 @@ function generateReceiptThermal(receptionId) {
     const colName = collector?.name || 'N/A';
     const dateStr = formatDate(base.date);
 
-    // ── Payload QR — multiligne, ASCII-safe (cohérent avec advances.js) ────────
-    // • Séparateurs \n → affichage sur plusieurs lignes dans tous les scanners
-    // • _ascii() supprime les diacritiques → évite la corruption UTF-8 sur vieux lecteurs
-    // • Espaces insécables fr-MG (U+00A0, U+202F) → espaces ASCII normaux
+    // ── Helper ASCII — supprime les diacritiques ────────────────
     function _ascii(s) {
         return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
+
+    // ── Payload QR — multiligne, ASCII-safe ─────────────────────
+    // Cohérent avec advances.js : \n, _ascii(), U+00A0/U+202F → espace
     const _poidsQr  = totalNet.toFixed(1) + ' Kg';
     const _valeurQr = Math.round(totalVal).toLocaleString('fr-MG')
                           .replace(/[\u00a0\u202f]/g, ' ') + ' Ar';
-    let qrPayload = 'No: ' + recNum
+    const qrPayload = 'No: ' + recNum
         + '\nCollecteur : ' + _ascii(colName)
         + '\nPoids : '      + _poidsQr
         + '\nValeur : '     + _valeurQr
         + '\nDate : '       + dateStr;
 
+    // ── Lignes de détail ────────────────────────────────────────
     const detailLines = dayRecs.map(r =>
         `<tr><td>Vanille ${r.quality}</td><td class="right bold">${r.netWeight.toFixed(2)} kg</td></tr>`
     ).join('');
@@ -407,157 +408,101 @@ function generateReceiptThermal(receptionId) {
     const now       = new Date();
     const timestamp = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR');
 
-    // ── Ouvre une popup standard (pas de dimensions fixes — le CSS gère le format) ──
-    const w = window.open('', '_blank');
-    if (!w) { showToast('Popup bloqué — autorisez les popups', 'error'); return; }
+    // ── Génère le SVG QR dans le DOM parent (avant ouverture popup) ─
+    // Architecture identique à advances.js : QR pré-généré → SVG statique injecté
+    // → zéro <script src>, zéro timing, 100% offline, tous navigateurs
+    function _buildQrSvg() {
+        const tmp = document.createElement('div');
+        tmp.style.cssText = 'position:absolute;left:-9999px;visibility:hidden;';
+        document.body.appendChild(tmp);
+        let svg = '';
+        try {
+            new QRCode(tmp, {
+                text:         qrPayload,
+                width:        90,
+                height:       90,
+                typeNumber:   0,
+                colorDark:    '#000000',
+                colorLight:   '#ffffff',
+                correctLevel: QRCode.CorrectLevel.L
+            });
+            let raw = tmp.innerHTML || '';
+            if (raw.indexOf('<svg') !== -1) {
+                raw = raw.replace(/(<svg[^>]*?)\s*width="[^"]*"/,  '$1 width="24mm"');
+                raw = raw.replace(/(<svg[^>]*?)\s*height="[^"]*"/, '$1 height="24mm"');
+                raw = raw.replace('<svg ', '<svg style="display:block;margin:0 auto;" ');
+                svg = raw;
+            }
+        } catch(e) {
+            console.warn('[RISEVANILLA] QR réception error:', e);
+        } finally {
+            if (tmp.parentNode) { document.body.removeChild(tmp); }
+        }
+        return svg;
+    }
 
-    /* Stratégie format thermique :
-     * - En écran  : body = fond gris, #ticket = bloc blanc 80mm centré → aperçu fidèle ticket
-     * - À l'impression (@media print) : fond gris masqué, seul #ticket imprimé,
-     *   @page margin:0 + le ticket porte ses propres paddings.
-     * Chrome respecte alors la largeur du contenu (80mm) sans forcer A4.         */
-    const html = `<!DOCTYPE html>
+    // ── Ouvre le popup avec SVG QR statique ────────────────────
+    function _openPopup(qrSvgHtml) {
+        const qrBlock = qrSvgHtml
+            ? `<div class="qr-wrap">${qrSvgHtml}</div><div class="qr-ref">${recNum}</div>`
+            : '';
+
+        const w = window.open('', '_blank');
+        if (!w) { showToast('Popup bloqué — autorisez les popups', 'error'); return; }
+
+        const html = `<!DOCTYPE html>
 <html lang="fr"><head>
 <meta charset="UTF-8">
-<title>Reçu ${recNum} — RISEVANILLA</title>
-<script src="../assets/qrcode.min.js"><\/script>
+<title>Re\u00e7u ${recNum} \u2014 RISEVANILLA</title>
 <style>
-/* ── Reset ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-/* ── Écran : fond gris, ticket centré ── */
-html { background: #e0e0e0; min-height: 100%; }
-body {
-    background: #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 0 40px;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 12px;
-    color: #000;
-    line-height: 1.6;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:#e0e0e0;min-height:100%}
+body{background:#e0e0e0;display:flex;flex-direction:column;align-items:center;
+     padding:20px 0 40px;font-family:'Courier New',Courier,monospace;font-size:12px;color:#000;line-height:1.6}
+.toolbar{width:80mm;display:flex;gap:8px;margin-bottom:12px}
+.toolbar button{flex:1;padding:7px 0;border:none;border-radius:6px;
+     font-family:Arial,sans-serif;font-size:13px;cursor:pointer;font-weight:600}
+.btn-print{background:#1a1a1a;color:#fff}
+.btn-close{background:#ccc;color:#333}
+#ticket{width:80mm;background:#fff;padding:4mm 4mm 6mm;line-height:1.6;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.t-center{text-align:center}
+.hd-title{font-size:15px;font-weight:700;letter-spacing:1.5px;text-align:center;margin-bottom:1px}
+.hd-subtitle{font-size:11px;font-weight:700;letter-spacing:.8px;text-align:center;margin-bottom:4px}
+.sep-dash{border:none;border-top:1px dashed #000;margin:6px 0}
+.sep-solid{border:none;border-top:1px solid #000;margin:6px 0}
+.info-table{width:100%;border-collapse:collapse;margin-bottom:2px}
+.info-table td{padding:2px 0;vertical-align:top;line-height:1.6}
+.info-table td.lbl{width:50%}
+.info-table td.val{text-align:right;font-weight:700}
+.info-table td.val-normal{text-align:right;font-weight:400}
+.section-ttl{font-weight:700;margin:4px 0 3px}
+.detail-table{width:100%;border-collapse:collapse}
+.detail-table td{padding:3px 0;line-height:1.5;vertical-align:middle}
+.detail-table td.right{text-align:right;font-weight:700}
+.total-box{border:1px solid #000;padding:6px 8px;margin:7px 0}
+.total-box .lbl{font-size:10px;font-weight:700;text-align:center;letter-spacing:.6px;margin-bottom:1px}
+.total-box .val{font-size:14px;font-weight:700;text-align:center;margin-bottom:5px}
+.total-box .val:last-child{margin-bottom:0}
+.qr-wrap{text-align:center;margin:6px 0 2px;line-height:0}
+.qr-wrap svg{width:24mm!important;height:24mm!important;display:block;margin:0 auto}
+.qr-ref{font-size:10px;text-align:center;margin:3px 0 5px;line-height:1.5}
+.sig-section{margin:8px 0 4px}
+.sig-label{font-size:11px;text-align:center;margin-top:22mm;margin-bottom:4px;line-height:1.6}
+.sig-line{border-top:1px solid #000;width:52mm;margin:0 auto}
+.footer{font-size:9px;text-align:center;margin-top:8px;line-height:1.7}
+@media print{
+    @page{size:80mm auto;margin:0}
+    html,body{background:#fff!important;display:block!important;padding:0!important}
+    .toolbar{display:none!important}
+    #ticket{width:80mm!important;box-shadow:none!important;padding:3mm 3mm 5mm!important;page-break-inside:avoid}
 }
+</style></head><body>
 
-/* ── Barre d'actions (masquée à l'impression) ── */
-.toolbar {
-    width: 80mm;
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-.toolbar button {
-    flex: 1;
-    padding: 7px 0;
-    border: none;
-    border-radius: 6px;
-    font-family: Arial, sans-serif;
-    font-size: 13px;
-    cursor: pointer;
-    font-weight: 600;
-}
-.btn-print  { background: #1a1a1a; color: #fff; }
-.btn-close  { background: #ccc;    color: #333; }
-
-/* ── Ticket ── */
-#ticket {
-    width: 80mm;
-    background: #fff;
-    padding: 4mm 4mm 6mm;
-    line-height: 1.6;
-    box-shadow: 0 2px 12px rgba(0,0,0,.25);
-}
-
-/* Typographie */
-.t-center  { text-align: center; }
-.t-right   { text-align: right; }
-.bold      { font-weight: 700; }
-
-/* En-tête */
-.hd-title    { font-size: 15px; font-weight: 700; letter-spacing: 1.5px; text-align: center; margin-bottom: 1px; }
-.hd-subtitle { font-size: 11px; font-weight: 700; letter-spacing: .8px; text-align: center; margin-bottom: 4px; }
-
-/* Séparateurs */
-.sep-dash  { border: none; border-top: 1px dashed #000; margin: 6px 0; }
-.sep-solid { border: none; border-top: 1px solid  #000; margin: 6px 0; }
-
-/* Table infos */
-.info-table { width: 100%; border-collapse: collapse; margin-bottom: 2px; }
-.info-table td { padding: 2px 0; vertical-align: top; line-height: 1.6; }
-.info-table td.lbl { width: 50%; }
-.info-table td.val       { text-align: right; font-weight: 700; }
-.info-table td.val-normal { text-align: right; font-weight: 400; }
-
-/* Section titre */
-.section-ttl { font-weight: 700; margin: 4px 0 3px; }
-
-/* Table détails articles */
-.detail-table { width: 100%; border-collapse: collapse; }
-.detail-table td { padding: 3px 0; line-height: 1.5; vertical-align: middle; }
-.detail-table td.right { text-align: right; font-weight: 700; }
-
-/* Bloc total encadré */
-.total-box { border: 1px solid #000; padding: 6px 8px; margin: 7px 0; }
-.total-box .lbl {
-    font-size: 10px; font-weight: 700;
-    text-align: center; letter-spacing: .6px;
-    margin-bottom: 1px;
-}
-.total-box .val {
-    font-size: 14px; font-weight: 700;
-    text-align: center; margin-bottom: 5px;
-}
-.total-box .val:last-child { margin-bottom: 0; }
-
-/* QR code — taille réduite, compatible renderer SVG et canvas */
-.qr-wrap      { text-align: center; margin: 6px 0 2px; line-height: 0; }
-#qr-container { display: inline-block; }
-#qr-container canvas,
-#qr-container img,
-#qr-container svg {
-    width: 24mm !important;
-    height: 24mm !important;
-    image-rendering: pixelated;
-    display: block;
-}
-.qr-ref { font-size: 10px; text-align: center; margin: 3px 0 5px; line-height: 1.5; }
-
-/* Signature — espace pour apposer la signature */
-.sig-section { margin: 8px 0 4px; }
-.sig-label   { font-size: 11px; text-align: center; margin-top: 22mm; margin-bottom: 4px; line-height: 1.6; }
-.sig-line    { border-top: 1px solid #000; width: 52mm; margin: 0 auto; }
-
-/* Pied de page */
-.footer { font-size: 9px; text-align: center; margin-top: 8px; line-height: 1.7; }
-
-/* ── Impression ── */
-@media print {
-    @page { size: 80mm auto; margin: 0; }
-
-    /* Masquer tout sauf le ticket */
-    html  { background: #fff !important; }
-    body  { background: #fff !important; display: block !important;
-            padding: 0 !important; }
-    .toolbar { display: none !important; }
-
-    #ticket {
-        width: 80mm !important;
-        box-shadow: none !important;
-        padding: 3mm 3mm 5mm !important;
-        /* Pas de page-break parasite */
-        page-break-inside: avoid;
-    }
-}
-</style>
-</head><body>
-
-<!-- Barre d'actions (écran uniquement) -->
 <div class="toolbar no-print">
-    <button class="btn-print" onclick="doPrint()">🖨 Imprimer</button>
-    <button class="btn-close" onclick="window.close()">✕ Fermer</button>
+    <button class="btn-print" onclick="window.print()">&#128438; Imprimer</button>
+    <button class="btn-close" onclick="window.close()">&#10005; Fermer</button>
 </div>
 
-<!-- Ticket -->
 <div id="ticket">
 
     ${_logoHeaderThermal()}
@@ -567,9 +512,9 @@ body {
     <hr class="sep-dash">
 
     <table class="info-table">
-        <tr><td class="lbl">N&#176; Recu:</td><td class="val-normal">${recNum}</td></tr>
-        <tr><td class="lbl">Date:</td><td class="val-normal">${dateStr}</td></tr>
-        <tr><td class="lbl">Collecteur:</td><td class="val">${colName}</td></tr>
+        <tr><td class="lbl">N&#176; Re\u00e7u:</td><td class="val-normal">${recNum}</td></tr>
+        <tr><td class="lbl">Date:</td>          <td class="val-normal">${dateStr}</td></tr>
+        <tr><td class="lbl">Collecteur:</td>    <td class="val">${colName}</td></tr>
     </table>
 
     <hr class="sep-dash">
@@ -589,14 +534,12 @@ body {
         <div class="val">${totalVal.toLocaleString('fr-MG')} Ar</div>
     </div>
 
-    <div class="qr-wrap"><div id="qr-container"></div></div>
-    <div class="qr-ref">${recNum}</div>
+    ${qrBlock}
 
     <hr class="sep-dash">
 
-    <!-- Zone signature avec espace suffisant -->
     <div class="sig-section">
-        <div class="sig-label">Signature du responsable de réception</div>
+        <div class="sig-label">Signature du responsable de r\u00e9ception</div>
         <div class="sig-line"></div>
     </div>
 
@@ -607,45 +550,28 @@ body {
 
 </div><!-- /#ticket -->
 
-<script>
-function buildQR() {
-    var el = document.getElementById('qr-container');
-    if (!el) return;
-    new QRCode(el, {
-        text:         ${JSON.stringify(qrPayload)},
-        width:        90,
-        height:       90,
-        typeNumber:   0,
-        colorDark:    '#000000',
-        colorLight:   '#ffffff',
-        correctLevel: QRCode.CorrectLevel.L
-    });
-}
-
-function doPrint() {
-    window.print();
-}
-
-function init() {
-    if (typeof QRCode !== 'undefined') {
-        buildQR();
-    } else {
-        setTimeout(init, 80);
-    }
-}
-
-window.onload = function() {
-    init();
-    // Délai pour s'assurer que le QR est rendu avant l'impression auto
-    setTimeout(function() { window.print(); }, 700);
-};
-<\/script>
+<script>window.onload=function(){setTimeout(function(){window.print();},400)};<\/script>
 </body></html>`;
 
-    w.document.write(html);
-    w.document.close();
-}
+        w.document.write(html);
+        w.document.close();
+    }
 
+    // ── Dispatch : QRCode dispo → direct ; sinon chargement dynamique ──
+    if (typeof QRCode === 'function') {
+        _openPopup(_buildQrSvg());
+    } else {
+        console.info('[RISEVANILLA] Chargement dynamique qrcode.min.js (réception)...');
+        const _s = document.createElement('script');
+        _s.src = 'assets/qrcode.min.js';
+        _s.onload  = function() { _openPopup(_buildQrSvg()); };
+        _s.onerror = function() {
+            console.warn('[RISEVANILLA] qrcode.min.js introuvable — reçu sans QR');
+            _openPopup('');
+        };
+        document.head.appendChild(_s);
+    }
+}
 // ── Delivery PDF ──────────────────────────────────────────────
 
 /**
