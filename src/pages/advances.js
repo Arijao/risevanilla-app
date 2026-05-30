@@ -186,10 +186,16 @@ function printAdvanceTicket(advanceId) {
         return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
-    // ── Payload QR — multiligne, ASCII-safe ─────────────────────
-    // Séparateurs \n → affichage sur plusieurs lignes dans tous les scanners.
-    const _montantQr = Math.abs(advance.amount).toLocaleString('fr-MG') + ' Ar';
-    let qrPayload = 'N\u00b0: ' + ref
+    // ── Payload QR — multiligne, 100% ASCII-safe ───────────────
+    // Règles strictes pour éviter tout overflow dans qrcodejs :
+    // • Aucun caractère non-ASCII (N° → No, espaces insécables → espaces normaux)
+    // • Séparateurs \n → affichage multiligne dans tous les scanners
+    // • correctLevel L + typeNumber 0 (auto) → capacité maximale
+    const _montantQr = Math.abs(advance.amount)
+        .toLocaleString('fr-MG')
+        .replace(/[\u00a0\u202f]/g, ' ')  // espaces insécables fr-MG (U+00A0, U+202F) → ASCII
+        + ' Ar';
+    let qrPayload = 'No: ' + ref
         + '\nCollecteur : ' + _ascii(colName)
         + '\nAvance : '     + _montantQr
         + '\nDate : '       + dateFmt;
@@ -205,9 +211,13 @@ function printAdvanceTicket(advanceId) {
         let svg = '';
         try {
             new QRCode(tmp, {
-                text: qrPayload, width: 114, height: 114,
-                colorDark: '#000000', colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.M
+                text:         qrPayload,
+                width:        114,
+                height:       114,
+                typeNumber:   0,
+                colorDark:    '#000000',
+                colorLight:   '#ffffff',
+                correctLevel: QRCode.CorrectLevel.L
             });
             // Récupérer le SVG via innerHTML (évite les problèmes de namespace
             // avec querySelector('svg') dans certains navigateurs mobiles).
