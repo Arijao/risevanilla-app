@@ -222,7 +222,7 @@ function updateReceptionTable() {
             <td data-label="Collecteur"></td>
             <td data-label="Poids Brut">${grossWeight} kg</td>
             <td data-label="Poids Net">${netWeight} kg</td>
-            <td data-label="Qualité" data-no-highlight>
+            <td data-label="Qualité" data-no-highlight="1">
                 <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
                     <span class="status-badge status-${qualClass}">${RiseVanillaSearch.highlightText(r.quality || '—', _q)}</span>
                     ${typeBadge}
