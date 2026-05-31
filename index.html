@@ -52,6 +52,120 @@
 
     <!-- ⑧ Style bannière offline/update (inline = disponible sans réseau) -->
     <style>
+        /* ── Analysis Actions Bar ──────────────────────────── */
+        .analysis-actions-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            background: var(--md-sys-color-surface);
+            border: 1px solid var(--md-sys-color-outline-variant);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .analysis-actions-bar__reports {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .analysis-actions-bar__secondary {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        @media (max-width: 600px) {
+            .analysis-actions-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .analysis-actions-bar__reports,
+            .analysis-actions-bar__secondary {
+                width: 100%;
+            }
+            .analysis-actions-bar__reports .btn,
+            .analysis-actions-bar__secondary .btn {
+                flex: 1;
+            }
+        }
+
+        /* ── Quality badge clickable hover ────────────────── */
+        .quality-badge-clickable {
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+        }
+        .quality-badge-clickable:hover {
+            transform: translateY(-1px) scale(1.08);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+            opacity: 0.9;
+        }
+        .quality-badge-clickable:active {
+            transform: scale(0.96);
+        }
+
+        /* ── Quality Detail Modal body ────────────────────── */
+        .quality-detail-type-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: var(--md-sys-color-on-surface-variant);
+            padding: 0 0 12px;
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
+            margin-bottom: 4px;
+        }
+        .quality-detail-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding-top: 8px;
+        }
+        .quality-detail-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-radius: 10px;
+            transition: background 0.15s;
+        }
+        .quality-detail-row:hover {
+            background: var(--md-sys-color-surface-variant);
+        }
+        .quality-detail-row__left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+        .quality-detail-row__left .material-icons {
+            font-size: 18px;
+            color: var(--md-sys-color-primary);
+        }
+        .quality-detail-row__value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--md-sys-color-on-surface);
+        }
+        .quality-detail-row--highlight {
+            background: var(--md-sys-color-primary-container);
+            margin-top: 6px;
+        }
+        .quality-detail-row--highlight:hover {
+            background: var(--md-sys-color-primary-container);
+            filter: brightness(0.96);
+        }
+        .quality-detail-row--highlight .quality-detail-row__left {
+            color: var(--md-sys-color-on-primary-container);
+        }
+        .quality-detail-row--highlight .quality-detail-row__left .material-icons {
+            color: var(--md-sys-color-on-primary-container);
+        }
+        .quality-detail-row--highlight .quality-detail-row__value {
+            color: var(--md-sys-color-on-primary-container);
+            font-size: 15px;
+        }
         #sw-update-banner {
             position: fixed;
             bottom: 20px;
@@ -683,27 +797,26 @@
 
             <!-- Analysis Section -->
             <section class="content-section" id="analysis">
-                <div class="filters">
-                    <div class="filter-group">
-                        <label class="filter-label">Filtrer par Collecteur</label>
-                        <select class="form-select" id="analysis-filter-collector" onchange="updateAnalysisTable()">
-                            <option value="">Tous les collecteurs</option>
-                        </select>
+                <div class="analysis-actions-bar">
+                    <div class="analysis-actions-bar__reports">
+                        <button class="btn btn-primary" onclick="exportAnalysis()">
+                            <span class="material-icons">paid</span>
+                            Rapport Comptes
+                        </button>
+                        <button class="btn btn-primary" onclick="exportPoidsAnalysis()">
+                            <span class="material-icons">scale</span>
+                            Rapport Poids
+                        </button>
                     </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Filtrer par Qualité de Vanille</label>
-                        <select class="form-select" id="analysis-filter-quality" onchange="updateAnalysisTable()">
-                            <option value="">Toutes les qualités</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Actions & Rapports</label>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button class="btn btn-secondary" onclick="showAllInAnalysis()"><span class="material-icons">clear_all</span> Afficher Tout</button>
-                            <button class="btn btn-outline" onclick="exportAnalysis()"><span class="material-icons">paid</span> Rapport Comptes</button>
-                            <button class="btn btn-outline" onclick="exportPoidsAnalysis()"><span class="material-icons">scale</span> Rapport Poids</button>
-                            <button class="btn btn-success" onclick="exportAnalysisToExcel()"><span class="material-icons">table_view</span> Export Excel</button>
-                        </div>
+                    <div class="analysis-actions-bar__secondary">
+                        <button class="btn btn-outline" onclick="showAllInAnalysis()">
+                            <span class="material-icons">clear_all</span>
+                            Afficher Tout
+                        </button>
+                        <button class="btn btn-success" onclick="exportAnalysisToExcel()">
+                            <span class="material-icons">table_view</span>
+                            Export Excel
+                        </button>
                     </div>
                 </div>
                 <div class="summary-insights" style="margin-bottom: 32px;">
@@ -1596,6 +1709,22 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Quality Detail Modal -->
+    <div class="modal" id="quality-detail-modal">
+        <div class="modal-content" style="max-width:420px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="quality-detail-modal-title">
+                    <span class="material-icons">info</span>
+                    Détail Qualité
+                </h3>
+                <button class="close-btn" onclick="closeModal('quality-detail-modal')">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div id="quality-detail-modal-body" style="padding:8px 0 4px;"></div>
         </div>
     </div>
 

@@ -18,10 +18,7 @@ function updateAnalysisTable() {
         return;
     }
 
-    const filterCollector = document.getElementById('analysis-filter-collector')?.value;
-    const filterQuality   = document.getElementById('analysis-filter-quality')?.value;
-
-    let toShow = filterCollector ? available.filter(c => c.id == filterCollector) : available;
+    let toShow = available;
 
     const paiementsYear      = getPaiementsForCurrentYear();
     const remboursementsYear = getRemboursementsForCurrentYear();
@@ -31,7 +28,6 @@ function updateAnalysisTable() {
     paiementsYear.forEach(p => { paiMap[p.collectorId] = (paiMap[p.collectorId]||0) + p.amount; });
     remboursementsYear.forEach(r => { rembMap[r.collectorId] = (rembMap[r.collectorId]||0) + r.amount; });
     receptionsYear.forEach(r => {
-        if (filterQuality && r.quality !== filterQuality) return;
         recMap[r.collectorId] = (recMap[r.collectorId]||0) + r.totalValue;
     });
 
@@ -132,20 +128,12 @@ function filterAnalysisByStatus(statusClass) {
 function filterAnalysisForDebtors() { filterAnalysisByStatus('debiteur'); }
 
 function resetAnalysisView() {
-    const selC = document.getElementById('analysis-filter-collector');
-    const selQ = document.getElementById('analysis-filter-quality');
-    if (selC) selC.value = '';
-    if (selQ) selQ.value = '';
     updateAnalysisTable();
     document.querySelectorAll('#analysis-table tr').forEach(r => r.style.display = '');
     showToast('Filtres réinitialisés.', 'success', 2000);
 }
 
 function showAllInAnalysis() {
-    const selC = document.getElementById('analysis-filter-collector');
-    const selQ = document.getElementById('analysis-filter-quality');
-    if (selC) selC.value = '';
-    if (selQ) selQ.value = '';
     updateAnalysisTable();
     document.querySelectorAll('#analysis-table tr').forEach(r => r.style.display = '');
     showToast('Affichage de tous les collecteurs.', 'success', 2000);
@@ -246,9 +234,12 @@ function updatePrixRevientAnalysis() {
                 <div class="insight-footer-v2">
                     <span class="insight-rec-count">${recVerte.length} réception${recVerte.length > 1 ? 's' : ''}</span>
                     <span class="insight-footer-label">Qualités :</span>
-                    ${[...new Set(recVerte.map(r => r.quality))].map(q =>
-                        `<span class="status-badge status-${q.toLowerCase().replace(/\s+/g, '-')}" style="font-size:10px;">${q}</span>`
-                    ).join('')}
+                    ${[...new Set(recVerte.map(r => r.quality))].map(q => {
+                        const qRecs = recVerte.filter(r => r.quality === q);
+                        const qPoids = qRecs.reduce((s,r) => s+(r.netWeight||0),0);
+                        const qVal   = qRecs.reduce((s,r) => s+(r.totalValue||0),0);
+                        return `<span class="status-badge status-${q.toLowerCase().replace(/\s+/g, '-')} quality-badge-clickable" style="font-size:10px;cursor:pointer;" onclick="showQualityDetail('${q}','verte',${qPoids.toFixed(3)},${Math.round(qVal)},${qRecs.length})" title="Voir détail ${q}">${q}</span>`;
+                    }).join('')}
                 </div>` : `
                 <div class="insight-metric-row" style="opacity:.6;">
                     <div class="insight-metric-left">
@@ -300,9 +291,12 @@ function updatePrixRevientAnalysis() {
                 <div class="insight-footer-v2">
                     <span class="insight-rec-count">${recPreparee.length} réception${recPreparee.length > 1 ? 's' : ''}</span>
                     <span class="insight-footer-label">Qualités :</span>
-                    ${[...new Set(recPreparee.map(r => r.quality))].map(q =>
-                        `<span class="status-badge status-${q.toLowerCase().replace(/\s+/g, '-')}" style="font-size:10px;">${q}</span>`
-                    ).join('')}
+                    ${[...new Set(recPreparee.map(r => r.quality))].map(q => {
+                        const qRecs = recPreparee.filter(r => r.quality === q);
+                        const qPoids = qRecs.reduce((s,r) => s+(r.netWeight||0),0);
+                        const qVal   = qRecs.reduce((s,r) => s+(r.totalValue||0),0);
+                        return `<span class="status-badge status-${q.toLowerCase().replace(/\s+/g, '-')} quality-badge-clickable" style="font-size:10px;cursor:pointer;" onclick="showQualityDetail('${q}','preparee',${qPoids.toFixed(3)},${Math.round(qVal)},${qRecs.length})" title="Voir détail ${q}">${q}</span>`;
+                    }).join('')}
                 </div>` : `
                 <div class="insight-metric-row" style="opacity:.6;">
                     <div class="insight-metric-left">
@@ -357,4 +351,55 @@ function updatePrixRevientAnalysis() {
             </div>
 
         </div>`;
+}
+
+/* ============================================================
+ * QUALITY DETAIL POPUP — Clic sur badge qualité dans les cards
+ * ============================================================ */
+
+function showQualityDetail(quality, type, poids, valeur, nbRec) {
+    const titleEl = document.getElementById('quality-detail-modal-title');
+    const bodyEl  = document.getElementById('quality-detail-modal-body');
+    if (!titleEl || !bodyEl) return;
+
+    const typeLabel  = type === 'verte' ? 'Vanille Verte' : 'Vanille Préparée';
+    const typeIcon   = type === 'verte' ? 'grass' : 'verified';
+    const prixMoy    = poids > 0 ? Math.round(valeur / poids) : 0;
+
+    titleEl.innerHTML = `<span class="material-icons">${typeIcon}</span> ${quality}`;
+
+    bodyEl.innerHTML = `
+        <div class="quality-detail-type-label">${typeLabel}</div>
+        <div class="quality-detail-metrics">
+            <div class="quality-detail-row">
+                <div class="quality-detail-row__left">
+                    <span class="material-icons">tag</span>
+                    <span>Réceptions</span>
+                </div>
+                <span class="quality-detail-row__value">${nbRec} réception${nbRec > 1 ? 's' : ''}</span>
+            </div>
+            <div class="quality-detail-row">
+                <div class="quality-detail-row__left">
+                    <span class="material-icons">scale</span>
+                    <span>Poids total</span>
+                </div>
+                <span class="quality-detail-row__value">${Number(poids).toFixed(2)} kg</span>
+            </div>
+            <div class="quality-detail-row">
+                <div class="quality-detail-row__left">
+                    <span class="material-icons">payments</span>
+                    <span>Valeur totale</span>
+                </div>
+                <span class="quality-detail-row__value">${formatCurrency(valeur)}</span>
+            </div>
+            <div class="quality-detail-row quality-detail-row--highlight">
+                <div class="quality-detail-row__left">
+                    <span class="material-icons">trending_up</span>
+                    <span>Prix moyen</span>
+                </div>
+                <span class="quality-detail-row__value">${formatCurrency(prixMoy)}/kg</span>
+            </div>
+        </div>`;
+
+    openModal('quality-detail-modal');
 }
