@@ -118,7 +118,7 @@ function updateDeliveryTable() {
             </td>
             <td data-label="Poids Net">${(d.weight || 0).toFixed(2)} kg</td>
             <td data-label="Valeur">${formatCurrency(d.totalValue || 0)}</td>
-            <td data-label="Exportateur">${RiseVanillaSearch.highlightText(d.exporter || '—', _q)}</td>
+            <td data-label="Exportateur (Client)">${RiseVanillaSearch.highlightText(d.exporter || '—', _q)}</td>
             <td class="actions-cell">
                 <button class="btn btn-icon btn-outline"   onclick="openDeliveryModal(${d.id})"             title="Modifier">
                     <span class="material-icons">edit</span>

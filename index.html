@@ -662,7 +662,7 @@
             <section class="content-section" id="delivery">
                 <div class="data-table">
                     <div class="table-header">
-                        <h2 class="table-title">Livraison à l'Exportateur</h2>
+                        <h2 class="table-title">Livraison à l'Exportateur (Client)</h2>
                         <button class="btn btn-primary" onclick="openDeliveryModal()">
                             <span class="material-icons">add</span>
                             Nouvelle Livraison
@@ -671,7 +671,7 @@
                     <div class="table-scroll-wrapper">
                         <table>
                             <thead>
-                                <tr><th>Date</th><th>N° BL / Facture</th><th style="padding:8px;text-align:left;">Qualité</th><th>Poids</th><th>Valeur</th><th>Exportateur</th><th>Actions</th></tr>
+                                <tr><th>Date</th><th>N° BL / Facture</th><th style="padding:8px;text-align:left;">Qualité</th><th>Poids</th><th>Valeur</th><th>Exportateur (Client)</th><th>Actions</th></tr>
                             </thead>
                             <tbody id="delivery-table">
                                 <tr><td colspan="7" class="empty-state"><div class="material-icons">local_shipping</div><div>Aucune livraison enregistrée</div></td></tr>
@@ -1274,7 +1274,7 @@
             </div>
             <form id="delivery-form">
                 <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="delivery-date" required></div>
-                <div class="form-group"><label class="form-label">Exportateur</label><input type="text" class="form-input" id="delivery-exporter" placeholder="Nom de l'exportateur"></div>
+                <div class="form-group"><label class="form-label">Exportateur (Client)</label><input type="text" class="form-input" id="delivery-exporter" placeholder="Nom de l'exportateur ou du client"></div>
                 <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group"><label class="form-label">N° BL</label><input type="text" class="form-input" id="delivery-bl" placeholder="Auto" readonly tabindex="-1"></div>
                     <div class="form-group"><label class="form-label">N° Facture</label><input type="text" class="form-input" id="delivery-invoice" placeholder="Auto" readonly tabindex="-1"></div>

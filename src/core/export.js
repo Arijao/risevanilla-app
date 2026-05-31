@@ -703,8 +703,8 @@ function generateDeliveryPDF(deliveryId, type = 'BL') {
         montantEnLettres = `
             <div style="margin-top:16px;padding:12px 16px;border:1px solid #bbb;border-radius:6px;
                         font-size:12px;color:#333;line-height:1.7;">
-                <strong>Arrêté la présente facture à la somme de :</strong><br>
-                <span style="font-style:italic;">${lettresMaj} ariary</span>
+                Arrêté la présente facture à la somme de :<br>
+                <strong style="font-style:italic;">${lettresMaj} ariary</strong>
             </div>`;
         tableHead = `<tr>
             <th>Désignation</th>
@@ -753,7 +753,7 @@ function generateDeliveryPDF(deliveryId, type = 'BL') {
     ${_logoHeader(title, number||'—')}
     <div class="info-grid">
         <div class="info-box"><div class="info-label">Date</div><div class="info-value">${formatDate(delivery.date)}</div></div>
-        <div class="info-box"><div class="info-label">Exportateur</div><div class="info-value">${delivery.exporter||'N/A'}</div></div>
+        <div class="info-box"><div class="info-label">Exportateur (Client)</div><div class="info-value">${delivery.exporter||'N/A'}</div></div>
     </div>
     <table>
         <thead>${tableHead}</thead>
@@ -762,7 +762,7 @@ function generateDeliveryPDF(deliveryId, type = 'BL') {
     ${montantEnLettres}
     <div class="signatures">
         <div class="sig-line">Signature Livreur / RISEVANILLA</div>
-        <div class="sig-line">Signature Destinataire / ${delivery.exporter||'Exportateur'}</div>
+        <div class="sig-line">Signature Destinataire / ${delivery.exporter||'Exportateur (Client)'}</div>
     </div>
     <script>window.onload=()=>window.print();</script>
     </body></html>`;
