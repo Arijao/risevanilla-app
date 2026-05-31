@@ -281,7 +281,7 @@ let startYearDrag = 0;
 
 function getYearBounds() {
     const now = new Date().getFullYear();
-    return { minYear: now - 5, maxYear: now + 2 };
+    return { minYear: 2025, maxYear: Math.max(2030, now + 2) };
 }
 
 function changeYearBy(delta) {
@@ -303,9 +303,10 @@ function refreshAllData() {
 }
 
 function initYearDisplay() {
-    const saved = parseInt(localStorage.getItem(ACTIVE_YEAR_STORAGE_KEY), 10);
-    const now   = new Date().getFullYear();
-    currentYear = (!isNaN(saved) && saved >= 2020 && saved <= now + 5) ? saved : now;
+    const saved    = parseInt(localStorage.getItem(ACTIVE_YEAR_STORAGE_KEY), 10);
+    const now      = new Date().getFullYear();
+    const fallback = Math.max(2025, Math.min(2030, now));
+    currentYear    = (!isNaN(saved) && saved >= 2025 && saved <= 2030) ? saved : fallback;
 
     const el = document.getElementById('overview-month');
     if (el) el.textContent = `Année ${currentYear}`;
