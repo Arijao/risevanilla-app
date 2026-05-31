@@ -383,7 +383,7 @@ function showQualityDetail(quality, type, poids, valeur, nbRec) {
                     <span class="material-icons">scale</span>
                     <span>Poids total</span>
                 </div>
-                <span class="quality-detail-row__value">${Number(poids).toFixed(2)} kg</span>
+                <span class="quality-detail-row__value">${Number(poids).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kg</span>
             </div>
             <div class="quality-detail-row">
                 <div class="quality-detail-row__left">
