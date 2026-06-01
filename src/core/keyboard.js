@@ -30,13 +30,13 @@
         '8': 'settings',
     };
 
-    // ── Map section → bouton "Ajouter" (Alt+N) ───────────────
-    const ADD_BUTTON_MAP = {
-        collectors:  'add-collector-btn',
-        advances:    'add-advance-btn',
-        reception:   'add-reception-btn',
-        delivery:    'add-delivery-btn',
-        expenses:    'add-expense-btn',
+    // ── Map section → fonction d'ouverture du modal "Ajouter" ─
+    const ADD_MODAL_MAP = {
+        collectors:  () => typeof openCollectorModal === 'function' && openCollectorModal(),
+        advances:    () => typeof openAdvanceModal   === 'function' && openAdvanceModal(),
+        reception:   () => typeof openReceptionModal === 'function' && openReceptionModal(),
+        delivery:    () => typeof openDeliveryModal  === 'function' && openDeliveryModal(),
+        expenses:    () => typeof openExpenseModal   === 'function' && openExpenseModal(),
     };
 
     // ── Helpers ───────────────────────────────────────────────
@@ -137,11 +137,10 @@
             // Alt+N : nouveau / ajouter
             if (key === 'n' || key === 'N') {
                 e.preventDefault();
-                const section  = _activeSection();
-                const btnId    = ADD_BUTTON_MAP[section];
-                const btn      = btnId ? document.getElementById(btnId) : null;
-                if (btn) {
-                    btn.click();
+                const section = _activeSection();
+                const opener  = ADD_MODAL_MAP[section];
+                if (opener) {
+                    opener();
                     _feedback('Nouveau');
                 }
                 return;
