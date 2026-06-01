@@ -91,6 +91,43 @@
             }
         }
 
+        /* ── Keyboard FAB button (desktop only) ──────────────── */
+        .kbd-help-fab {
+            display: none; /* masqué par défaut, affiché via media query */
+        }
+        @media (min-width: 993px) {
+            .kbd-help-fab {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                border: none;
+                cursor: pointer;
+                z-index: 900;
+                background: var(--md-sys-color-surface-variant);
+                color: var(--md-sys-color-on-surface-variant);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+                transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+            }
+            .kbd-help-fab:hover {
+                background: var(--md-sys-color-primary);
+                color: var(--md-sys-color-on-primary);
+                transform: scale(1.08);
+                box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+            }
+            .kbd-help-fab:active {
+                transform: scale(0.96);
+            }
+            .kbd-help-fab .material-icons {
+                font-size: 20px;
+            }
+        }
+
         /* ── Keyboard Help Modal ──────────────────────────── */
         .kbd-modal-content {
             max-width: 520px;

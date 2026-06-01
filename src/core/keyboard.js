@@ -303,10 +303,25 @@
         }
     }
 
+    // ── Bouton FAB "?" (desktop uniquement) ──────────────────
+
+    function _renderHelpFab() {
+        if (document.getElementById('kbd-help-fab')) return;
+        const fab = document.createElement('button');
+        fab.id = 'kbd-help-fab';
+        fab.className = 'kbd-help-fab';
+        fab.setAttribute('aria-label', 'Raccourcis clavier');
+        fab.setAttribute('title', 'Raccourcis clavier (?)');
+        fab.innerHTML = '<span class="material-icons">keyboard</span>';
+        fab.addEventListener('click', _toggleHelpModal);
+        document.body.appendChild(fab);
+    }
+
     // ── Init ──────────────────────────────────────────────────
 
     function initKeyboardShortcuts() {
         document.addEventListener('keydown', _onKeyDown);
+        _renderHelpFab();
         console.log('[KB] Raccourcis clavier initialisés — appuyez sur ? pour l\'aide');
     }
 
