@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // ── Sidebar & Navigation ──────────────────────────────────
     initSidebar();
     initGlobalSearch();                        // barre de recherche + highlight
+    initKeyboardShortcuts();                   // raccourcis clavier (laptop/desktop)
     document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
 
     // ── Forms ─────────────────────────────────────────────────

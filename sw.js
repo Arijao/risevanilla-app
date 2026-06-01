@@ -1,11 +1,11 @@
 /* ============================================================
- * SW.JS — Service Worker RISEVANILLA v3.9.0
+ * SW.JS — Service Worker RISEVANILLA v3.9.2
  * Stratégie: Cache-First (assets locaux) + Stale-While-Revalidate (CDN)
  * Offline complet après premier chargement
  * ============================================================ */
 
 const CACHE_NAME    = 'risevanilla-v3';
-const CACHE_VERSION = '3.9.1';
+const CACHE_VERSION = '3.9.2';
 const STATIC_CACHE  = `${CACHE_NAME}-static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_NAME}-runtime-${CACHE_VERSION}`;
 
@@ -25,6 +25,7 @@ const STATIC_ASSETS = [
     './src/core/state.js',
     './src/core/db.js',
     './src/core/router.js',
+    './src/core/keyboard.js',
     './src/core/export.js',
     './src/core/search.js',
     './src/core/search-analytics.js',

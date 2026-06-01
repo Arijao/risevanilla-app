@@ -91,7 +91,86 @@
             }
         }
 
-        /* ── Quality badge clickable hover ────────────────── */
+        /* ── Keyboard Help Modal ──────────────────────────── */
+        .kbd-modal-content {
+            max-width: 520px;
+            width: 100%;
+        }
+        .kbd-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 4px 0 8px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .kbd-group-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--md-sys-color-primary);
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
+            margin-bottom: 4px;
+        }
+        .kbd-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 10px;
+            border-radius: 8px;
+            transition: background 0.12s;
+        }
+        .kbd-row:hover {
+            background: var(--md-sys-color-surface-variant);
+        }
+        .kbd-label {
+            font-size: 13.5px;
+            color: var(--md-sys-color-on-surface);
+        }
+        .kbd-keys {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+        kbd {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 26px;
+            height: 24px;
+            padding: 0 6px;
+            font-family: 'Roboto Condensed', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--md-sys-color-on-surface);
+            background: var(--md-sys-color-surface-variant);
+            border: 1px solid var(--md-sys-color-outline-variant);
+            border-bottom-width: 2px;
+            border-radius: 5px;
+            box-shadow: 0 1px 0 var(--md-sys-color-outline);
+            white-space: nowrap;
+        }
+        .kbd-plus {
+            font-size: 11px;
+            color: var(--md-sys-color-on-surface-variant);
+            padding: 0 1px;
+        }
+        .kbd-footer {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 10px 2px;
+            font-size: 12px;
+            color: var(--md-sys-color-on-surface-variant);
+            border-top: 1px solid var(--md-sys-color-outline-variant);
+            margin-top: 4px;
+        }
+        .kbd-footer kbd {
+            font-size: 11px;
+        }
         .quality-badge-clickable {
             transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
         }
@@ -1750,6 +1829,7 @@
     <script src="src/pages/qualities.js"></script>
     <script src="src/core/export.js"></script>
     <script src="src/core/backup.js"></script>
+    <script src="src/core/keyboard.js"></script>
     <script src="src/main.js"></script>
     <!-- ============================================================
          Service Worker — Enregistrement PWA offline complet
