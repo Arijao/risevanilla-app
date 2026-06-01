@@ -358,8 +358,8 @@ function updatePrixRevientAnalysis() {
  * ============================================================ */
 
 function showQualityDetail(quality, type, poids, valeur, nbRec) {
-    const titleEl = document.getElementById('quality-detail-modal-title');
-    const bodyEl  = document.getElementById('quality-detail-modal-body');
+    const titleEl = document.getElementById('analysis-quality-modal-title');
+    const bodyEl  = document.getElementById('analysis-quality-modal-body');
     if (!titleEl || !bodyEl) return;
 
     const typeLabel  = type === 'verte' ? 'Vanille Verte' : 'Vanille Préparée';
@@ -401,5 +401,5 @@ function showQualityDetail(quality, type, poids, valeur, nbRec) {
             </div>
         </div>`;
 
-    openModal('quality-detail-modal');
+    openModal('analysis-quality-modal');
 }
